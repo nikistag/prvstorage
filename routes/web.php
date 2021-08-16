@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+//Controllers
+use App\Http\Controllers\WorkController;
+use App\Http\Controllers\FolderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +17,21 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
+});
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
+
+Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
+
+//Folder routes
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/folder/index', [FolderController::class, 'index'])->name('folder.index');
+
+    Route::get('/folder/ceva', [FolderController::class, 'ceva'])->name('folder.ceva');
 });
