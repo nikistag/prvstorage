@@ -10,8 +10,11 @@
     <link rel="stylesheet" type="text/css" href={{ asset('css/materialize.css')}} />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+
     <script src={{ asset('js/jquery3_6.js') }}></script>
+    <script src={{ asset('js/jquery.ui.widget.js') }}></script>
     <script src={{ asset('js/materialize.js') }}></script>
+    <script src={{ asset('js/fileuploads.js') }}></script>
 
     <title>{!! $title !!}</title>
 
@@ -74,10 +77,12 @@
     @endguest
     <div class="container">
         <div class="row blue-grey lighten-5" style="min-height:400px;">
-            <div class="col s3">
-                meniu
-            </div>
-            <div class="col s9">
+            <div class="col s12 center">
+                @auth
+
+                @include('partials._flash')
+                @endauth
+                
                 @yield('content')
             </div>
         </div>
@@ -111,7 +116,9 @@
     <script>
         $(document).ready(function() {
             //M.AutoInit();
-            $('.sidenav').sidenav({edge:'right'});
+            $('.sidenav').sidenav({
+                edge: 'right'
+            });
         });
     </script>
 

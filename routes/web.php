@@ -33,5 +33,26 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/folder/index', [FolderController::class, 'index'])->name('folder.index');
 
-    Route::get('/folder/ceva', [FolderController::class, 'ceva'])->name('folder.ceva');
+    Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
+
+    Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
+
+    Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
+
+    Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
+
+    Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
+
+    Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');    
+
+    Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
+
+    Route::post('/folder/moveFile', [FolderController::class, 'moveFile'])->name('folder.moveFile');
+
+    Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
+
+    Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
+
+
+    
 });
