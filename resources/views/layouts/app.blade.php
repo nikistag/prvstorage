@@ -45,8 +45,12 @@
                     </form>
                 </li>
                 <li>
+                    <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
+                </li>
+                <li>
                     &nbsp;
                 </li>
+
             </ul>
             @endauth
             @guest
@@ -60,12 +64,15 @@
             @endguest
     </nav>
     @auth
-    <ul class="sidenav" id="mobile-nav-menu">
+    <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
         <li>
-            <form method="POST" action="{{route('logout')}}">
+            <a id="logouttrigger" href="!#"><span class="white-text">Logout</span></a>
+            <form id="logoutform" method="POST" action="{{route('logout')}}">
                 @csrf
-                <button class="btn-small" type="submit">Logout</button>
             </form>
+        </li>
+        <li>
+            <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
         </li>
     </ul>
     @endauth
@@ -78,11 +85,8 @@
     <div class="container">
         <div class="row blue-grey lighten-5" style="min-height:400px;">
             <div class="col s12 center">
-                @auth
-
                 @include('partials._flash')
-                @endauth
-                
+
                 @yield('content')
             </div>
         </div>
@@ -118,6 +122,10 @@
             //M.AutoInit();
             $('.sidenav').sidenav({
                 edge: 'right'
+            });
+            $('#logouttrigger').on('click', function(e) {
+                e.preventDefault();
+                $('#logoutform').submit();
             });
         });
     </script>

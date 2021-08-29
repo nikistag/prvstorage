@@ -54,6 +54,10 @@ class RegisteredUserController extends Controller
         }
         //Create private folder
         Storage::disk('local')->makeDirectory($user->name);
+        //Create temp folder for archives
+        Storage::disk('local')->makeDirectory($user->name.'/ZTemp');
+        //Create Home network share folder
+        Storage::disk('local')->makeDirectory($user->name.'/Homeshare');
         
         event(new Registered($user));
 
