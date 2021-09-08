@@ -51,7 +51,7 @@
 
 
 @if(count($directories) == 0)
-<p>You have no directories stored.</p>
+
 @else
 
 @foreach($directories as $directory)
@@ -90,6 +90,8 @@
     </div>
 </div>
 @endforeach
+@endif
+
 <!-- 'ZTemp' and 'Homeshare' folder actions -->
 @if($current_folder == null)
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/Homeshare'))}} files" style="border-bottom: 1px solid gray;">
@@ -122,7 +124,6 @@
 </div>
 @endif
 
-@endif
 @if(count($files) == 0)
 <p>You have no files stored in this directory.</p>
 @else

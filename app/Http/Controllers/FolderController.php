@@ -13,21 +13,20 @@ class FolderController extends Controller
 {
     public function index()
     {
-        $path = 'app/prv/' . auth()->user()->name;
-        $directories = Storage::allDirectories(storage_path($path));
+
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
-        return view('folder.index', compact('directories', 'disk_free_space', 'disk_total_space', 'quota'));
+        return view('folder.index', compact('disk_free_space', 'disk_total_space', 'quota'));
     }
 
     public function root(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
 
@@ -39,14 +38,18 @@ class FolderController extends Controller
             $parent_folder = null;
         }
 
-        $full_directory_paths = Storage::disk('local')->allDirectories('app/prv/' . auth()->user()->name);
+        $full_directory_paths = Storage::disk('local')->allDirectories(auth()->user()->name);
+
+        //dd($full_directory_paths);
 
         $private_directory_paths = [];
         foreach ($full_directory_paths as $dir) {
-            if (($dir !== 'app/prv/' . auth()->user()->name . "/ZTemp") && ($dir !== 'app/prv/' . auth()->user()->name . "/Homeshare")) {
-                array_push($private_directory_paths, substr($dir, strlen('app/prv/' . auth()->user()->name) + 1));
+            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Homeshare")) {
+                array_push($private_directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
             }
         }
+
+        
         $dirs = Storage::disk('local')->directories($path);
 
         $fls = Storage::disk('local')->files($path);
@@ -54,15 +57,17 @@ class FolderController extends Controller
         //Remove folder paths
         $directories = [];
         foreach ($dirs as $dir) {
-            if (($dir !== 'app/prv/' . auth()->user()->name . "/ZTemp") && ($dir !== 'app/prv/' . auth()->user()->name . "/Homeshare")) {
-                array_push($directories, substr($dir, strlen($path) + 1));
+            if (($dir !== auth()->user()->name . "/ZTemp") && ($dir !== auth()->user()->name . "/Homeshare")) {
+                array_push($directories, substr($dir, strlen($path)));
             }
         }
         //Remove file paths
         $files = [];
         foreach ($fls as $file) {
-            array_push($files, ['filename' => substr($file, strlen($path) + 1), 'filesize' => $this->getFileSize($file)]);
+            array_push($files, ['filename' => substr($file, strlen($path)), 'filesize' => $this->getFileSize($file)]);
         }
+
+        //dd($dirs);
 
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
@@ -74,10 +79,10 @@ class FolderController extends Controller
     public function newfolder(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $new_folder = $request->input('newfolder');
@@ -90,10 +95,10 @@ class FolderController extends Controller
     public function editfolder(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $old_path = $path . "/" . $request->input('oldfolder');
@@ -107,14 +112,14 @@ class FolderController extends Controller
     {
         //dd($request->input());
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $old_path = $path . "/" . $request->input('oldmovefolder');
-        $new_path = 'app/prv/' . auth()->user()->name . "/" . $request->input('target') . "/" . $request->input('oldmovefolder');
+        $new_path = '/' . auth()->user()->name . "/" . $request->input('target') . "/" . $request->input('oldmovefolder');
 
         Storage::disk('local')->move($old_path, $new_path);
 
@@ -138,10 +143,10 @@ class FolderController extends Controller
     public function folderupload(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
 
@@ -160,7 +165,7 @@ class FolderController extends Controller
     }
     public function emptytemp(Request $request)
     {
-        $temp_path = 'app/prv/' . auth()->user()->name . "/ZTemp";
+        $temp_path = '/' . auth()->user()->name . "/ZTemp";
 
         $shares = Share::select('path')->where('user_id', auth()->user()->id)->get();
 
@@ -185,10 +190,10 @@ class FolderController extends Controller
     {
         //dd($request->input());
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $old_path = $path . "/" . $request->input('oldrenamefilename');
@@ -201,14 +206,14 @@ class FolderController extends Controller
     public function moveFile(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $old_path = $path . "/" . $request->input('oldfilefolder');
-        $new_path = 'app/prv/' . auth()->user()->name . "/" . $request->input('targetfolder') . "/" . $request->input('oldfilefolder');
+        $new_path = '/' . auth()->user()->name . "/" . $request->input('targetfolder') . "/" . $request->input('oldfilefolder');
 
         Storage::disk('local')->move($old_path, $new_path);
 
@@ -217,10 +222,10 @@ class FolderController extends Controller
     public function removeFile(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
         $garbage = $path . "/" . $request->input('filename');
@@ -234,10 +239,10 @@ class FolderController extends Controller
     {
 
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
 
@@ -250,7 +255,7 @@ class FolderController extends Controller
     public function folderdownload(Request $request)
     {
         if ($request->has('path')) {
-            $path = 'app/prv/' . auth()->user()->name .  $request->path;
+            $path = '/' . auth()->user()->name .  $request->path;
             $directory = $request->directory;
 
             $file_full_paths = Storage::disk('local')->allFiles($path);
@@ -259,12 +264,12 @@ class FolderController extends Controller
 
             $zip_directory_paths = [];
             foreach ($directory_full_paths as $dir) {
-                array_push($zip_directory_paths, substr($dir, strlen($path) + 1));
+                array_push($zip_directory_paths, substr($dir, strlen($path)));
             }
 
             $zipFileName = 'zpd_' . $directory . '.zip';
 
-            $zip_path = Storage::disk('local')->path('app/prv/' . auth()->user()->name . '/ZTemp/' . $zipFileName);
+            $zip_path = Storage::disk('local')->path('/' . auth()->user()->name . '/ZTemp/' . $zipFileName);
 
             // Creating file names and path names to be archived
             $files_n_paths = [];
@@ -272,7 +277,7 @@ class FolderController extends Controller
                 array_push($files_n_paths, [
                     'name' => substr($fl, strripos($fl, '/') + 1),
                     'path' => Storage::disk('local')->path($fl),
-                    'zip_path' => substr($fl, strlen($path) + 1),
+                    'zip_path' => substr($fl, strlen($path)),
                 ]);
             }
 
@@ -298,7 +303,7 @@ class FolderController extends Controller
     public function filedownload(Request $request)
     {
         if ($request->has('path')) {
-            $path = 'app/prv/' . auth()->user()->name . $request->path;
+            $path = '/' . auth()->user()->name . $request->path;
             return Storage::download($path);
         } else {
             return back()->with('error', 'File / Folder not found on server');
@@ -308,10 +313,10 @@ class FolderController extends Controller
     public function multiupload(Request $request)
     {
         if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $path = 'app/prv/' . auth()->user()->name . $request->current_folder;
+            $path = '/' . auth()->user()->name . $request->current_folder;
             $current_folder = $request->current_folder;
         } else {
-            $path = 'app/prv/' . auth()->user()->name;
+            $path = '/' . auth()->user()->name;
             $current_folder = null;
         }
 

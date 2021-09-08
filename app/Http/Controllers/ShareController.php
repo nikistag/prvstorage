@@ -22,7 +22,7 @@ class ShareController extends Controller
         }
         $shares = Share::where('user_id', auth()->user()->id)->orderBy('expiration', 'desc')->get();
 
-        $path = 'app/prv/' . auth()->user()->name;
+        $path = '/' . auth()->user()->name;
         $directories = Storage::allDirectories(storage_path($path));
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
@@ -35,7 +35,7 @@ class ShareController extends Controller
         $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
 
         $zip_path = Storage::disk('local')->path('app/prv/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
-        $db_zip_path = 'app/prv/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
+        $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
         //Create archive
         $zip = new ZipArchive();
@@ -62,8 +62,8 @@ class ShareController extends Controller
         $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
 
-        $zip_path = Storage::disk('local')->path('app/prv/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
-        $db_zip_path = 'app/prv/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
+        $zip_path = Storage::disk('local')->path('/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
+        $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
         $file_full_paths = Storage::disk('local')->allFiles($path);
 
@@ -71,7 +71,7 @@ class ShareController extends Controller
 
         $zip_directory_paths = [];
         foreach ($directory_full_paths as $dir) {
-            array_push($zip_directory_paths, substr($dir, strlen($path) + 1));
+            array_push($zip_directory_paths, substr($dir, strlen($path)));
         }
 
         // Creating file names and path names to be archived
@@ -80,7 +80,7 @@ class ShareController extends Controller
             array_push($files_n_paths, [
                 'name' => substr($fl, strripos($fl, '/') + 1),
                 'path' => Storage::disk('local')->path($fl),
-                'zip_path' => substr($fl, strlen($path) + 1),
+                'zip_path' => substr($fl, strlen($path)),
             ]);
         }
 
