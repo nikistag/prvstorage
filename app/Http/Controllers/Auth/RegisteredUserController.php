@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class RegisteredUserController extends Controller
 {
@@ -35,7 +36,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:10|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
@@ -50,19 +51,35 @@ class RegisteredUserController extends Controller
 
         if (count($admins) == 0) {
             $user->admin = 1;
+            $user->active = 1;
             $user->save();
         }
+
         //Create private folder
         Storage::disk('local')->makeDirectory($user->name);
         //Create temp folder for archives
         Storage::disk('local')->makeDirectory($user->name.'/ZTemp');
         //Create Home network share folder
-        Storage::disk('local')->makeDirectory($user->name.'/Homeshare');
+        Storage::disk('local')->makeDirectory($user->name.'/'.ucwords($user->name).'share');
         
         event(new Registered($user));
+
+        //Send mail to admins to activate accounts
+        $details = [
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'user_id' => $user->id,
+        ];
+
+        $admins = User::where('admin', 1)->get();
+
+        foreach($admins as $admin){
+
+            Mail::to($admin->email)->send(new \App\Mail\NewUser($details));
+        }        
 
         Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
-    }
+    } 
 }

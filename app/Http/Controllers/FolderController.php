@@ -49,7 +49,7 @@ class FolderController extends Controller
             }
         }
 
-        
+
         $dirs = Storage::disk('local')->directories($path);
 
         $fls = Storage::disk('local')->files($path);
@@ -58,16 +58,29 @@ class FolderController extends Controller
         $directories = [];
         foreach ($dirs as $dir) {
             if (($dir !== auth()->user()->name . "/ZTemp") && ($dir !== auth()->user()->name . "/Homeshare")) {
-                array_push($directories, substr($dir, strlen($path)));
+
+                array_push($directories, [
+                    'foldername' => substr($dir, strlen($path)),
+                    'shortfoldername' => substr(substr($dir, strlen($path)), 0, 15) . "...",
+                ]);
             }
         }
         //Remove file paths
         $files = [];
         foreach ($fls as $file) {
-            array_push($files, ['filename' => substr($file, strlen($path)), 'filesize' => $this->getFileSize($file)]);
+            //last coocurrance
+            //dd($file);
+            $fullfilename = substr($file, strlen($path));
+            array_push($files, [
+                'fullfilename' =>  $fullfilename,
+                'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
+                'shortfilename' => substr($filename, 0, 15) . "*~",
+                'extension' => strrchr($file, "."),
+                'filesize' => $this->getFileSize($file)
+            ]);
         }
 
-        //dd($dirs);
+        //dd($files);
 
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
@@ -171,17 +184,17 @@ class FolderController extends Controller
 
         $temp_files = Storage::disk('local')->allFiles($temp_path);
 
-        foreach($temp_files as $file){
+        foreach ($temp_files as $file) {
             $filtered = $shares->where('path', $file);
-            if(count($filtered) == 0){
+            if (count($filtered) == 0) {
                 Storage::delete($file);
             }
         }
-        
 
 
-       // $file = new Filesystem;
-       // $file->cleanDirectory(Storage::disk('local')->path($temp_path));
+
+        // $file = new Filesystem;
+        // $file->cleanDirectory(Storage::disk('local')->path($temp_path));
 
         return redirect()->route('folder.root', ['current_folder' => null])->with('success', 'Temporary folder is clean!');
     }

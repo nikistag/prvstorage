@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'admin',
+        'active'
     ];
 
     /**
@@ -41,6 +43,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    //Getters
+    public function getAdminRoleAttribute()
+    {
+        return $this->admin === 1 ? 'Yes' : 'No';
+    }
+    public function getActiveStatusAttribute()
+    {
+        return $this->active === 1 ? 'Yes' : 'No';
+    }
+
 
     //Relationships
 

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WorkController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +26,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
 
@@ -33,47 +34,40 @@ Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
 Route::middleware(['auth'])->group(function () {
 
     //Folder routes
-
     Route::get('/folder/index', [FolderController::class, 'index'])->name('folder.index');
 
-    Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
+    Route::middleware(['isactive'])->group(function () {
 
-    Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
+        Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
+        Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
+        Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
+        Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
+        Route::post('/folder/folderupload', [FolderController::class, 'folderupload'])->name('folder.folderupload');
+        Route::post('/folder/emptytemp', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
+        Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
+        Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
+        Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
+        Route::post('/folder/moveFile', [FolderController::class, 'moveFile'])->name('folder.moveFile');
+        Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
+        Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
+        Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
+        Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
 
-    Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
+        //Share routes    
+        Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
+        Route::post('/share/createFile', [ShareController::class, 'createFile'])->name('share.createFile');
+        Route::post('/share/createFolder', [ShareController::class, 'createFolder'])->name('share.createFolder');
+        Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
 
-    Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
-
-    Route::post('/folder/folderupload', [FolderController::class, 'folderupload'])->name('folder.folderupload');
-
-    Route::post('/folder/emptytemp', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
-
-    Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
-
-    Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');    
-
-    Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
-
-    Route::post('/folder/moveFile', [FolderController::class, 'moveFile'])->name('folder.moveFile');
-
-    Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
-
-    Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
-
-    Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
-
-    Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
-
-    //Share routes
-    
-    Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
-
-    Route::post('/share/createFile', [ShareController::class, 'createFile'])->name('share.createFile');
-
-    Route::post('/share/createFolder', [ShareController::class, 'createFolder'])->name('share.createFolder');
-
-    Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
-    
+        //User administration routes
+        Route::get('/user/admins', [UserController::class, 'admins'])->name('user.admins');
+        Route::middleware(['isadmin'])->group(function () {
+            Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
+            Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
+            Route::put('/user/{user}/update', [UserController::class, 'update'])->name('user.update');
+            Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+        });
+    });
 });
 
 Route::get('/share/download', [ShareController::class, 'download'])->name('share.download');

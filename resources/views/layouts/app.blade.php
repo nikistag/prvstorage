@@ -12,9 +12,9 @@
 
 
     <script src={{ asset('js/jquery3_6.js') }}></script>
-    <script src={{ asset('js/jquery.ui.widget.js') }}></script>
+<!--     <script src={{ asset('js/jquery.ui.widget.js') }}></script>    
+    <script src={{ asset('js/fileuploads.js') }}></script> -->
     <script src={{ asset('js/materialize.js') }}></script>
-    <script src={{ asset('js/fileuploads.js') }}></script>
 
     <title>{!! $title !!}</title>
 
@@ -47,6 +47,15 @@
                 <li>
                     <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
                 </li>
+                @if(auth()->user()->admin === 1)
+                <li>
+                    <a href="{{route('user.index')}}"><span class="white-text">Users</span></a>
+                </li>
+                @else
+                <li>
+                    <a href="{{route('user.admins')}}"><span class="white-text">Admins</span></a>
+                </li>
+                @endif
                 <li>
                     &nbsp;
                 </li>
@@ -74,6 +83,15 @@
         <li>
             <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
         </li>
+        @if(auth()->user()->admin === 1)
+        <li>
+            <a href="{{route('user.index')}}"><span class="white-text">Users</span></a>
+        </li>
+        @else
+        <li>
+            <a href="{{route('user.admins')}}"><span class="white-text">Admins</span></a>
+        </li>
+        @endif
     </ul>
     @endauth
     @guest
