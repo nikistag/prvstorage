@@ -8,7 +8,8 @@
     <meta name="csrf-token" value="{{ csrf_token() }}">
 
     <link rel="stylesheet" type="text/css" href={{ asset('css/materialize.css')}} />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- <link rel="stylesheet" type="text/css" href={{ asset('css/iconfont/material-icons.css')}} /> -->
+   <!--  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
 
 
     <script src={{ asset('js/jquery3_6.js') }}></script>

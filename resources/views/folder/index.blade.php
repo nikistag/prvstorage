@@ -13,7 +13,7 @@
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
     
-    <a href="{{route('folder.root')}}" class="btn-small waves-effect waves-light">My private files<i class="material-icons right">cloud</i></a>
+    <a href="{{route('folder.root', ['current_folder' => '/'])}}" class="btn-small waves-effect waves-light">My private files & folders<i class="material-icons right">cloud</i></a>
 
 </div>
 

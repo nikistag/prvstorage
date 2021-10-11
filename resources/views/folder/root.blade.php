@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="row">
-    <div><span><?= $quota ?></span> of disk space in use. <?= $disk_free_space ?> Gb free space</div>
+    <div><span><?= $quota ?></span> % of disk space in use. <?= $disk_free_space ?> Gb free space</div>
     <div class="progress">
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
@@ -29,17 +29,24 @@
     </div>
 
 </div>
-<nav class="blue-grey">
-    <div class="nav-wrapper">
-        <div class="col s12">
-            Current folder:
-            <a href="#!" class="breadcrumb"><span class="orange-text text-lighten-4">{{$current_folder == null ? "/" : $current_folder}}</span></a>
-        </div>
+<div class="row blue-grey">
+    <div class="col s12 center white-text">
+        <strong>Current folder:</strong>
+        @foreach($breadcrumbs as $piece)
+        @if ($loop->last)
+        <span class="lime-text"><strong>{{$piece['folder']}}</strong></span>
+        @else
+        <a href="{{route('folder.root', ['current_folder' => $piece['path']])}}">
+            <span class="orange-text text-lighten-4">{{$piece['folder']}}</span>
+        </a>
+        &nbsp;<strong>></strong>&nbsp;
+        @endif
+        @endforeach
     </div>
-</nav>
+</div>
 
 <!-- If in subfolder print back button -->
-@if($current_folder != null)
+@if($current_folder != "/")
 <div class="row">
     <div class="col s12">
         <a href="{{route('folder.root', ['current_folder' => $parent_folder])}}" class="left">
@@ -56,31 +63,22 @@
 
 @foreach($directories as $directory)
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files" style="border-bottom: 1px solid gray;">
-    <div class="col s6 valign-wrapper">
-        @if($current_folder != null)
-        <a href="{{route('folder.root', ['current_folder' => $current_folder.'/'.$directory['foldername']])}}" class="valign-wrapper">
+    <div class="col s8 valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . $directory['foldername'] . '/'])}}" class="valign-wrapper">
             <i class="material-icons orange-text" style="font-size:50px;">folder</i>
-            <span class="hide-on-med-and-down">{{$directory['foldername']}}</span>
-            <span class="hide-on-large-only truncate">{{$directory['shortfoldername']}}</span>
+            <span class="hide-on-small-only">{{$directory['foldername']}}</span>
+            <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span>
         </a>
-        @else
-        <a href="{{route('folder.root', ['current_folder' => '/'.$directory['foldername']])}}" class="valign-wrapper">
-            <i class="material-icons orange-text" style="font-size:50px;">folder</i>
-            <span class="hide-on-med-and-down">{{$directory['foldername']}}</span>
-            <span class="hide-on-large-only truncate">{{$directory['shortfoldername']}}</span>
-        </a>
-        @endif
-
     </div>
-    <div class="col s6 right-align">
-        @if($current_folder == null)
+    <div class="col s4 right-align">
+        @if($current_folder == "/")
         <input name="directory" type="hidden" value="{{'app/prv/' . auth()->user()->name.'/'.$directory['foldername']}}" />
         @else
         <input name="directory" type="hidden" value="{{'app/prv/' . auth()->user()->name.'/'.$current_folder.'/'.$directory['foldername']}}" />
         @endif
         <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
         <a href="{{$directory['foldername']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move"><i class="material-icons orange-text">subdirectory_arrow_right</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <br />
         <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" class="tooltipped" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
@@ -94,28 +92,30 @@
 @endforeach
 @endif
 
-<!-- 'ZTemp' and 'Homeshare' folder actions -->
-@if($current_folder == null)
-<div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/Homeshare'))}} files" style="border-bottom: 1px solid gray;">
+<!-- 'Homeshare' folder actions -->
+@if($current_folder == "/")
+<div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('Homeshare'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => '/Homeshare'])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => 'Homeshare'])}}" class="valign-wrapper">
             <i class="material-icons orange-text" style="font-size:50px;">folder</i>
             Homeshare
         </a>
     </div>
     <div class="col s6 right-align">
         <a href="Homeshare" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-        <a href="{{route('folder.folderdownload', ['path' => '/Homeshare', 'directory' => 'Homeshare'])}}" class="tooltipped" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
+        <a href="{{route('folder.folderdownload', ['path' => 'Homeshare', 'directory' => 'Homeshare'])}}" class="tooltipped" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
     </div>
 </div>
 <!-- Hidden form for sharing files and folders -->
 <form method="POST" id="shareformHomeshare" action="{{route('share.createFolder')}}">
     @csrf
-    <input type="hidden" name="share" value="{{$path . '/Homeshare'}}">
+    <input type="hidden" name="share" value="{{'Homeshare'}}">
 </form>
+
+<!-- 'ZTemp' folder actions -->
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => '/ZTemp'])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . 'ZTemp/'])}}" class="valign-wrapper">
             <i class="material-icons orange-text" style="font-size:50px;">folder</i>
             ZTemp
         </a>
@@ -132,27 +132,27 @@
 
 @foreach($files as $file)
 <div class="row hoverable" style="border-bottom: 1px solid gray;">
-    <div class="col s6 valign-wrapper left-align">
+    <div class="col s8 valign-wrapper left-align">
         <i class="material-icons medium">description</i>
         <p style="margin:0; text-align: left;">
-            <span class="hide-on-med-and-down">{{$file['fullfilename']}}</span>
-            <span class="hide-on-large-only">{{$file['shortfilename'] . $file['extension']}}</span>
+            <span class="hide-on-small-only">{{$file['fullfilename']}}</span>
+            <span class="hide-on-med-and-up tooltipped" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
             <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
         </p>
     </div>
-    <div class="col s6 right-align">
+    <div class="col s4 right-align">
         @if($current_folder == '/ZTemp')
         @else
-        <a href="{{$file['filename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$file['filename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-        <a href="{{$file['filename']}}" class="modal-trigger move-file tooltipped" data-target="modalmovefile" data-tooltip="Move"><i class="material-icons orange-text">subdirectory_arrow_right</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <a href="{{$file['fullfilename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file tooltipped" data-target="modalmovefile" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <br />
-        <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['filename'] : $current_folder.'/'.$file['filename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
-        <a href="{{$file['filename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+        <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
         <!-- Hidden form for sharing files and folders -->
-        <form method="POST" id="shareform{{$file['filename']}}" action="{{route('share.createFile')}}">
+        <form method="POST" id="shareform{{$file['fullfilename']}}" action="{{route('share.createFile')}}">
             @csrf
-            <input type="hidden" name="share" value="{{$path . '/' . $file['filename']}}">
+            <input type="hidden" name="share" value="{{$path . '/' . $file['fullfilename']}}">
         </form>
         @endif
     </div>
@@ -224,7 +224,16 @@
                 <div class="col s12">
                     <div class="input-field inline">
                         <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30" disabled />
-                        <label for="movefolder"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <label>
+                            <input type="checkbox" class="filled-in" name="foldercopy" />
+                            <span>Copy</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -309,13 +318,23 @@
 <div id="modalmovefile" class="modal">
     <form method="POST" action="{{ route('folder.moveFile') }}">
         <div class="modal-content">
-            <h5>Move file</h5>
+            <h5>Move/Copy file</h5>
             @csrf
             <div class="row">
                 <div class="col s12">
                     <div class="input-field inline">
                         <input id="movefile" name="movefile" type="text" class="valid" value="" size="30" disabled />
                         <label for="movefile"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <label>
+                            <input type="checkbox" class="filled-in" name="filecopy" />
+                            <span>Copy</span>
+                        </label>
                     </div>
                 </div>
             </div>

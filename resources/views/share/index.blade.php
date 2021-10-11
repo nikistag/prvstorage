@@ -3,12 +3,12 @@
 @section('content')
 
 <div class="row">
-    <div><span><?= $quota ?></span> of disk space in use. <?= $disk_free_space ?> Gb free space</div>
+    <div><span><?= $quota ?></span>% of disk space in use. <?= $disk_free_space ?> Gb free space</div>
     <div class="progress">
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
 </div>
-<a href="{{route('folder.root')}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+<a href="{{route('folder.root', ['current_folder' => '/'])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
 <h4>Shares</h4>
 <table class="responsive-table">
     <thead>
