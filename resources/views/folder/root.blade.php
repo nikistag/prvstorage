@@ -67,7 +67,8 @@
         <a href="{{route('folder.root', ['current_folder' => $current_folder . $directory['foldername'] . '/'])}}" class="valign-wrapper">
             <i class="material-icons orange-text" style="font-size:50px;">folder</i>
             <span class="hide-on-small-only">{{$directory['foldername']}}</span>
-            <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span>
+            <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span><br>
+            <span class="new badge" data-badge-caption="{{ $directory['foldersize']['type']}}">{{ $directory['foldersize']['size']}}</span>
         </a>
     </div>
     <div class="col s4 right-align">
@@ -96,27 +97,21 @@
 @if($current_folder == "/")
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('Homeshare'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => 'Homeshare'])}}" class="valign-wrapper">
-            <i class="material-icons orange-text" style="font-size:50px;">folder</i>
+        <a href="{{route('netshare.root', ['current_folder' => 'Homeshare/'])}}" class="valign-wrapper">
+            <i class="material-icons indigo-text" style="font-size:50px;">folder</i>
             Homeshare
         </a>
     </div>
     <div class="col s6 right-align">
-        <a href="Homeshare" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-        <a href="{{route('folder.folderdownload', ['path' => 'Homeshare', 'directory' => 'Homeshare'])}}" class="tooltipped" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
+
     </div>
 </div>
-<!-- Hidden form for sharing files and folders -->
-<form method="POST" id="shareformHomeshare" action="{{route('share.createFolder')}}">
-    @csrf
-    <input type="hidden" name="share" value="{{'Homeshare'}}">
-</form>
 
 <!-- 'ZTemp' folder actions -->
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
         <a href="{{route('folder.root', ['current_folder' => $current_folder . 'ZTemp/'])}}" class="valign-wrapper">
-            <i class="material-icons orange-text" style="font-size:50px;">folder</i>
+            <i class="material-icons lime-text" style="font-size:50px;">folder</i>
             ZTemp
         </a>
     </div>
@@ -145,7 +140,7 @@
         @else
         <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
         <a href="{{$file['fullfilename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file tooltipped" data-target="modalmovefile" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <br />
         <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
         <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
@@ -163,7 +158,6 @@
 </div>
 
 <!-- New folder modal -->
-
 <div id="modal1" class="modal">
     <form method="POST" action="{{ route('folder.newfolder') }}">
         <div class="modal-content">
@@ -177,13 +171,13 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
-                <i class="material-icons right">send</i>
-            </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            <div class="row">
+                <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+                <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
+                    <i class="material-icons right">send</i>
+                </button>
+                <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
         </div>
     </form>
 </div>
@@ -241,10 +235,9 @@
                 <div class="input-field col s12">
                     <select id="target" name="target">
                         <option value="" disabled>Choose where</option>
-                        @foreach($private_directory_paths as $path)
+                        @foreach($directory_paths as $path)
                         <option value="{{$path}}">{{$path}}</option>
                         @endforeach
-                        <option value="Homeshare">Homeshare</option>
                     </select>
                     <label>Choose folder</label>
                 </div>
@@ -314,17 +307,18 @@
     </form>
 </div>
 
-<!-- Move file modal -->
-<div id="modalmovefile" class="modal">
-    <form method="POST" action="{{ route('folder.moveFile') }}">
+
+<!-- Move file BIG modal -->
+<div id="modalmovefilebig" class="modal">
+    <form method="POST" action="{{ route('folder.moveFileBig') }}" id="bigFileForm">
         <div class="modal-content">
             <h5>Move/Copy file</h5>
             @csrf
             <div class="row">
                 <div class="col s12">
                     <div class="input-field inline">
-                        <input id="movefile" name="movefile" type="text" class="valid" value="" size="30" disabled />
-                        <label for="movefile"></label>
+                        <input id="bigFile" name="bigFile" type="text" class="valid" value="" size="30" disabled />
+                        <label for="bigFile"></label>
                     </div>
                 </div>
             </div>
@@ -340,26 +334,31 @@
             </div>
             <div class="row">
                 <div class="input-field col s12">
-                    <select id="targetfolder" name="targetfolder">
+                    <select id="targetfolderbig" name="targetfolderbig">
                         <option value="" disabled>Choose where</option>
-                        @foreach($private_directory_paths as $path)
+                        @foreach($directory_paths as $path)
                         <option value="{{$path}}">{{$path}}</option>
                         @endforeach
-                        <option value="Homeshare">Homeshare</option>
                     </select>
                     <label>Choose folder</label>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
-            <input type="hidden" id="oldfilefolder" name="oldfilefolder" value="" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
+            <input type="hidden" id="current_folder_big" name="current_folder_big" value="{{$current_folder}}" />
+            <input type="hidden" id="oldfolder" name="oldfolder" value="" />
+            <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyBigFileSubmit">Submit
                 <i class="material-icons right">send</i>
             </button>
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
+
+    <div class="progress">
+        <div class="determinate" style="width: 0%" id="copyFileProgress"></div>
+    </div>
+
+    <form action="{{route('folder.fileCopyProgress')}}" id="fileCopyProgressForm"></form>
 </div>
 
 <!-- Remove file modal -->
@@ -389,35 +388,6 @@
     </form>
 </div>
 
-<!-- upload file modal -->
-<!-- <div id="modalfileupload" class="modal">
-    <form method="POST" action="{{ route('folder.fileupload') }}" enctype="multipart/form-data">
-        <div class="modal-content">
-            <h4>Pick file to upload</h4>
-            @csrf
-            <div class="row">
-                <div class="col s12">
-                    <div class="file-field input-field">
-                        <div class="btn">
-                            <span>File</span>
-                            <input id="fileupload" name="fileupload" type="file" class="valid" />
-                        </div>
-                        <div class="file-path-wrapper">
-                            <input class="file-path validate" type="text" placeholder="Upload one or more files">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
-                <i class="material-icons right">send</i>
-            </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
-        </div>
-    </form>
-</div> -->
 <!-- Upload folder modal -->
 <div id="modalfolderupload" class="modal">
     <form id="folderuploadform" method="POST" action="{{ route('folder.folderupload') }}" enctype="multipart/form-data">
@@ -502,15 +472,6 @@
 
 
 
-
-<!-- Ajax routes -->
-<!-- <input type="hidden" name="newfolderroute" value="route" /> -->
-<!-- Ajax additional data -->
-@csrf
-<!-- <input type="hidden" name="additionaldata" value="additionaldata" /> -->
-<!-- <input type="hidden" name="additionaldata" value="additionaldata" /> -->
-
-
 <script>
     $(document).ready(function() {
         $('.tooltipped').tooltip();
@@ -554,11 +515,34 @@
             $('input[name=oldrenamefilename]').val(filename);
 
         }));
-        $('.move-file').on("click", (function(e) {
+        $('.move-file-big').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');
-            $('input[name=movefile]').val(filename);
-            $('input[name=oldfilefolder]').val(filename);
+            $('input[name=bigFile]').val(filename);
+            $('input[name=oldfolder]').val(filename);
+
+        }));
+        $('#copyBigFileSubmit').on("click", (function(e) {
+            e.preventDefault();
+            $('#bigFileForm').submit();
+            setInterval(function() {
+                $.ajax({
+                    url: $('#fileCopyProgressForm').attr("action"),
+                    type: "POST",
+                    data: {
+                        '_token': $('input[name=_token]').val(),
+                        'targetfolder': $('select[name=targetfolderbig]').val(),
+                        'copyfile': $('input[name=oldfolder]').val(),
+                        'currentfolder': $('input[name=current_folder_big]').val(),
+                    },
+                    success: function(data) {
+                        if (typeof data.progress !== "undefined") {
+                            var progressBar = document.getElementById('copyFileProgress');                            
+                            progressBar.style.width = data.progress + "%";
+                        }
+                    }
+                });
+            }, 2000);
 
         }));
         $('.remove-file').on("click", (function(e) {

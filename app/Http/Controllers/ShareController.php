@@ -34,14 +34,14 @@ class ShareController extends Controller
         $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
 
-        $zip_path = Storage::disk('local')->path('app/prv/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
+        $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
         //Create archive
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             // Add File in ZipArchive
-            $zip->addFile(Storage::disk('local')->path($request->input('share')), $share_name);
+            $zip->addFile(Storage::path($request->input('share')), $share_name);
             // Close ZipArchive     
             $zip->close();
         }
@@ -62,12 +62,12 @@ class ShareController extends Controller
         $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
 
-        $zip_path = Storage::disk('local')->path('/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
+        $zip_path = Storage::path('/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
-        $file_full_paths = Storage::disk('local')->allFiles($path);
+        $file_full_paths = Storage::allFiles($path);
 
-        $directory_full_paths = Storage::disk('local')->allDirectories($path);
+        $directory_full_paths = Storage::allDirectories($path);
 
         $zip_directory_paths = [];
         foreach ($directory_full_paths as $dir) {
@@ -79,7 +79,7 @@ class ShareController extends Controller
         foreach ($file_full_paths as $fl) {
             array_push($files_n_paths, [
                 'name' => substr($fl, strripos($fl, '/') + 1),
-                'path' => Storage::disk('local')->path($fl),
+                'path' => Storage::path($fl),
                 'zip_path' => substr($fl, strlen($path)),
             ]);
         }
@@ -130,7 +130,7 @@ class ShareController extends Controller
         
         $share = Share::where('path', $request->input('filename'))->first();
 
-        Storage::disk('local')->delete($share->path);
+        Storage::delete($share->path);
 
         $share->delete();
 

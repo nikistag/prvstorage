@@ -6,6 +6,7 @@ use App\Http\Controllers\WorkController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NetshareController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['isactive'])->group(function () {
 
+        //Folder routes
         Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
         Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
         Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
@@ -47,11 +49,29 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
         Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
-        Route::post('/folder/moveFile', [FolderController::class, 'moveFile'])->name('folder.moveFile');
+        Route::post('/folder/moveFileBig', [FolderController::class, 'moveFileBig'])->name('folder.moveFileBig'); 
+        Route::post('/folder/fileCopyProgress', [FolderController::class, 'fileCopyProgress'])->name('folder.fileCopyProgress'); // ajax request
         Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
         Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
         Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
         Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
+
+        //Local network share routes
+        Route::get('/netshare/root', [NetshareController::class, 'root'])->name('netshare.root');
+        Route::post('/netshare/newfolder', [NetshareController::class, 'newfolder'])->name('netshare.newfolder');
+        Route::post('/netshare/editfolder', [NetshareController::class, 'editfolder'])->name('netshare.editfolder');
+        Route::post('/netshare/moveFolder', [NetshareController::class, 'moveFolder'])->name('netshare.moveFolder');
+        Route::post('/netshare/folderupload', [NetshareController::class, 'folderupload'])->name('netshare.folderupload');
+        Route::post('/netshare/emptytemp', [NetshareController::class, 'emptytemp'])->name('netshare.emptytemp');
+        Route::delete('/netshare/remove', [NetshareController::class, 'remove'])->name('netshare.remove');
+        Route::post('/netshare/fileupload', [NetshareController::class, 'fileupload'])->name('netshare.fileupload');
+        Route::post('/netshare/renameFile', [NetshareController::class, 'renameFile'])->name('netshare.renameFile');
+        Route::post('/netshare/moveFileBig', [NetshareController::class, 'moveFileBig'])->name('netshare.moveFileBig'); 
+        Route::post('/netshare/fileCopyProgress', [NetshareController::class, 'fileCopyProgress'])->name('netshare.fileCopyProgress'); // ajax request
+        Route::delete('/netshare/removeFile', [NetshareController::class, 'removeFile'])->name('netshare.removeFile');
+        Route::post('/netshare/multiupload', [NetshareController::class, 'multiupload'])->name('netshare.multiupload');
+        Route::get('/netshare/filedownload', [NetshareController::class, 'filedownload'])->name('netshare.filedownload');
+        Route::get('/netshare/folderdownload', [NetshareController::class, 'folderdownload'])->name('netshare.folderdownload');
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
