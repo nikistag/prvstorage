@@ -8,7 +8,6 @@
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
 </div>
-
 <div class="row">
     <div class="col s12 center">
         <a href="Multiple files">
@@ -27,7 +26,6 @@
             </i>
         </a>
     </div>
-
 </div>
 <div class="row blue-grey">
     <div class="col s12 center white-text">
@@ -46,7 +44,7 @@
 </div>
 
 <!-- If in subfolder print back button -->
-@if($current_folder != "/")
+@if($current_folder != "")
 <div class="row">
     <div class="col s12">
         <a href="{{route('folder.root', ['current_folder' => $parent_folder])}}" class="left">
@@ -64,7 +62,7 @@
 @foreach($directories as $directory)
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s8 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . $directory['foldername'] . '/'])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">
             <i class="material-icons orange-text" style="font-size:50px;">folder</i>
             <span class="hide-on-small-only">{{$directory['foldername']}}</span>
             <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span><br>
@@ -94,16 +92,16 @@
 @endif
 
 <!-- 'Homeshare' folder actions -->
-@if($current_folder == "/")
+@if($current_folder == "")
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('Homeshare'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
-        <a href="{{route('netshare.root', ['current_folder' => 'Homeshare/'])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => '/Homeshare'])}}" class="valign-wrapper">
             <i class="material-icons indigo-text" style="font-size:50px;">folder</i>
             Homeshare
+            <span class="new badge" data-badge-caption="{{ $homeshare['foldersize']['type']}}">{{ $homeshare['foldersize']['size']}}</span>
         </a>
     </div>
     <div class="col s6 right-align">
-
     </div>
 </div>
 

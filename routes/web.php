@@ -56,23 +56,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
         Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
 
-        //Local network share routes
-        Route::get('/netshare/root', [NetshareController::class, 'root'])->name('netshare.root');
-        Route::post('/netshare/newfolder', [NetshareController::class, 'newfolder'])->name('netshare.newfolder');
-        Route::post('/netshare/editfolder', [NetshareController::class, 'editfolder'])->name('netshare.editfolder');
-        Route::post('/netshare/moveFolder', [NetshareController::class, 'moveFolder'])->name('netshare.moveFolder');
-        Route::post('/netshare/folderupload', [NetshareController::class, 'folderupload'])->name('netshare.folderupload');
-        Route::post('/netshare/emptytemp', [NetshareController::class, 'emptytemp'])->name('netshare.emptytemp');
-        Route::delete('/netshare/remove', [NetshareController::class, 'remove'])->name('netshare.remove');
-        Route::post('/netshare/fileupload', [NetshareController::class, 'fileupload'])->name('netshare.fileupload');
-        Route::post('/netshare/renameFile', [NetshareController::class, 'renameFile'])->name('netshare.renameFile');
-        Route::post('/netshare/moveFileBig', [NetshareController::class, 'moveFileBig'])->name('netshare.moveFileBig'); 
-        Route::post('/netshare/fileCopyProgress', [NetshareController::class, 'fileCopyProgress'])->name('netshare.fileCopyProgress'); // ajax request
-        Route::delete('/netshare/removeFile', [NetshareController::class, 'removeFile'])->name('netshare.removeFile');
-        Route::post('/netshare/multiupload', [NetshareController::class, 'multiupload'])->name('netshare.multiupload');
-        Route::get('/netshare/filedownload', [NetshareController::class, 'filedownload'])->name('netshare.filedownload');
-        Route::get('/netshare/folderdownload', [NetshareController::class, 'folderdownload'])->name('netshare.folderdownload');
-
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
         Route::post('/share/createFile', [ShareController::class, 'createFile'])->name('share.createFile');
