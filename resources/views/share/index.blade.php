@@ -8,7 +8,7 @@
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
 </div>
-<a href="{{route('folder.root', ['current_folder' => '/'])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+<a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
 <h4>Shares</h4>
 <table class="responsive-table">
     <thead>

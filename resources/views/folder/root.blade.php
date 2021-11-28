@@ -79,7 +79,7 @@
         <a href="{{$directory['foldername']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <br />
-        <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" class="tooltipped" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
+        <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
         <!-- Hidden form for sharing files and folders -->
         <form method="POST" id="shareform{{$directory['foldername']}}" action="{{route('share.createFolder')}}">
@@ -208,7 +208,7 @@
 
 <!-- Move folder modal -->
 <div id="modalmove" class="modal">
-    <form method="POST" action="{{ route('folder.moveFolder') }}">
+    <form id="moveFolderForm" method="POST" action="{{ route('folder.moveFolder') }}">
         <div class="modal-content">
             <h5>Move folder</h5>
             @csrf
@@ -243,13 +243,20 @@
         </div>
         <div class="modal-footer">
             <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
-            <input type="hidden" id="oldmovefolder" name="oldmovefolder" value="" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
+            <input type="hidden" id="whichfolder" name="whichfolder" value="" />
+            <button id="moveFolderSubmit"class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
+
+    <div class="progress">
+        <div class="determinate" style="width: 0%" id="copyFolderProgress"></div>
+    </div>
+
+    <!-- Links used with jQuery to calculate progress bar for copy file/folders -->
+    <form action="{{route('folder.folderCopyProgress')}}" id="folderCopyProgressForm"></form>
 </div>
 
 <!-- Remove folder modal -->
@@ -315,8 +322,8 @@
             <div class="row">
                 <div class="col s12">
                     <div class="input-field inline">
-                        <input id="bigFile" name="bigFile" type="text" class="valid" value="" size="30" disabled />
-                        <label for="bigFile"></label>
+                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30" disabled />
+                        <label for="fileDisplay"></label>
                     </div>
                 </div>
             </div>
@@ -344,7 +351,7 @@
         </div>
         <div class="modal-footer">
             <input type="hidden" id="current_folder_big" name="current_folder_big" value="{{$current_folder}}" />
-            <input type="hidden" id="oldfolder" name="oldfolder" value="" />
+            <input type="hidden" id="file_big" name="file_big" value="" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyBigFileSubmit">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -356,7 +363,9 @@
         <div class="determinate" style="width: 0%" id="copyFileProgress"></div>
     </div>
 
+    <!-- Links used with jQuery to calculate progress bar for copy file/folders -->
     <form action="{{route('folder.fileCopyProgress')}}" id="fileCopyProgressForm"></form>
+
 </div>
 
 <!-- Remove file modal -->
@@ -468,7 +477,17 @@
     <div class="collection" id='file-list-display'></div>
 </div>
 
-
+<!-- Preparing data modal -->
+<div id="modalbgworking" class="modal">
+    <div class="modal-content">
+        <h5 class="red-text" id="preparing"></h5>
+    </div>
+    <div class="modal-footer">
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
+    </div>
+</div>
 
 <script>
     $(document).ready(function() {
@@ -481,8 +500,12 @@
         $('.sharelink').on("click", (function(e) {
             e.preventDefault();
             var shareform = $(this).attr('href');
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing share";
             document.getElementById('shareform' + shareform).submit();
-
         }));
 
         $('.edit-folder').on("click", (function(e) {
@@ -492,13 +515,7 @@
             $('input[name=oldfolder]').val(foldername);
 
         }));
-        $('.move-folder').on("click", (function(e) {
-            e.preventDefault();
-            var foldername = $(this).attr('href');
-            $('input[name=movefolder]').val(foldername);
-            $('input[name=oldmovefolder]').val(foldername);
-
-        }));
+        
         $('.remove-folder').on("click", (function(e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
@@ -516,8 +533,8 @@
         $('.move-file-big').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');
-            $('input[name=bigFile]').val(filename);
-            $('input[name=oldfolder]').val(filename);
+            $('input[name=fileDisplay]').val(filename);
+            $('input[name=file_big]').val(filename);
 
         }));
         $('#copyBigFileSubmit').on("click", (function(e) {
@@ -530,12 +547,42 @@
                     data: {
                         '_token': $('input[name=_token]').val(),
                         'targetfolder': $('select[name=targetfolderbig]').val(),
-                        'copyfile': $('input[name=oldfolder]').val(),
+                        'copyfile': $('input[name=file_big]').val(),
                         'currentfolder': $('input[name=current_folder_big]').val(),
                     },
                     success: function(data) {
                         if (typeof data.progress !== "undefined") {
-                            var progressBar = document.getElementById('copyFileProgress');                            
+                            var progressBar = document.getElementById('copyFileProgress');
+                            progressBar.style.width = data.progress + "%";
+                        }
+                    }
+                });
+            }, 2000);
+
+        }));
+        $('.move-folder').on("click", (function(e) {
+            e.preventDefault();
+            var foldername = $(this).attr('href');
+            $('input[name=movefolder]').val(foldername);
+            $('input[name=whichfolder]').val(foldername);
+
+        }));
+        $('#moveFolderSubmit').on("click", (function(e) {
+            e.preventDefault();
+            $('#moveFolderForm').submit();
+            setInterval(function() {
+                $.ajax({
+                    url: $('#folderCopyProgressForm').attr("action"),
+                    type: "POST",
+                    data: {
+                        '_token': $('input[name=_token]').val(),
+                        'current_folder': $('input[name=current_folder]').val(),
+                        'whichfolder' : $('input[name=whichfolder]').val(),
+                        'target' : $('select[name=target]').val()
+                    },
+                    success: function(data) {
+                        if (typeof data.progress !== "undefined") {
+                            var progressBar = document.getElementById('copyFolderProgress');
                             progressBar.style.width = data.progress + "%";
                         }
                     }
@@ -548,6 +595,17 @@
             var filename = $(this).attr('href');
             $('input[name=filename]').val(filename);
             $('.filetoremove').html(filename);
+
+        }));
+        $('.zipNdownload').on("click", (function(e) {
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing Zip and Download folder";
+            instance.open();
+            setInterval(function() {
+                instance.close();
+            }, 3000);
 
         }));
 

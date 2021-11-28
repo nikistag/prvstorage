@@ -27,7 +27,7 @@ class FolderController extends Controller
 
         $path = $this->getPath($current_folder);
 
-        $breadcrumbs = $this->getBreadcrumbs($current_folder);        
+        $breadcrumbs = $this->getBreadcrumbs($current_folder);
 
         //Directory paths for options to move files and folders
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
@@ -97,8 +97,7 @@ class FolderController extends Controller
         if ($request->input('newfolder') == 'Homeshare') {
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder name @Homeshare is restricted');
         } else {
-
-            $path = $this->getPath($current_folder);         
+            $path = $this->getPath($current_folder);
             $new_folder = $request->input('newfolder');
             $new_folder_path = $path . "/" . $new_folder;
 
@@ -115,7 +114,7 @@ class FolderController extends Controller
         if ($request->input('editfolder') == 'Homeshare') {
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder name @Homeshare is restricted');
         } else {
-            $path = $this->getPath($current_folder);  
+            $path = $this->getPath($current_folder);
             $old_path = $path . "/" . $request->input('oldfolder');
             $new_path = $path . "/" . $request->input('editfolder');
             Storage::move($old_path, $new_path);
@@ -126,39 +125,25 @@ class FolderController extends Controller
     public function moveFolder(Request $request)
     {
 
-        $current_folder = "/" . $request->input('target') . "/";
-        $path = auth()->user()->name . $request->current_folder;
+        $current_folder = "/" . $request->input('target');
 
-        $old_path = $path . "/" . $request->input('oldmovefolder');
-
-        //Check if folder moved to local share folder 
-        if (stripos($request->input('target'), "Homeshare") !== false) {
-            $new_path = $current_folder . $request->input('oldmovefolder');
-        } else {
-            $new_path = '/' . auth()->user()->name . $current_folder . $request->input('oldmovefolder');
-        }
+        $new_path = $this->getPath($current_folder) . "/" . $request->input('whichfolder');
+        $old_path = $this->getPath($request->current_folder) . "/" . $request->input('whichfolder');
 
         //Check for duplicate folder
         if (Storage::exists($new_path)) {
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'NO action done. Duplicate folder found!');
         }
-
+        //Copy or move folder
         if ($request->has('foldercopy')) {
             $done = (new Filesystem)->copyDirectory(Storage::path($old_path), Storage::path($new_path));
-            if (stripos($request->input('target'), "Homeshare") !== false) {
-                return redirect()->route('folder.root', ['current_folder' => $request->input('target') . "/"])->with('success', 'Folder successfuly copied!');
-            } else {
-                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly copied!');
-            }
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly copied!');
         } else {
             $done = Storage::move($old_path, $new_path);
-            if (stripos($request->input('target'), "Homeshare") !== false) {
-                return redirect()->route('folder.root', ['current_folder' => $request->input('target') . "/"])->with('success', 'Folder successfuly moved!');
-            } else {
-                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
-            }
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
         }
     }
+
     public function remove(Request $request)
     {
         $current_folder = $request->current_folder;
@@ -171,13 +156,9 @@ class FolderController extends Controller
 
     public function folderupload(Request $request)
     {
-        if (($request->has('current_folder')) && ($request->current_folder != null)) {
-            $current_folder = $request->current_folder;
-        } else {
-            $current_folder = null;
-        }
+
         $current_folder = $request->current_folder;
-        $path = auth()->user()->name . $current_folder;
+        $path = $this->getPath($current_folder);
 
         $name = $request->file('file')->getClientOriginalName();
 
@@ -189,14 +170,13 @@ class FolderController extends Controller
         } else {
             $upload_path = Storage::putFileAs($path, $request->file('file'), $name);
         }
-
-        return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Upload successful!!');
     }
 
     public function folderdownload(Request $request)
     {
         if ($request->has('path')) {
-            $path = '/' . auth()->user()->name .  $request->path;
+            $path = $this->getPath($request->path);
+
             $directory = $request->directory;
 
             $file_full_paths = Storage::allFiles($path);
@@ -255,13 +235,13 @@ class FolderController extends Controller
             }
         }
 
-        return redirect()->route('folder.root', ['current_folder' => '/'])->with('success', 'Temporary folder is clean!');
+        return redirect()->route('folder.root', ['current_folder' => ''])->with('success', 'Temporary folder is clean!');
     }
 
     public function renameFile(Request $request)
     {
         $current_folder = $request->current_folder;
-        $path = auth()->user()->name . $current_folder;
+        $path =$this->getPath($current_folder);
 
         $old_path = $path . "/" . $request->input('oldrenamefilename');
         $new_path = $path . "/" . $request->input('renamefilename');
@@ -273,49 +253,29 @@ class FolderController extends Controller
 
     public function moveFileBig(Request $request)
     {
+        $current_folder = "/" . $request->input('targetfolderbig');
+        $path = $this->getPath($request->current_folder_big);
 
-        $current_folder = "/" . $request->input('targetfolderbig') . "/";
-        $path = "/" . auth()->user()->name . $request->current_folder_big;
-
-        $old_path = $path . $request->input('oldfolder');
-
-
-        //Check if folder moved to local share folder 
-        if (stripos($request->input('targetfolderbig'), "Homeshare") !== false) {
-            $new_path = $current_folder . $request->input('oldfolder');
-        } else {
-            $new_path = '/' . auth()->user()->name . $current_folder . $request->input('oldfolder');
-        }
+        $old_path = $path . "/" . $request->input('file_big');
+        $new_path = $this->getPath($current_folder . "/" . $request->input('file_big'));
 
         //Check for duplicate file
         if (Storage::exists($new_path)) {
-            if (stripos($request->input('targetfolderbig'), "Homeshare") !== false) {
-                return redirect()->route('folder.root', ['current_folder' => $request->input('targetfolderbig') . "/"])->with('warning', 'File already there!');
-            } else {
-                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'File already there!');
-            }
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'File already there!');
         } else {
-            if ($request->has('filecopy')) {
+            if ($request->has('filecopy')) {   //Check if copy or move file
                 $done = Storage::copy($old_path, $new_path);
-                if (stripos($request->input('targetfolderbig'), "Homeshare") !== false) {
-                    return redirect()->route('folder.root', ['current_folder' => $request->input('targetfolderbig') . "/"])->with('success', 'File successfuly copied!');
-                } else {
-                    return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
-                }
+                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
             } else {
                 $done = Storage::move($old_path, $new_path);
-                if (stripos($request->input('targetfolderbig'), "Homeshare") !== false) {
-                    return redirect()->route('folder.root', ['current_folder' => $request->input('targetfolderbig') . "/"])->with('success', 'File successfuly moved!');
-                } else {
-                    return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
-                }
+                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
             }
         }
     }
     public function removeFile(Request $request)
     {
         $current_folder = $request->current_folder;
-        $path = auth()->user()->name . $current_folder;
+        $path = $this->getPath($current_folder);
 
         $garbage = $path . "/" . $request->input('filename');
 
@@ -327,7 +287,7 @@ class FolderController extends Controller
     public function fileupload(Request $request)
     {
         $current_folder = $request->current_folder;
-        $path = auth()->user()->name . $current_folder;
+        $path = $this->getPath($current_folder);
 
         $name = $request->file('fileupload')->getClientOriginalName();
         $upload_path = Storage::putFileAs($path, $request->file('fileupload'), $name);
@@ -345,9 +305,8 @@ class FolderController extends Controller
         }
     }
 
-    public function multiupload(Request $request)
+    public function multiupload(Request $request)                                           // IN USE, working fine for multiple files
     {
-
         $current_folder = $request->current_folder;
         $path = auth()->user()->name . $current_folder;
 
@@ -356,15 +315,29 @@ class FolderController extends Controller
     }
     public function fileCopyProgress(Request $request)
     {
-        $old_path = '/' . auth()->user()->name . $request->currentfolder . $request->copyfile;
+        $current_folder = "/" . $request->targetfolder;
+        $path = $this->getPath($request->currentfolder);
 
-        //Check if folder moved to local share folder 
-        if (stripos($request->targetfolder, "Homeshare") !== false) {
-            $new_path = $request->targetfolder . "/" .  $request->copyfile;
-        } else {
-            $new_path = auth()->user()->name . "/" . $request->targetfolder . "/" . $request->copyfile;
-        }
+        $old_path = $path . "/" . $request->copyfile;
+        $new_path = $this->getPath($current_folder . "/" . $request->copyfile);
+
         $progress = (File::size(Storage::path($new_path)) / File::size(Storage::path($old_path))) * 100;
+
+        return response()->json([
+            'progress' =>  $progress
+        ]);
+    }
+    public function folderCopyProgress(Request $request)
+    {
+ 
+        $path = $this->getPath($request->current_folder);
+        $old_path = $path . "/" . $request->whichfolder;
+        $new_path = $this->getPath("/".$request->target . "/" . $request->whichfolder);
+
+        $original_size = $this->getFolderSize($new_path);
+        $new_size = $this->getFolderSize($old_path);
+
+        $progress = ($original_size['byteSize'] / $new_size['byteSize']) * 100;
 
         return response()->json([
             'progress' =>  $progress
@@ -382,9 +355,10 @@ class FolderController extends Controller
         }
         return $path;
     }
-    private function getParentFolder($current_folder){
-        
-        $parent_search = explode("/", $current_folder); 
+    private function getParentFolder($current_folder)
+    {
+
+        $parent_search = explode("/", $current_folder);
 
         $parent_folder = null;
 
@@ -403,9 +377,10 @@ class FolderController extends Controller
         }
         return $parent_folder;
     }
-    private function getBreadcrumbs($current_folder){
+    private function getBreadcrumbs($current_folder)
+    {
         //Folder breadcrumbs
-        $parent_search = explode("/", $current_folder); 
+        $parent_search = explode("/", $current_folder);
         $breadcrumbs[0] = ['folder' => 'ROOT', 'path' => ''];
         for ($i = 1; $i <= count($parent_search) - 1; $i++) {
             $breadcrumbs[$i] = ['folder' => $parent_search[$i], 'path' => $breadcrumbs[$i - 1]['path'] . "/" . $parent_search[$i]];

@@ -2,7 +2,7 @@
 
 @section('content')
 
-<a href="{{route('folder.root', ['current_folder' => '/'])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+<a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
 <h5>Link generated successfuly for file/folder <span class="orange-text">{{$share_name}}</span></h5>
 <p>Copy this link and send it by mail/SMS/other means</p>
 <!--  Text area with copy option -->

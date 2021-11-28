@@ -32,7 +32,7 @@ class ShareController extends Controller
     public function createFile(Request $request)
     {
         $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
-        $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
+        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
 
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
@@ -60,7 +60,7 @@ class ShareController extends Controller
     {
         $path = $request->input('share');
         $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
-        $zip_file_name = 'zpd_' . $share_name . time() . ".zip";
+        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
 
         $zip_path = Storage::path('/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;

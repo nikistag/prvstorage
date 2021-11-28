@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
         Route::post('/folder/moveFileBig', [FolderController::class, 'moveFileBig'])->name('folder.moveFileBig'); 
         Route::post('/folder/fileCopyProgress', [FolderController::class, 'fileCopyProgress'])->name('folder.fileCopyProgress'); // ajax request
+        Route::post('/folder/folderCopyProgress', [FolderController::class, 'folderCopyProgress'])->name('folder.folderCopyProgress'); // ajax request
         Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
         Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
         Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
