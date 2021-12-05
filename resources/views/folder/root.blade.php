@@ -9,6 +9,7 @@
     </div>
 </div>
 <div class="row">
+    @if($current_folder != "/ZTemp")
     <div class="col s12 center">
         <a href="Multiple files">
             <i class="material-icons medium purple-text tooltipped modal-trigger" data-target="modalfilesupload" data-position="bottom" data-tooltip="Upload multiple files" onclick="jsUpload('multiupload','filesupload','file-list-display')">
@@ -26,6 +27,7 @@
             </i>
         </a>
     </div>
+    @endif
 </div>
 <div class="row blue-grey">
     <div class="col s12 center white-text">
@@ -108,9 +110,10 @@
 <!-- 'ZTemp' folder actions -->
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s6 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . 'ZTemp/'])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => '/ZTemp'])}}" class="valign-wrapper">
             <i class="material-icons lime-text" style="font-size:50px;">folder</i>
             ZTemp
+            <span class="new badge" data-badge-caption="{{ $ztemp['foldersize']['type']}}">{{ $ztemp['foldersize']['size']}}</span>
         </a>
     </div>
     <div class="col s6 right-align">

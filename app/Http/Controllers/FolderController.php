@@ -18,7 +18,6 @@ class FolderController extends Controller
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         return view('folder.index', compact('disk_free_space', 'disk_total_space', 'quota'));
     }
-
     public function root(Request $request)
     {
         $current_folder = $request->current_folder;
@@ -57,6 +56,7 @@ class FolderController extends Controller
             }
         }
         $homeshare['foldersize'] = $this->getFolderSize('Homeshare');
+        $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
 
         $files = [];
         foreach ($fls as $file) {
@@ -84,6 +84,7 @@ class FolderController extends Controller
             'parent_folder',
             'directory_paths',
             'homeshare',
+            'ztemp',
             'path',
             'breadcrumbs'
         ));
@@ -94,8 +95,8 @@ class FolderController extends Controller
         $current_folder = $request->current_folder;
 
         //Forbid creation of Restricted folder name 'Homeshare'
-        if ($request->input('newfolder') == 'Homeshare') {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder name @Homeshare is restricted');
+        if (($request->input('newfolder') == 'Homeshare') || ($request->input('newfolder') == 'ZTemp')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @Homeshare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $new_folder = $request->input('newfolder');
@@ -111,8 +112,8 @@ class FolderController extends Controller
         $current_folder = $request->current_folder;
 
         //Forbid creation of Restricted folder name 'Homeshare'
-        if ($request->input('editfolder') == 'Homeshare') {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder name @Homeshare is restricted');
+        if (($request->input('editfolder') == 'Homeshare') || ($request->input('editfolder') == 'ZTemp')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @Homeshare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $old_path = $path . "/" . $request->input('oldfolder');
