@@ -21,7 +21,7 @@
                 folder_open
             </i>
         </a>
-        <a href="Folder upload">
+        <a href="Folder upload" class="hide-on-small-only">
             <i class="material-icons medium purple-text tooltipped modal-trigger" data-target="modalfolderupload" data-position="bottom" data-tooltip="Upload folder" onclick="jsUpload('folderuploadform','folderupload','folder-list-display')">
                 create_new_folder
             </i>
@@ -65,7 +65,7 @@
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s8 valign-wrapper">
         <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">
-            <i class="material-icons orange-text" style="font-size:50px;">folder</i>
+            <i class="material-icons orange-text" style="font-size:40px;">folder</i>
             <span class="hide-on-small-only">{{$directory['foldername']}}</span>
             <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span><br>
             <span class="new badge" data-badge-caption="{{ $directory['foldersize']['type']}}">{{ $directory['foldersize']['size']}}</span>
@@ -93,30 +93,30 @@
 @endforeach
 @endif
 
-<!-- 'Homeshare' folder actions -->
+<!-- 'NShare' folder actions -->
 @if($current_folder == "")
-<div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('Homeshare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('Homeshare'))}} files" style="border-bottom: 1px solid gray;">
-    <div class="col s6 valign-wrapper">
-        <a href="{{route('folder.root', ['current_folder' => '/Homeshare'])}}" class="valign-wrapper">
-            <i class="material-icons indigo-text" style="font-size:50px;">folder</i>
-            Homeshare
-            <span class="new badge" data-badge-caption="{{ $homeshare['foldersize']['type']}}">{{ $homeshare['foldersize']['size']}}</span>
+<div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('NShare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('NShare'))}} files" style="border-bottom: 1px solid gray;">
+    <div class="col s8 valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => '/NShare'])}}" class="valign-wrapper">
+            <i class="material-icons indigo-text" style="font-size:40px;">folder</i>
+            NShare
+            <span class="new badge" data-badge-caption="{{$NShare['foldersize']['type']}}">{{$NShare['foldersize']['size']}}</span>
         </a>
     </div>
-    <div class="col s6 right-align">
+    <div class="col s4 right-align">
     </div>
 </div>
 
 <!-- 'ZTemp' folder actions -->
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files" style="border-bottom: 1px solid gray;">
-    <div class="col s6 valign-wrapper">
+    <div class="col s8 valign-wrapper">
         <a href="{{route('folder.root', ['current_folder' => '/ZTemp'])}}" class="valign-wrapper">
-            <i class="material-icons lime-text" style="font-size:50px;">folder</i>
+            <i class="material-icons lime-text" style="font-size:40px;">folder</i>
             ZTemp
             <span class="new badge" data-badge-caption="{{ $ztemp['foldersize']['type']}}">{{ $ztemp['foldersize']['size']}}</span>
         </a>
     </div>
-    <div class="col s6 right-align">
+    <div class="col s4 right-align">
         <a href="{{'app/prv/' . auth()->user()->name.'/ZTemp'}}" class="modal-trigger empty-temp tooltipped" data-target="modalemptytemp" data-tooltip="Empty temporary folder"><i class="material-icons red-text">delete_sweep</i></a>
     </div>
 </div>

@@ -36,8 +36,8 @@ class FolderController extends Controller
                 array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
             }
         }
-        $share_directory_paths = Storage::allDirectories('Homeshare');
-        array_push($directory_paths, "Homeshare");
+        $share_directory_paths = Storage::allDirectories('NShare');
+        array_push($directory_paths, "NShare");
         foreach ($share_directory_paths as $dir) {
             array_push($directory_paths, $dir);
         }
@@ -55,7 +55,7 @@ class FolderController extends Controller
                 ]);
             }
         }
-        $homeshare['foldersize'] = $this->getFolderSize('Homeshare');
+        $NShare['foldersize'] = $this->getFolderSize('NShare');
         $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
 
         $files = [];
@@ -83,7 +83,7 @@ class FolderController extends Controller
             'current_folder',
             'parent_folder',
             'directory_paths',
-            'homeshare',
+            'NShare',
             'ztemp',
             'path',
             'breadcrumbs'
@@ -94,9 +94,9 @@ class FolderController extends Controller
     {
         $current_folder = $request->current_folder;
 
-        //Forbid creation of Restricted folder name 'Homeshare'
-        if (($request->input('newfolder') == 'Homeshare') || ($request->input('newfolder') == 'ZTemp')) {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @Homeshare and @ZTemp are restricted!!!');
+        //Forbid creation of Restricted folder name 'NShare'
+        if (($request->input('newfolder') == 'NShare') || ($request->input('newfolder') == 'ZTemp')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $new_folder = $request->input('newfolder');
@@ -111,9 +111,9 @@ class FolderController extends Controller
     {
         $current_folder = $request->current_folder;
 
-        //Forbid creation of Restricted folder name 'Homeshare'
-        if (($request->input('editfolder') == 'Homeshare') || ($request->input('editfolder') == 'ZTemp')) {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @Homeshare and @ZTemp are restricted!!!');
+        //Forbid creation of Restricted folder name 'NShare'
+        if (($request->input('editfolder') == 'NShare') || ($request->input('editfolder') == 'ZTemp')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $old_path = $path . "/" . $request->input('oldfolder');
@@ -349,7 +349,7 @@ class FolderController extends Controller
     {
         $parent_search = explode("/", $current_folder); //Needed to get parent folder
 
-        if ((isset($parent_search[1])) && ($parent_search[1] == "Homeshare")) {
+        if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
             $path = $current_folder;                                               //Path to local network share           
         } else {
             $path = "/" . auth()->user()->name . $current_folder;                   //Path to folder of specific user               
@@ -363,7 +363,7 @@ class FolderController extends Controller
 
         $parent_folder = null;
 
-        if ((isset($parent_search[1])) && ($parent_search[1] == "Homeshare")) {
+        if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
             if (count($parent_search) >= 2) {
                 for ($i = 0; $i <= count($parent_search) - 2; $i++) {
                     $i != count($parent_search) - 2 ? $parent_folder .= $parent_search[$i] . "/" : $parent_folder .= $parent_search[$i];
