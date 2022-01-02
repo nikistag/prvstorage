@@ -50,16 +50,22 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
         Route::post('/folder/moveFileBig', [FolderController::class, 'moveFileBig'])->name('folder.moveFileBig'); 
+        Route::post('/folder/moveFileMulti', [FolderController::class, 'moveFileMulti'])->name('folder.moveFileMulti');
+        Route::post('/folder/multiFilesCopyProgress', [FolderController::class, 'multiFilesCopyProgress'])->name('folder.multiFilesCopyProgress'); // ajax request
         Route::post('/folder/fileCopyProgress', [FolderController::class, 'fileCopyProgress'])->name('folder.fileCopyProgress'); // ajax request
+        Route::post('/folder/targetFolderSize', [FolderController::class, 'targetFolderSize'])->name('folder.targetFolderSize'); // ajax request
         Route::post('/folder/folderCopyProgress', [FolderController::class, 'folderCopyProgress'])->name('folder.folderCopyProgress'); // ajax request
         Route::delete('/folder/removeFile', [FolderController::class, 'removeFile'])->name('folder.removeFile');
         Route::post('/folder/multiupload', [FolderController::class, 'multiupload'])->name('folder.multiupload');
         Route::get('/folder/filedownload', [FolderController::class, 'filedownload'])->name('folder.filedownload');
+        Route::get('/folder/multifiledownload', [FolderController::class, 'multifiledownload'])->name('folder.multifiledownload');
         Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
+        Route::post('/folder/fileReadiness', [FolderController::class, 'fileReadiness'])->name('folder.fileReadiness'); // ajax request
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
         Route::post('/share/createFile', [ShareController::class, 'createFile'])->name('share.createFile');
+        Route::post('/share/createFileMulti', [ShareController::class, 'createFileMulti'])->name('share.createFileMulti');
         Route::post('/share/createFolder', [ShareController::class, 'createFolder'])->name('share.createFolder');
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
 

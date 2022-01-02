@@ -242,7 +242,7 @@ class FolderController extends Controller
     public function renameFile(Request $request)
     {
         $current_folder = $request->current_folder;
-        $path =$this->getPath($current_folder);
+        $path = $this->getPath($current_folder);
 
         $old_path = $path . "/" . $request->input('oldrenamefilename');
         $new_path = $path . "/" . $request->input('renamefilename');
@@ -269,8 +269,37 @@ class FolderController extends Controller
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
             } else {
                 $done = Storage::move($old_path, $new_path);
-                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
+                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!');
             }
+        }
+    }
+    public function moveFileMulti(Request $request)
+    {
+
+        $current_folder = "/" . $request->input('targetfoldermulti');
+        $path = $this->getPath($request->current_folder_multi);
+
+        foreach ($request->filesMove as $file) {
+            $old_path = $path . "/" . $file;
+            $new_path = $this->getPath($current_folder . "/" . $file);
+            //Check for duplicate file
+            if (Storage::exists($new_path)) {
+                /* return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'File already there!'); */
+            } else {
+                if ($request->has('filecopy')) {   //Check if copy or move file
+                    $done = Storage::copy($old_path, $new_path);
+                    /* return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!'); */
+                } else {
+                    $done = Storage::move($old_path, $new_path);
+                    /*  return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!'); */
+                }
+            }
+        }
+
+        if ($request->has('filecopy')) {   //Check if copy or move file
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
+        } else {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!');
         }
     }
     public function removeFile(Request $request)
@@ -306,6 +335,31 @@ class FolderController extends Controller
         }
     }
 
+    public function multifiledownload(Request $request)
+    {
+ 
+        $path = $this->getPath($request->currentFolderMultiDownload);
+
+        $zipFileName = $request->multiZipFileName;
+
+        $storage_path = '/' . auth()->user()->name . '/ZTemp/' . $zipFileName;
+
+        $zip_path = Storage::path($storage_path);
+
+        //Create archive
+        $zip = new ZipArchive();
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            // Add File in ZipArchive
+            foreach ($request->input("filesdownload") as $file) {
+                $zip->addFile(Storage::path($path . "/" . $file), $file);
+            }
+            // Close ZipArchive     
+            $zip->close();
+        }
+        //sleep(1);
+        return Storage::download($storage_path);
+    }
+
     public function multiupload(Request $request)                                           // IN USE, working fine for multiple files
     {
         $current_folder = $request->current_folder;
@@ -328,12 +382,38 @@ class FolderController extends Controller
             'progress' =>  $progress
         ]);
     }
+    public function multiFilesCopyProgress(Request $request)
+    {
+
+        $filesSize = 0;
+        foreach ($request->copyfiles as $file) {
+            $filesSize += File::size(Storage::path($this->getPath($request->currentfolder . "/" . $file)));
+        }
+        // $expectedTargetFolderSize = $request->targetfoldersize + $filesSize;
+
+        $currentTargetFolderSize = $this->getFolderSize($this->getPath("/" . $request->targetfolder));
+
+        $progress = (($currentTargetFolderSize['byteSize'] - $request->targetfordersize) / $filesSize) * 100;
+
+        return response()->json([
+            'progress' =>  $progress
+        ]);
+    }
+    public function targetFolderSize(Request $request)
+    {
+
+        $targetFolderSize = $this->getFolderSize($this->getPath("/" . $request->targetfolder));
+
+        return response()->json([
+            'folderSize' =>  $targetFolderSize['byteSize']
+        ]);
+    }
     public function folderCopyProgress(Request $request)
     {
- 
+
         $path = $this->getPath($request->current_folder);
         $old_path = $path . "/" . $request->whichfolder;
-        $new_path = $this->getPath("/".$request->target . "/" . $request->whichfolder);
+        $new_path = $this->getPath("/" . $request->target . "/" . $request->whichfolder);
 
         $original_size = $this->getFolderSize($new_path);
         $new_size = $this->getFolderSize($old_path);
@@ -342,6 +422,22 @@ class FolderController extends Controller
 
         return response()->json([
             'progress' =>  $progress
+        ]);
+    }
+    public function fileReadiness(Request $request)
+    {
+        //dd($request->input());
+
+        $path = $this->getPath($request->filePath);
+
+        if(Storage::exists($path)){
+            $ready = true;
+        }else{
+            $ready = false;
+        }
+
+        return response()->json([
+            'ready' =>  $ready
         ]);
     }
     //PRIVATE FUNCTIONS

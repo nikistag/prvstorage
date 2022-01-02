@@ -31,7 +31,7 @@ class ShareController extends Controller
     }
     public function createFile(Request $request)
     {
-        $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
+        $share_name = substr($request->input('fileshare'), strripos($request->input('fileshare'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
 
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
@@ -41,7 +41,7 @@ class ShareController extends Controller
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             // Add File in ZipArchive
-            $zip->addFile(Storage::path($request->input('share')), $share_name);
+            $zip->addFile(Storage::path($request->input('fileshare')), $share_name);
             // Close ZipArchive     
             $zip->close();
         }
@@ -54,6 +54,35 @@ class ShareController extends Controller
         $share->status = 'active';
         $share->save();
 
+        return view('share.create', compact('share', 'share_name'));
+    }
+    public function createFileMulti(Request $request)
+    {
+        
+        $share_name = $request->input("fileshare")[0]."-multi";
+        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
+
+        $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
+        $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
+
+        //Create archive
+        $zip = new ZipArchive();
+        if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            // Add File in ZipArchive
+            foreach($request->input("fileshare") as $file){
+                $zip->addFile(Storage::path($request->input("path")."/".$file), $file);
+            }            
+            // Close ZipArchive     
+            $zip->close();
+        }
+
+        $share = new Share();
+        $share->user_id = auth()->user()->id;
+        $share->path = $db_zip_path;
+        $share->code = hash('ripemd160', time());
+        $share->expiration = time() + 259200;
+        $share->status = 'active';
+        $share->save();
         return view('share.create', compact('share', 'share_name'));
     }
     public function createFolder(Request $request)

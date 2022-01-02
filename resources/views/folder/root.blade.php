@@ -129,7 +129,11 @@
 @foreach($files as $file)
 <div class="row hoverable" style="border-bottom: 1px solid gray;">
     <div class="col s8 valign-wrapper left-align">
-        <i class="material-icons medium">description</i>
+        <label>
+            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
+            <span></span>
+        </label>
+        <i class="material-icons" style="font-size:40px;">description</i>
         <p style="margin:0; text-align: left;">
             <span class="hide-on-small-only">{{$file['fullfilename']}}</span>
             <span class="hide-on-med-and-up tooltipped" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
@@ -145,18 +149,32 @@
         <br />
         <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
         <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
-        <!-- Hidden form for sharing files and folders -->
-        <form method="POST" id="shareform{{$file['fullfilename']}}" action="{{route('share.createFile')}}">
-            @csrf
-            <input type="hidden" name="share" value="{{$path . '/' . $file['fullfilename']}}">
-        </form>
         @endif
     </div>
 </div>
 
 @endforeach
+<div class="row center left-align">
+    &nbsp;
+    <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
+    &nbsp;
+    <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
+    &nbsp;
+    <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
+    &nbsp;
+    <a href="#delete" class="modal-trigger remove-file-files tooltipped" data-target="modalremovefiles" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+    &nbsp;
+</div>
 @endif
 </div>
+
+<!-- Form for downloadin multiple files -->
+<form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
+    <input type="hidden" id="multiZipFileName" name="multiZipFileName" value="" />
+    <input type="hidden" id="currentFolderMultiDownload" name="currentFolderMultiDownload" value="{{$current_folder}}" />
+</form>
+<!-- Form for checking file readiness -->
+<form action="{{route('folder.fileReadiness')}}" id="fileReadinessForm"></form>
 
 <!-- New folder modal -->
 <div id="modal1" class="modal">
@@ -236,8 +254,8 @@
                 <div class="input-field col s12">
                     <select id="target" name="target">
                         <option value="" disabled>Choose where</option>
-                        @foreach($directory_paths as $path)
-                        <option value="{{$path}}">{{$path}}</option>
+                        @foreach($directory_paths as $dpath)
+                        <option value="{{$dpath}}">{{$dpath}}</option>
                         @endforeach
                     </select>
                     <label>Choose folder</label>
@@ -247,7 +265,7 @@
         <div class="modal-footer">
             <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
             <input type="hidden" id="whichfolder" name="whichfolder" value="" />
-            <button id="moveFolderSubmit"class="btn-small waves-effect waves-light" type="submit" name="action">Submit
+            <button id="moveFolderSubmit" class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
@@ -260,6 +278,7 @@
 
     <!-- Links used with jQuery to calculate progress bar for copy file/folders -->
     <form action="{{route('folder.folderCopyProgress')}}" id="folderCopyProgressForm"></form>
+
 </div>
 
 <!-- Remove folder modal -->
@@ -344,8 +363,8 @@
                 <div class="input-field col s12">
                     <select id="targetfolderbig" name="targetfolderbig">
                         <option value="" disabled>Choose where</option>
-                        @foreach($directory_paths as $path)
-                        <option value="{{$path}}">{{$path}}</option>
+                        @foreach($directory_paths as $dpath)
+                        <option value="{{$dpath}}">{{$dpath}}</option>
                         @endforeach
                     </select>
                     <label>Choose folder</label>
@@ -366,8 +385,67 @@
         <div class="determinate" style="width: 0%" id="copyFileProgress"></div>
     </div>
 
+</div>
+<!-- Move multiple files modal -->
+<div id="modalmovefiles" class="modal">
+    <form method="POST" action="{{ route('folder.moveFileMulti') }}" id="multiFileForm">
+        <div class="modal-content">
+            <h5>Move/Copy file</h5>
+            @csrf
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="100" disabled />
+                        <label for="fileDisplayMulti"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <label>
+                            <input type="checkbox" class="filled-in" name="filecopy" />
+                            <span>Copy</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field">
+                        <select id="targetfoldermulti" name="targetfoldermulti">
+                            <option value="" disabled>Choose where</option>
+                            @foreach($directory_paths as $dpath)
+                            <option value="{{$dpath}}">{{$dpath}}</option>
+                            @endforeach
+                        </select>
+                        <label></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" id="targetFolderSize" name="targetFolderSize" value="" />
+            <input type="hidden" id="current_folder_multi" name="current_folder_multi" value="{{$current_folder}}" />
+            <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyMultiFileSubmit">Submit
+                <i class="material-icons right">send</i>
+            </button>
+            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+        </div>
+    </form>
+
+    <ul class="collection" id='copyFilesDisplay'>
+        <li class="collection-item" id="oneFileCopy">
+            Copy/Move files progress
+        </li>
+        <div class="progress">
+            <div class="determinate" style="width: 0%" id="multiFilesCopyProgress"></div>
+        </div>
+    </ul>
+
     <!-- Links used with jQuery to calculate progress bar for copy file/folders -->
-    <form action="{{route('folder.fileCopyProgress')}}" id="fileCopyProgressForm"></form>
+    <form action="{{route('folder.multiFilesCopyProgress')}}" id="multiFilesCopyProgressForm"></form>
+    <form action="{{route('folder.targetFolderSize')}}" id="targetFolderSizeForm"></form>
 
 </div>
 
@@ -490,6 +568,16 @@
             <div class="indeterminate"></div>
         </div>
     </div>
+    <!-- Form used to initiate file share -->
+    <form method="POST" id="fileshareform" action="{{route('share.createFile')}}">
+        @csrf
+        <input id="fileshareinput" type="hidden" name="fileshare" value="">
+    </form>
+    <!-- Form used to initiate multiple files share -->
+    <form method="POST" id="multifileshareform" action="{{route('share.createFileMulti')}}">
+        @csrf
+        <input id="path" type="hidden" name="path" value="{{$path}}">
+    </form>
 </div>
 
 <script>
@@ -500,15 +588,42 @@
             dismissible: false,
         });
         $('select').formSelect();
+        /* Manage link to share file */
         $('.sharelink').on("click", (function(e) {
             e.preventDefault();
-            var shareform = $(this).attr('href');
             var elem = document.getElementById('modalbgworking');
             var instance = M.Modal.getInstance(elem);
             instance.open();
             var forWhat = document.getElementById('preparing');
             forWhat.innerHTML = "Preparing share";
-            document.getElementById('shareform' + shareform).submit();
+            var fileshareinput = document.getElementById('fileshareinput');
+            fileshareinput.value = '{{$path}}' + '/' + $(this).attr('href');
+            document.getElementById('fileshareform').submit();
+        }));
+        /* Manage link to share multiple files */
+        $('.sharelink-files').on("click", (function(e) {
+            e.preventDefault();
+            if ($('input[name="selectedFile"]:checked').length == 0) {
+                M.toast({
+                    html: 'Nothing to do! No files selected'
+                });
+            } else {
+                var elem = document.getElementById('modalbgworking');
+                var instance = M.Modal.getInstance(elem);
+                instance.open();
+                var forWhat = document.getElementById('preparing');
+                forWhat.innerHTML = "Preparing share";
+                $('input[name="selectedFile"]:checked').each(function() {
+                    var newInput = document.createElement("input");
+                    newInput.type = "hidden";
+                    newInput.name = "fileshare[]";
+                    newInput.value = this.value;
+                    var path = document.getElementById('path');
+                    path.appendChild(newInput);
+                });
+                document.getElementById('multifileshareform').submit();
+            }
+
         }));
 
         $('.edit-folder').on("click", (function(e) {
@@ -518,7 +633,7 @@
             $('input[name=oldfolder]').val(foldername);
 
         }));
-        
+
         $('.remove-folder').on("click", (function(e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
@@ -538,8 +653,8 @@
             var filename = $(this).attr('href');
             $('input[name=fileDisplay]').val(filename);
             $('input[name=file_big]').val(filename);
-
         }));
+
         $('#copyBigFileSubmit').on("click", (function(e) {
             e.preventDefault();
             $('#bigFileForm').submit();
@@ -561,6 +676,75 @@
                     }
                 });
             }, 2000);
+        }));
+
+        /* multiple files move / copy mechanics */
+        $('.move-files').on("click", (function(e) {
+            e.preventDefault();
+            if ($('input[name="selectedFile"]:checked').length == 0) {
+                M.toast({
+                    html: 'Nothing to do! No files selected'
+                });
+            } else {
+                var elem = document.getElementById('modalmovefiles');
+                var instance = M.Modal.getInstance(elem);
+                instance.open();
+                var filename = '';
+                $('input[name="selectedFile"]:checked').each(function() {
+                    filename = filename + this.value + ', ';
+                });
+                $('input[name=fileDisplayMulti]').val(filename);
+            }
+        }));
+
+        $('#copyMultiFileSubmit').on("click", (function(e) {
+            e.preventDefault();
+            const fileNames = [];
+            $('input[name="selectedFile"]:checked').each(function() {
+                var newInput = document.createElement("input");
+                newInput.type = "hidden";
+                newInput.name = "filesMove[]";
+                newInput.value = this.value;
+                var path = document.getElementById('current_folder_multi');
+                path.appendChild(newInput);
+                fileNames.push(this.value);
+            });
+            $.ajax({
+                url: $('#targetFolderSizeForm').attr("action"),
+                type: "POST",
+                data: {
+                    '_token': $('input[name=_token]').val(),
+                    'targetfolder': $('select[name=targetfoldermulti]').val(),
+                },
+                success: function(data) {
+                    if (typeof data.folderSize !== "undefined") {
+                        $('input[name=targetFolderSize]').val(data.folderSize);
+                    }
+                }
+            });
+
+
+            document.getElementById('multiFileForm').submit();
+
+            setInterval(function() {
+                $.ajax({
+                    url: $('#multiFilesCopyProgressForm').attr("action"),
+                    type: "POST",
+                    data: {
+                        '_token': $('input[name=_token]').val(),
+                        'targetfolder': $('select[name=targetfoldermulti]').val(),
+                        'targetfoldersize': $('input[name=targetFolderSize]').val(),
+                        'copyfiles': fileNames,
+                        'currentfolder': $('input[name=current_folder_multi]').val(),
+                    },
+                    success: function(data) {
+                        if (typeof data.progress !== "undefined") {
+                            var progressBar = document.getElementById('multiFilesCopyProgress');
+                            progressBar.style.width = data.progress + "%";
+                        }
+                    }
+                });
+            }, 1000);
 
         }));
         $('.move-folder').on("click", (function(e) {
@@ -580,8 +764,8 @@
                     data: {
                         '_token': $('input[name=_token]').val(),
                         'current_folder': $('input[name=current_folder]').val(),
-                        'whichfolder' : $('input[name=whichfolder]').val(),
-                        'target' : $('select[name=target]').val()
+                        'whichfolder': $('input[name=whichfolder]').val(),
+                        'target': $('select[name=target]').val()
                     },
                     success: function(data) {
                         if (typeof data.progress !== "undefined") {
@@ -609,6 +793,52 @@
             setInterval(function() {
                 instance.close();
             }, 3000);
+
+        }));
+        $('#zipNDownloadFiles').on("click", (function(e) {
+            /* Multifile download mechanics */
+            if ($('input[name="selectedFile"]:checked').length >= 1) {
+                $('input[name="selectedFile"]:checked').each(function() {
+                    var newInput = document.createElement("input");
+                    newInput.type = "hidden";
+                    newInput.name = "filesdownload[]";
+                    newInput.value = this.value;
+                    var path = document.getElementById('currentFolderMultiDownload');
+                    path.appendChild(newInput);
+                });
+                document.getElementById('multiZipFileName').value = 'zpd_multipleFiles' + Date.now() + '.zip';
+                document.getElementById('multifiledownloadform').submit();
+
+                /*  UI for preparing download */
+                var elem = document.getElementById('modalbgworking');
+                var instance = M.Modal.getInstance(elem);
+                var forWhat = document.getElementById('preparing');
+                forWhat.innerHTML = "Preparing Zip and Download !!! Be patient.";
+                instance.open();
+                var checkFile = setInterval(function() {
+                    $.ajax({
+                        url: $('#fileReadinessForm').attr("action"),
+                        type: "POST",
+                        data: {
+                            '_token': $('input[name=_token]').val(),
+                            'filePath': '/ZTemp/' + document.getElementById('multiZipFileName').value,
+                        },
+                        success: function(data) {
+                            if (typeof data.ready !== "undefined") {
+                                if (data.ready === true) {
+                                    $('input[name="selectedFile"]:checked').prop("checked", false);
+                                    instance.close();
+                                    clearInterval(checkFile);                                    
+                                }
+                            }
+                        }
+                    });
+                }, 2000);
+            } else {
+                M.toast({
+                    html: 'Nothing to do! No files selected'
+                });
+            }
 
         }));
 
