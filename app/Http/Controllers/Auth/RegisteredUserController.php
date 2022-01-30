@@ -51,9 +51,12 @@ class RegisteredUserController extends Controller
 
         if (count($admins) == 0) {
             $user->admin = 1;
-            $user->active = 1;
-            $user->save();
+            $user->active = 1;            
+        }else{
+            $user->admin = 0;
+            $user->active = 0;   
         }
+        $user->save();
 
         //Create private folder
         Storage::disk('local')->makeDirectory($user->name);
@@ -69,22 +72,21 @@ class RegisteredUserController extends Controller
         
         event(new Registered($user));
 
-        //Send mail to admins to activate accounts
-        $details = [
-            'user_name' => $user->name,
-            'user_email' => $user->email,
-            'user_id' => $user->id,
-        ];
-
-        $admins = User::where('admin', 1)->get();
-
-        foreach($admins as $admin){
-
-            Mail::to($admin->email)->send(new \App\Mail\NewUser($details));
-        }        
-
+        //Send mail to admins to activate accounts but not for first admin
+        if (count($admins) == 0) {
+            // No mail sent         
+        }else{
+            $details = [
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_id' => $user->id,
+            ];    
+            $admins = User::where('admin', 1)->get();    
+            foreach($admins as $admin){
+                Mail::to($admin->email)->send(new \App\Mail\NewUser($details));
+            } 
+        }
         Auth::login($user);
-
         return redirect(RouteServiceProvider::HOME);
     } 
 }

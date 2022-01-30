@@ -154,6 +154,9 @@
 </div>
 
 @endforeach
+
+@if($current_folder == '/ZTemp')
+@else
 <div class="row center left-align">
     &nbsp;
     <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
@@ -162,17 +165,19 @@
     &nbsp;
     <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
     &nbsp;
-    <a href="#delete" class="modal-trigger remove-file-files tooltipped" data-target="modalremovefiles" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+    <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
     &nbsp;
 </div>
 @endif
+@endif
 </div>
 
-<!-- Form for downloadin multiple files -->
+<!-- Form for downloading multiple files -->
 <form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
     <input type="hidden" id="multiZipFileName" name="multiZipFileName" value="" />
     <input type="hidden" id="currentFolderMultiDownload" name="currentFolderMultiDownload" value="{{$current_folder}}" />
 </form>
+
 <!-- Form for checking file readiness -->
 <form action="{{route('folder.fileReadiness')}}" id="fileReadinessForm"></form>
 
@@ -191,7 +196,7 @@
                 </div>
             </div>
             <div class="row">
-                <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+                <input type="hidden" name="current_folder" value="{{$current_folder}}" />
                 <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                     <i class="material-icons right">send</i>
                 </button>
@@ -217,7 +222,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <input type="hidden" id="oldfolder" name="oldfolder" value="" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
@@ -263,7 +268,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <input type="hidden" id="whichfolder" name="whichfolder" value="" />
             <button id="moveFolderSubmit" class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
@@ -324,7 +329,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <input type="hidden" id="oldrenamefilename" name="oldrenamefilename" value="" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
@@ -467,7 +472,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -475,7 +480,30 @@
         </div>
     </form>
 </div>
-
+<!-- Remove multifile modal -->
+<div id="modalremovefilesmulti" class="modal">
+    <form method="POST" action="{{ route('folder.removeFileMulti') }}">
+        <div class="modal-content">
+            <h5 class="red-text">Are you sure to delete these files?</h5>
+            @method('DELETE')
+            @csrf
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <span class="showfilestoremove"></span>
+                        <input type="hidden" id="currentFolderDeleteMulti" name="current_folder" value="{{$current_folder}}" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
+                <i class="material-icons right">send</i>
+            </button>
+            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+        </div>
+    </form>
+</div>
 <!-- Upload folder modal -->
 <div id="modalfolderupload" class="modal">
     <form id="folderuploadform" method="POST" action="{{ route('folder.folderupload') }}" enctype="multipart/form-data">
@@ -501,7 +529,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -518,7 +546,7 @@
             @csrf
         </div>
         <div class="modal-footer">
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -533,7 +561,7 @@
         <div class="modal-content">
             <h5>Pick multiple files to upload</h5>
             @csrf
-            <input type="hidden" id="current_folder" name="current_folder" value="{{$current_folder}}" />
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <div class="row">
                 <div class="col s12">
                     <div class="file-field input-field">
@@ -784,6 +812,26 @@
             $('.filetoremove').html(filename);
 
         }));
+        $('.remove-files-multi').on("click", (function(e) {
+            e.preventDefault();
+            if ($('input[name="selectedFile"]:checked').length == 0) {
+                M.toast({
+                    html: 'Nothing to do! No files selected'
+                });
+            } else {
+                const fileNames = [];
+                $('input[name="selectedFile"]:checked').each(function() {
+                    var newInput = document.createElement("input");
+                    newInput.type = "hidden";
+                    newInput.name = "filesDelete[]";
+                    newInput.value = this.value;
+                    var path = document.getElementById('currentFolderDeleteMulti');
+                    path.appendChild(newInput);
+                    fileNames.push(this.value + '; ');
+                });
+                $('.showfilestoremove').html(fileNames);
+            }
+        }));
         $('.zipNdownload').on("click", (function(e) {
             var elem = document.getElementById('modalbgworking');
             var instance = M.Modal.getInstance(elem);
@@ -828,7 +876,7 @@
                                 if (data.ready === true) {
                                     $('input[name="selectedFile"]:checked').prop("checked", false);
                                     instance.close();
-                                    clearInterval(checkFile);                                    
+                                    clearInterval(checkFile);
                                 }
                             }
                         }

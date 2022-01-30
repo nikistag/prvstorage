@@ -21,7 +21,7 @@ class FolderController extends Controller
     public function root(Request $request)
     {
         $current_folder = $request->current_folder;
-
+  
         $parent_folder = $this->getParentFolder($current_folder);
 
         $path = $this->getPath($current_folder);
@@ -313,6 +313,19 @@ class FolderController extends Controller
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly removed!');
     }
+    public function removeFileMulti(Request $request)
+    {
+        $current_folder = $request->current_folder;
+        $path = $this->getPath($current_folder);
+
+        foreach ($request->input("filesDelete") as $file) {
+
+            $garbage = $path . "/" . $file;
+            Storage::delete($garbage);
+        }
+
+        return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Files successfuly removed!');
+    }
 
     public function fileupload(Request $request)
     {
@@ -337,7 +350,7 @@ class FolderController extends Controller
 
     public function multifiledownload(Request $request)
     {
- 
+
         $path = $this->getPath($request->currentFolderMultiDownload);
 
         $zipFileName = $request->multiZipFileName;
@@ -430,9 +443,9 @@ class FolderController extends Controller
 
         $path = $this->getPath($request->filePath);
 
-        if(Storage::exists($path)){
+        if (Storage::exists($path)) {
             $ready = true;
-        }else{
+        } else {
             $ready = false;
         }
 
