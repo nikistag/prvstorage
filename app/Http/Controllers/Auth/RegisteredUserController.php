@@ -51,42 +51,47 @@ class RegisteredUserController extends Controller
 
         if (count($admins) == 0) {
             $user->admin = 1;
-            $user->active = 1;            
-        }else{
+            $user->active = 1;
+            //Create local network share folder
+            Storage::disk('local')->makeDirectory('NShare');
+        } else {
             $user->admin = 0;
-            $user->active = 0;   
+            $user->active = 0;
         }
         $user->save();
 
         //Create private folder
         Storage::disk('local')->makeDirectory($user->name);
         //Create temp folder for archives
-        Storage::disk('local')->makeDirectory($user->name.'/ZTemp');
+        Storage::disk('local')->makeDirectory($user->name . '/ZTemp');
 
         //Create Home network share folder
         //Storage::disk('local')->makeDirectory($user->name.'/'.ucwords($user->name).'share');
-        
-        //Create shared folder on local network
-        
 
-        
+        //Create shared folder on local network
+
+
+
         event(new Registered($user));
 
         //Send mail to admins to activate accounts but not for first admin
         if (count($admins) == 0) {
-            // No mail sent         
-        }else{
-            $details = [
-                'user_name' => $user->name,
-                'user_email' => $user->email,
-                'user_id' => $user->id,
-            ];    
-            $admins = User::where('admin', 1)->get();    
-            foreach($admins as $admin){
-                Mail::to($admin->email)->send(new \App\Mail\NewUser($details));
-            } 
+            // No mail sent if no admins     
+        } else {
+            // Send mails to Prvstorage admins if application EMAIL is configured
+            if (env('MAIL_CONFIGURATION') == true) {
+                $details = [
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_id' => $user->id,
+                ];
+                $admins = User::where('admin', 1)->get();
+                foreach ($admins as $admin) {
+                    Mail::to($admin->email)->send(new \App\Mail\NewUser($details));
+                }
+            }
         }
         Auth::login($user);
         return redirect(RouteServiceProvider::HOME);
-    } 
+    }
 }
