@@ -50,6 +50,7 @@
                 </div>
             </div>
         </div>
+        @if(auth()->user()->suadmin == 1)
         <div class="row">
             <div class="col s12">
                 <div class="input-field inline">
@@ -67,6 +68,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="row">
             <div class="col s12">

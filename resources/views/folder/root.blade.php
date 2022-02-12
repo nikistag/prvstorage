@@ -72,21 +72,22 @@
         </a>
     </div>
     <div class="col s4 right-align">
-        @if($current_folder == "/")
+        <!-- What is this for? -->
+        @if($current_folder == "")
         <input name="directory" type="hidden" value="{{'app/prv/' . auth()->user()->name.'/'.$directory['foldername']}}" />
         @else
         <input name="directory" type="hidden" value="{{'app/prv/' . auth()->user()->name.'/'.$current_folder.'/'.$directory['foldername']}}" />
         @endif
         <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$directory['foldername']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
+        <a href="{{$directory['foldername']}}" class="tooltipped sharelink-folder" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <br />
         <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
         <!-- Hidden form for sharing files and folders -->
-        <form method="POST" id="shareform{{$directory['foldername']}}" action="{{route('share.createFolder')}}">
+        <form method="POST" id="shareform{{$directory['foldername']}}" action="{{route('share.folder')}}">
             @csrf
-            <input type="hidden" name="share" value="{{$path . '/' . $directory['foldername']}}">
+            <input type="hidden" name="share-folder" value="{{$path . '/' . $directory['foldername']}}">
         </form>
     </div>
 </div>
@@ -120,6 +121,7 @@
         <a href="{{'app/prv/' . auth()->user()->name.'/ZTemp'}}" class="modal-trigger empty-temp tooltipped" data-target="modalemptytemp" data-tooltip="Empty temporary folder"><i class="material-icons red-text">delete_sweep</i></a>
     </div>
 </div>
+
 @endif
 
 @if(count($files) == 0)
@@ -597,12 +599,12 @@
         </div>
     </div>
     <!-- Form used to initiate file share -->
-    <form method="POST" id="fileshareform" action="{{route('share.createFile')}}">
+    <form method="POST" id="fileshareform" action="{{route('share.file')}}">
         @csrf
         <input id="fileshareinput" type="hidden" name="fileshare" value="">
     </form>
     <!-- Form used to initiate multiple files share -->
-    <form method="POST" id="multifileshareform" action="{{route('share.createFileMulti')}}">
+    <form method="POST" id="multifileshareform" action="{{route('share.fileMulti')}}">
         @csrf
         <input id="path" type="hidden" name="path" value="{{$path}}">
     </form>
@@ -627,6 +629,17 @@
             var fileshareinput = document.getElementById('fileshareinput');
             fileshareinput.value = '{{$path}}' + '/' + $(this).attr('href');
             document.getElementById('fileshareform').submit();
+        }));
+        $('.sharelink-folder').on("click", (function(e) {
+            e.preventDefault();
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing share";
+            var fileshareinput = document.getElementById('fileshareinput');
+            folderShareForm = 'shareform' + $(this).attr('href');
+            document.getElementById(folderShareForm).submit();
         }));
         /* Manage link to share multiple files */
         $('.sharelink-files').on("click", (function(e) {

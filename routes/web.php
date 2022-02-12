@@ -45,7 +45,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
         Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
         Route::post('/folder/folderupload', [FolderController::class, 'folderupload'])->name('folder.folderupload');
-        Route::post('/folder/emptytemp', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
+        Route::post('/folder/emptytemp', [FolderController::class, 'emptytrash'])->name('folder.emptytrash');
+        Route::post('/folder/emptytrash', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
         Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
         Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
@@ -65,9 +66,9 @@ Route::middleware(['auth'])->group(function () {
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
-        Route::post('/share/createFile', [ShareController::class, 'createFile'])->name('share.createFile');
-        Route::post('/share/createFileMulti', [ShareController::class, 'createFileMulti'])->name('share.createFileMulti');
-        Route::post('/share/createFolder', [ShareController::class, 'createFolder'])->name('share.createFolder');
+        Route::post('/share/file', [ShareController::class, 'file'])->name('share.file');
+        Route::post('/share/fileMulti', [ShareController::class, 'fileMulti'])->name('share.fileMulti');
+        Route::post('/share/folder', [ShareController::class, 'folder'])->name('share.folder');
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
 
         //User administration routes
@@ -76,7 +77,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
             Route::put('/user/{user}/update', [UserController::class, 'update'])->name('user.update');
-            Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+            Route::post('/user/destroy', [UserController::class, 'destroy'])->name('user.destroy');
+            Route::get('/user/emailTest', [UserController::class, 'emailTest'])->name('user.emailTest');
         });
     });
 });

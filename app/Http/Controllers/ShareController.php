@@ -29,7 +29,8 @@ class ShareController extends Controller
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         return view('share.index', compact('shares', 'quota', 'disk_free_space'));
     }
-    public function createFile(Request $request)
+
+    public function file(Request $request)
     {
         $share_name = substr($request->input('fileshare'), strripos($request->input('fileshare'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
@@ -56,7 +57,7 @@ class ShareController extends Controller
 
         return view('share.create', compact('share', 'share_name'));
     }
-    public function createFileMulti(Request $request)
+    public function fileMulti(Request $request)
     {
         
         $share_name = $request->input("fileshare")[0]."-multi";
@@ -85,13 +86,14 @@ class ShareController extends Controller
         $share->save();
         return view('share.create', compact('share', 'share_name'));
     }
-    public function createFolder(Request $request)
+
+    public function folder(Request $request)
     {
-        $path = $request->input('share');
-        $share_name = substr($request->input('share'), strripos($request->input('share'), '/') + 1);
+        $path = $request->input('share-folder');
+        $share_name = substr($request->input('share-folder'), strripos($request->input('share-folder'), '/') + 1);
         $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
 
-        $zip_path = Storage::path('/' . auth()->user()->name . '/ZTemp/' . $zip_file_name);
+        $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
         $file_full_paths = Storage::allFiles($path);
@@ -112,6 +114,8 @@ class ShareController extends Controller
                 'zip_path' => substr($fl, strlen($path)),
             ]);
         }
+
+        //dd($zip_path);
 
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {

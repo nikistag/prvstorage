@@ -13,8 +13,6 @@
 
 
     <script src={{ asset('js/jquery3_6.js') }}></script>
-<!--     <script src={{ asset('js/jquery.ui.widget.js') }}></script>    
-    <script src={{ asset('js/fileuploads.js') }}></script> -->
     <script src={{ asset('js/materialize.js') }}></script>
 
     <title>{!! $title !!}</title>
@@ -55,6 +53,11 @@
                 @else
                 <li>
                     <a href="{{route('user.admins')}}"><span class="white-text">Admins</span></a>
+                </li>
+                @endif
+                @if(auth()->user()->suadmin === 1)
+                <li>
+                    <a href="{{route('user.emailTest')}}"><span class="white-text">Email test</span></a>
                 </li>
                 @endif
                 <li>

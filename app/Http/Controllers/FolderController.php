@@ -32,7 +32,7 @@ class FolderController extends Controller
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
         $directory_paths = [];
         foreach ($full_private_directory_paths as $dir) {
-            if ($dir !==  auth()->user()->name . "/ZTemp") {
+            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
                 array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
             }
         }
@@ -175,6 +175,7 @@ class FolderController extends Controller
 
     public function folderdownload(Request $request)
     {
+        
         if ($request->has('path')) {
             $path = $this->getPath($request->path);
 
@@ -191,7 +192,7 @@ class FolderController extends Controller
 
             $zipFileName = 'zpd_' . $directory . '.zip';
 
-            $zip_path = Storage::path('/' . auth()->user()->name . '/ZTemp/' . $zipFileName);
+            $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zipFileName);
 
             // Creating file names and path names to be archived
             $files_n_paths = [];
@@ -199,9 +200,10 @@ class FolderController extends Controller
                 array_push($files_n_paths, [
                     'name' => substr($fl, strripos($fl, '/') + 1),
                     'path' => Storage::path($fl),
-                    'zip_path' => substr($fl, strlen($path) - 1),
+                    'zip_path' => substr($fl, strlen($path)),
                 ]);
             }
+            
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
                 //Add folders to archive
@@ -355,7 +357,7 @@ class FolderController extends Controller
 
         $zipFileName = $request->multiZipFileName;
 
-        $storage_path = '/' . auth()->user()->name . '/ZTemp/' . $zipFileName;
+        $storage_path = auth()->user()->name . '/ZTemp/' . $zipFileName;
 
         $zip_path = Storage::path($storage_path);
 
@@ -456,7 +458,7 @@ class FolderController extends Controller
     //PRIVATE FUNCTIONS
     private function getPath($current_folder)
     {
-        $parent_search = explode("/", $current_folder); //Needed to get parent folder
+        $parent_search = explode("/", $current_folder);
 
         if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
             $path = $current_folder;                                               //Path to local network share           
@@ -479,12 +481,13 @@ class FolderController extends Controller
                 }
             }
         } else {
-            if (count($parent_search) >= 3) {
-                for ($i = 0; $i <= count($parent_search) - 3; $i++) {
-                    $i != count($parent_search) - 3 ? $parent_folder .= $parent_search[$i] . "/" : $parent_folder .= $parent_search[$i];
+            if (count($parent_search) >= 2) {
+                for ($i = 0; $i <= count($parent_search) - 2; $i++) {
+                    $i != count($parent_search) - 2 ? $parent_folder .= $parent_search[$i] . "/" : $parent_folder .= $parent_search[$i];
                 }
             }
         }
+       // dd($parent_folder);
         return $parent_folder;
     }
     private function getBreadcrumbs($current_folder)

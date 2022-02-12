@@ -52,11 +52,13 @@ class RegisteredUserController extends Controller
         if (count($admins) == 0) {
             $user->admin = 1;
             $user->active = 1;
+            $user->suadmin = 1;
             //Create local network share folder
             Storage::disk('local')->makeDirectory('NShare');
         } else {
             $user->admin = 0;
             $user->active = 0;
+            $user->suadmin = 0;
         }
         $user->save();
 
@@ -64,13 +66,6 @@ class RegisteredUserController extends Controller
         Storage::disk('local')->makeDirectory($user->name);
         //Create temp folder for archives
         Storage::disk('local')->makeDirectory($user->name . '/ZTemp');
-
-        //Create Home network share folder
-        //Storage::disk('local')->makeDirectory($user->name.'/'.ucwords($user->name).'share');
-
-        //Create shared folder on local network
-
-
 
         event(new Registered($user));
 

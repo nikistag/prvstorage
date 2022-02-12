@@ -30,7 +30,7 @@
             <td>{{$user->admin_role}}</td>
             <td>
                 <a href="{{ route('user.edit', ['user' => $user->id])}}" class="tooltipped" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-                <a id="{{$user->name}}" href="{{$user->name}}" class="modal-trigger remove-user tooltipped" data-target="modalremoveuser" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+                <a id="{{$user->id}}" href="{{$user->name . ', with email: ' . $user->email}}" class="modal-trigger remove-user tooltipped" data-target="modalremoveuser" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
             </td>
         </tr>
         @endforeach
@@ -38,9 +38,9 @@
     </tbody>
 </table>
 
-<!-- Remove file modal -->
-<div id="modalremovefile" class="modal">
-    <form id="deleteform" method="POST" action="">
+<!-- Remove user modal -->
+<div id="modalremoveuser" class="modal">
+    <form id="deleteform" method="POST" action="{{route('user.destroy')}}">
         <div class="modal-content">
             <h5 class="red-text">Are you sure to delete this user?</h5>
             @csrf
@@ -49,13 +49,7 @@
                     <div class="input-field inline">
                         <span class="usertoremove"></span>
                         <input id="userid" name="userid" type="hidden" class="valid" value="" />
-                        <label for="file"></label>
-                    </div>
-                    <div class="input-field inline">
-                        <label>
-                            <input id="deletefolders" name="deletefolders" type="checkbox" class="filled-in"  />
-                            <span>Filled in</span>
-                        </label>
+                        <label for="userid"></label>
                     </div>
                 </div>
             </div>
