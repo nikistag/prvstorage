@@ -9,7 +9,7 @@
     @foreach($admins as $admin)
     <li class="collection-item">
         <strong>{{$loop->iteration}}.</strong> 
-        username: <strong><span class="indigo-text">{{$admin->name}}</strong></span> 
+       <!--  username: <strong><span class="indigo-text">{{$admin->name}}</strong></span>  -->
         e-mail: <strong><span class="indigo-text">{{$admin->email}}</strong></span>
     </li>
     @endforeach

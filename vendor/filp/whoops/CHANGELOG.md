@@ -1,3 +1,12 @@
+# 2.14.5
+
+* Allow ArrayAccess on super globals
+
+# 2.14.4
+
+* Fix PHP 5.5 support.
+* Allow to use psr/log 2 or 3.
+
 # 2.14.3
 
 * Support PHP 8.1

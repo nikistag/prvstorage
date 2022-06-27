@@ -192,7 +192,7 @@ class FolderController extends Controller
 
             $zipFileName = 'zpd_' . $directory . '.zip';
 
-            $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zipFileName);
+            $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zipFileName);            
 
             // Creating file names and path names to be archived
             $files_n_paths = [];
@@ -212,9 +212,9 @@ class FolderController extends Controller
                 }
                 // Add Files in ZipArchive
                 foreach ($files_n_paths as $file) {
-                    $zip->addFile($file['path'], $file['zip_path']);
+                    $zip->addFile($file['path']);
                 }
-                // Close ZipArchive     
+                 // Close ZipArchive     
                 $zip->close();
             }
             return redirect(route('folder.filedownload', ['path' => '/ZTemp/' . $zipFileName]));

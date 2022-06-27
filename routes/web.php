@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
     //Folder routes
     Route::get('/folder/index', [FolderController::class, 'index'])->name('folder.index');
+    Route::get('/user/admins', [UserController::class, 'admins'])->name('user.admins');
 
     Route::middleware(['isactive'])->group(function () {
 
@@ -72,12 +73,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
 
         //User administration routes
-        Route::get('/user/admins', [UserController::class, 'admins'])->name('user.admins');
+        
         Route::middleware(['isadmin'])->group(function () {
             Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
             Route::put('/user/{user}/update', [UserController::class, 'update'])->name('user.update');
             Route::post('/user/destroy', [UserController::class, 'destroy'])->name('user.destroy');
+        });
+        Route::middleware(['issuadmin'])->group(function () {
             Route::get('/user/emailTest', [UserController::class, 'emailTest'])->name('user.emailTest');
         });
     });
