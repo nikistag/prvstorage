@@ -1,4 +1,4 @@
-<p align="center"><a href="https://nikistag.com" target="_blank">PRVSTORAGE</a></p>
+<p align="center"><a href="https://nikistag.com/prvstorage/what-is-prvstorage" target="_blank">PRVSTORAGE</a></p>
 
 ## About Prvstorage
 
@@ -10,10 +10,10 @@ This appication uses <a href="https://laravel.com" target="_blank">LARAVEL</a> f
 
 Best way to get started is to read the small [tutorials](https://nikistag.com) and other information about Prvstorage, such as:
 
-- [What is](https://nikistag.com/docs/routing).
-- [Why](https://nikistag.com/docs/container).
-- [Requirements](https://nikistag.com/docs/session).
-- [First contact](https://nikistag.com/docs/eloquent).
+- [What is](https://nikistag.com/prvstorage/what-is-prvstorage).
+- [Why](https://nikistag.com/prvstorage/why-private-network-storage).
+- [Requirements](https://nikistag.com/prvstorage/software-and-hardware-requirements-prvstorage-on-ubuntu-web-server).
+- [First contact](https://nikistag.com/prvstorage/prvstorage-first-contact).
 
 ## License
 
