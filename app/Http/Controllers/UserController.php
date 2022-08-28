@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use ZipArchive;
 
 class UserController extends Controller
 {
@@ -44,20 +45,78 @@ class UserController extends Controller
     }
 
     public function destroy(Request $request)
-    {        
+    {
+        //dd($request->input());
         $user = User::where('id', $request->userid)->first();
         if ((auth()->user()->suadmin == 1) && ($user->id != auth()->user()->id)) {
-            //Purge user folders
+            //Check if needs backup
+            if ($request->input('backup') != null) { //Backup of user storage required
+
+                $path = '/'.$request->userName;
+
+                Storage::deleteDirectory($path . "/ZTemp");//Empty user temp folder
+
+                $file_full_paths = Storage::allFiles($path);
+
+                $directory_full_paths = Storage::allDirectories($path);
+
+                $zip_directory_paths = [];
+
+                foreach ($directory_full_paths as $dir) {
+                    array_push($zip_directory_paths, substr($dir, strlen($path) - 1));
+                }
+
+                $zipFileName = 'deleted_' . $request->userName . '.zip';
+
+                //Backup folder
+                $backupFolder = '/'.auth()->user()->name.'/DeletedAccountsBackup';
+
+                // Check if Backup folder exists and create if needed
+                if(Storage::exists($backupFolder)){
+                }else{
+                    Storage::makeDirectory($backupFolder);
+                }
+
+                $zip_path = Storage::path($backupFolder. '/' . $zipFileName);
+
+                // Creating file names and path names to be archived
+                $files_n_paths = [];
+                foreach ($file_full_paths as $fl) {
+                    array_push($files_n_paths, [
+                        'name' => substr($fl, strripos($fl, '/') + 1),
+                        'path' => Storage::path($fl),
+                        'zip_path' => substr($fl, strlen($path)),
+                    ]);
+                }
+
+                $zip = new ZipArchive();
+                if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                    //Add folders to archive
+                    foreach ($zip_directory_paths as $zip_directory) {
+                        $zip->addEmptyDir($zip_directory);
+                    }
+                    // Add Files in ZipArchive
+                    foreach ($files_n_paths as $file) {
+                        $zip->addFile($file['path']);
+                    }
+                    // Close ZipArchive     
+                    $zip->close();
+                }
+
+            }
+            //Delete user directory
             $user_folder = "/" . $user->name;
             Storage::deleteDirectory($user_folder);
             //Delete user shares from DB
             $deleted = DB::table('shares')->where('user_id', $user->id)->delete();
             //Delete user from user table
             $user->delete();
+
             return redirect(route('user.index'))->with('success', 'User ' . $user->name . ' with email ' . $user->email . ' has been deleted');
         } else {
             return redirect(route('user.index'))->with('error', 'You don\'t have permissions to delete this user!!!');
         }
+        
 
         $users = User::orderBy('email', 'asc')->get();
         return view('user.index', compact('users'));

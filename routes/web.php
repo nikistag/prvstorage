@@ -64,6 +64,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/folder/multifiledownload', [FolderController::class, 'multifiledownload'])->name('folder.multifiledownload');
         Route::get('/folder/folderdownload', [FolderController::class, 'folderdownload'])->name('folder.folderdownload');
         Route::post('/folder/fileReadiness', [FolderController::class, 'fileReadiness'])->name('folder.fileReadiness'); // ajax request
+        Route::get('/folder/searchForm', [FolderController::class, 'searchForm'])->name('folder.searchForm');
+        Route::post('/folder/search', [FolderController::class, 'search'])->name('folder.search'); // ajax request - not yet
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
@@ -78,10 +80,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
             Route::put('/user/{user}/update', [UserController::class, 'update'])->name('user.update');
-            Route::post('/user/destroy', [UserController::class, 'destroy'])->name('user.destroy');
+            
         });
         Route::middleware(['issuadmin'])->group(function () {
             Route::get('/user/emailTest', [UserController::class, 'emailTest'])->name('user.emailTest');
+            Route::post('/user/destroy', [UserController::class, 'destroy'])->name('user.destroy');
         });
     });
 });

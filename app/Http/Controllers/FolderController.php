@@ -21,7 +21,7 @@ class FolderController extends Controller
     public function root(Request $request)
     {
         $current_folder = $request->current_folder;
-  
+
         $parent_folder = $this->getParentFolder($current_folder);
 
         $path = $this->getPath($current_folder);
@@ -102,9 +102,12 @@ class FolderController extends Controller
             $new_folder = $request->input('newfolder');
             $new_folder_path = $path . "/" . $new_folder;
 
-            Storage::makeDirectory($new_folder_path);
-
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'New folder created!');
+            if (Storage::exists($new_folder_path)) {
+                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'Folder already exists!');
+            } else {
+                Storage::makeDirectory($new_folder_path);
+                return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'New folder created!');
+            }
         }
     }
     public function editfolder(Request $request)
@@ -162,20 +165,18 @@ class FolderController extends Controller
         $path = $this->getPath($current_folder);
 
         $name = $request->file('file')->getClientOriginalName();
+        $clientFolder = substr($request->filepath, 0, strlen($request->filepath) - strlen($name) - 1);
 
-        if ($request->input('newfolder') != "") {
-            $new_folder = $request->input('newfolder');
-            $new_folder_path = $path . "/" . $new_folder;
-            Storage::makeDirectory($new_folder_path);
-            $upload_path = Storage::putFileAs($new_folder_path, $request->file('file'), $name);
-        } else {
-            $upload_path = Storage::putFileAs($path, $request->file('file'), $name);
-        }
+        $new_folder = $clientFolder;
+        $new_folder_path = $path . "/" . $new_folder;
+
+        Storage::makeDirectory($new_folder_path);
+        $upload_path = Storage::putFileAs($new_folder_path, $request->file('file'), $name);
     }
 
     public function folderdownload(Request $request)
     {
-        
+
         if ($request->has('path')) {
             $path = $this->getPath($request->path);
 
@@ -192,7 +193,7 @@ class FolderController extends Controller
 
             $zipFileName = 'zpd_' . $directory . '.zip';
 
-            $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zipFileName);            
+            $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zipFileName);
 
             // Creating file names and path names to be archived
             $files_n_paths = [];
@@ -203,7 +204,7 @@ class FolderController extends Controller
                     'zip_path' => substr($fl, strlen($path)),
                 ]);
             }
-            
+
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
                 //Add folders to archive
@@ -214,7 +215,7 @@ class FolderController extends Controller
                 foreach ($files_n_paths as $file) {
                     $zip->addFile($file['path']);
                 }
-                 // Close ZipArchive     
+                // Close ZipArchive     
                 $zip->close();
             }
             return redirect(route('folder.filedownload', ['path' => '/ZTemp/' . $zipFileName]));
@@ -227,14 +228,18 @@ class FolderController extends Controller
     {
         $temp_path = '/' . auth()->user()->name . "/ZTemp";
 
-        $shares = Share::select('path')->where('user_id', auth()->user()->id)->get();
+        $shares = Share::select('path', 'status')->where('user_id', auth()->user()->id)->get();
 
         $temp_files = Storage::allFiles($temp_path);
 
         foreach ($temp_files as $file) {
-            $filtered = $shares->where('path', $file);
+            $filtered = $shares->where('path', "/" . $file);
             if (count($filtered) == 0) {
                 Storage::delete($file);
+            } else {
+                if ($filtered->first()->status != 'active') {
+                    Storage::delete($file);
+                }
             }
         }
 
@@ -455,6 +460,157 @@ class FolderController extends Controller
             'ready' =>  $ready
         ]);
     }
+    public function searchForm(Request $request)
+    {
+        $current_folder = $request->current_folder;
+
+        $parent_folder = $this->getParentFolder($current_folder);
+
+        $path = $this->getPath($current_folder);
+
+        $breadcrumbs = $this->getBreadcrumbs($current_folder);
+
+        //Directory paths for options to move files and folders
+        $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
+        $directory_paths = [];
+        foreach ($full_private_directory_paths as $dir) {
+            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
+                array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
+            }
+        }
+        $share_directory_paths = Storage::allDirectories('NShare');
+        array_push($directory_paths, "NShare");
+        foreach ($share_directory_paths as $dir) {
+            array_push($directory_paths, $dir);
+        }
+
+        //Get folders an fils of current directory
+        $dirs = Storage::directories($path);
+        $fls = Storage::files($path);
+        $directories = [];
+        foreach ($dirs as $dir) {
+            if ($dir !== auth()->user()->name . "/ZTemp") {
+                array_push($directories, [
+                    'foldername' => substr($dir, strlen($path)),
+                    'shortfoldername' => strlen(substr($dir, strlen($path))) > 15 ? substr(substr($dir, strlen($path)), 0, 12) . "..." :  substr($dir, strlen($path)),
+                    'foldersize' => $this->getFolderSize($dir),
+                ]);
+            }
+        }
+        $NShare['foldersize'] = $this->getFolderSize('NShare');
+        $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
+
+        $files = [];
+        foreach ($fls as $file) {
+            $fullfilename = substr($file, strlen($path));
+            array_push($files, [
+                'fullfilename' =>  $fullfilename,
+                'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
+                'shortfilename' => strlen($filename) > 15 ? substr($filename, 0, 10) . "*~" : $filename,
+                'extension' => strrchr($file, "."),
+                'filesize' => $this->getFileSize($file)
+            ]);
+        }
+        //Data to compute free space
+        $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
+        $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
+        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
+
+        return view('folder.searchForm', compact(
+            'directories',
+            'files',
+            'disk_free_space',
+            'disk_total_space',
+            'quota',
+            'current_folder',
+            'parent_folder',
+            'directory_paths',
+            'NShare',
+            'ztemp',
+            'path',
+            'breadcrumbs'
+        ));
+    }
+    public function search(Request $request)
+    {
+        $current_folder = $request->current_folder;
+        $searchstring = strtolower($request->searchstring);
+
+        $path = $this->getPath($current_folder);
+
+        //Directory paths for options to move files and folders
+        $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
+        $directory_paths = [];
+        foreach ($full_private_directory_paths as $dir) {
+            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
+                array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
+            }
+        }
+
+        //Get folders an files of current directory
+        $dirs = Storage::allDirectories($path);
+        $fls = Storage::allFiles($path);
+
+        $directories = [];
+        foreach ($dirs as $dir) {
+            if ($dir !== auth()->user()->name . "/ZTemp") {
+                $trueFolderName = substr($dir, strrpos($dir, "/") + 1, strlen($dir) - strrpos($dir, "/"));
+                if ($searchstring == "") {
+                    array_push($directories, [
+                        'foldername' => $trueFolderName,
+                        'folderpath' => $dir,
+                        'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
+                        'shortfoldername' => strlen($trueFolderName) > 15 ? substr($trueFolderName, 0, 12) . "..." :   $trueFolderName,
+                        'foldersize' => $this->getFolderSize($dir),
+                    ]);
+                } elseif (strstr(strtolower($trueFolderName), $searchstring) !== false) {
+                    array_push($directories, [
+                        'foldername' => $trueFolderName,
+                        'folderpath' => $dir,
+                        'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
+                        'shortfoldername' => strlen($trueFolderName) > 15 ? substr($trueFolderName, 0, 12) . "..." :   $trueFolderName,
+                        'foldersize' => $this->getFolderSize($dir),
+                    ]);
+                }
+            }
+        }
+
+        //return dd($directories);
+
+        $files = [];
+        foreach ($fls as $file) {
+            $trueFileName = substr($file, strrpos($file, "/") + 1, strlen($file) - strrpos($file, "/"));
+            $fullfilename = substr($file, strlen(auth()->user()->name) + 1);
+            if ($searchstring == "") {
+                array_push($files, [
+                    'filepath' => $file,
+                    'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
+                    'fullfilename' => $fullfilename,
+                    'filename' => $trueFileName,
+                    'shortfilename' => strlen($trueFileName) > 15 ? substr($trueFileName, 0, 10) . "*~" : $trueFileName,
+                    'extension' => strrchr($file, "."),
+                    'filesize' => $this->getFileSize($file)
+                ]);
+            } elseif (strstr(strtolower($trueFileName), $searchstring) !== false) {
+                array_push($files, [
+                    'filepath' => $file,
+                    'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
+                    'fullfilename' => $fullfilename,
+                    'filename' => $trueFileName,
+                    'shortfilename' => strlen($trueFileName) > 15 ? substr($trueFileName, 0, 10) . "*~" : $trueFileName,
+                    'extension' => strrchr($file, "."),
+                    'filesize' => $this->getFileSize($file)
+                ]);
+            }
+        }
+        //return dd($files);
+
+        $results = view('folder.search_results', compact('directories', 'files', 'current_folder'));
+
+        return response()->json([
+            'html' => $results->render(),
+        ]);
+    }
     //PRIVATE FUNCTIONS
     private function getPath($current_folder)
     {
@@ -487,7 +643,7 @@ class FolderController extends Controller
                 }
             }
         }
-       // dd($parent_folder);
+        // dd($parent_folder);
         return $parent_folder;
     }
     private function getBreadcrumbs($current_folder)

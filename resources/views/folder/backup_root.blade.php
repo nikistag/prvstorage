@@ -539,11 +539,11 @@
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
-    <!-- Upload and saving progress -->
-    <div class="collection" id='folder-list-display'>
+    <!-- Needed for counting uploaded files and progress-->
+    <input type="hidden" id="totalUploadFiles" name="totalUploadFiles" value="" />
+    <input type="hidden" id="uploadedFiles" name="uploadedFiles" value="" />
 
-    </div>
-
+    <div class="collection" id='folder-list-display'></div>
 </div>
 <!-- Empty temporary folder modal -->
 <div id="modalemptytemp" class="modal">
@@ -914,6 +914,10 @@
         var fileCatcher = document.getElementById(form); //form
         var fileInput = document.getElementById(input); //input        
         var fileListDisplay = document.getElementById(display); //display
+        var totalUploadFilesInput = document.getElementById(display); //total files to upload
+        var uploadedFilesInput = document.getElementById(display); //uploded files
+        var totalUploadFiles = 0; //total files to upload
+        var uploadedFiles = 0; //uploded files
         var fileList = [];
         var renderFileList, sendFile;
 
@@ -925,9 +929,11 @@
             evnt.preventDefault();
             closeButton.classList.add("hide"); //my
             submitButton.classList.add("hide"); //my
+
             fileList.forEach(function(file) {
                 sendFile(file);
             });
+
         });
 
         fileInput.addEventListener('change', function(evnt) {
@@ -940,29 +946,54 @@
             for (var i = 0; i < fileInput.files.length; i++) {
                 fileList.push(clientFiles[i]);
             }
-            renderFileList();
+            if (fileInput.files.length < 20) {
+                renderFileList();
+            } else {
+                renderFileCounter()
+            }
+            totalUploadFiles = fileInput.files.length;
+
         });
+        renderFileCounter = function() {
+            fileListDisplay.innerHTML = '';
+            var fileDisplayEl = document.createElement("div");
+            fileDisplayEl.setAttribute("class", "collection-item");
+            fileDisplayEl.setAttribute("id", "upload-counter");
+            fileDisplayEl.innerHTML = "Uploaded: 0 / " + fileInput.files.length;
+            fileListDisplay.appendChild(fileDisplayEl);
+            var progressDisplayEl = document.createElement("div");
+            progressDisplayEl.setAttribute("class", "progress");
+            progressDisplayEl.setAttribute("id", "upload-progress");
+            progressDisplayEl.innerHTML = "";
+            fileDisplayEl.appendChild(progressDisplayEl);
+            var progressBarEl = document.createElement("div");
+            progressBarEl.setAttribute("class", "determinate");
+            progressBarEl.setAttribute("id", "upload-progress-bar");
+            progressBarEl.setAttribute("style", "width:1%");
+            progressBarEl.innerHTML = "";
+            progressDisplayEl.appendChild(progressBarEl);
+
+        };
 
         renderFileList = function() {
             fileListDisplay.innerHTML = '';
             fileList.forEach(function(file) { //added index
                 var fileDisplayEl = document.createElement("div");
                 fileDisplayEl.setAttribute("class", "collection-item notuploaded");
-                fileDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "item");
+                fileDisplayEl.setAttribute("id", file.size + "item");
                 fileDisplayEl.innerHTML = file.name;
                 fileListDisplay.appendChild(fileDisplayEl);
                 var progressDisplayEl = document.createElement("div");
                 progressDisplayEl.setAttribute("class", "progress");
-                progressDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "progress");
+                progressDisplayEl.setAttribute("id", file.size + "progress");
                 progressDisplayEl.innerHTML = "";
                 fileDisplayEl.appendChild(progressDisplayEl);
                 var progressBarEl = document.createElement("div");
                 progressBarEl.setAttribute("class", "determinate");
-                progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size);
+                progressBarEl.setAttribute("id", file.size);
                 progressBarEl.setAttribute("style", "width:1%");
                 progressBarEl.innerHTML = "";
                 progressDisplayEl.appendChild(progressBarEl);
-                console.log(file.webkitRelativePath + file.name + file.size);
             });
         };
 
@@ -975,38 +1006,99 @@
             formData.set('filepath', file.webkitRelativePath);
             formData.set('current_folder', $('input[name=current_folder]').val());
 
-            request.upload.addEventListener("progress", function(evt) {
-                if (evt.lengthComputable) {
-                    var progressBar = document.getElementById(file.webkitRelativePath + file.name + file.size);
-                    var progresspc = Math.round(evt.loaded * 100 / evt.total);
-                    var handbreak = 0;
-                    progressBar.style.width = progresspc + "%";
-                    if (progresspc == 100) {
-                        console.log("Saved one file!");
-                        M.toast({
-                            html: 'Saving ' + file.name + ' to server!'
-                        });
+            if (fileInput.files.length < 20) {
+                request.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var progressBar = document.getElementById(file.size);
+                        var progresspc = Math.round(evt.loaded * 100 / evt.total);
+                        var handbreak = 0;
+                        progressBar.style.width = progresspc + "%";
+                        if ((progresspc == 100) && (handbreak == 0)) {
+                            console.log("Saved one file!");
+                            M.toast({
+                                html: 'Saving ' + file.name + ' to server!'
+                            });
+                            handbreak = 1;
+                        }
                     }
-                }
-            }, false);
+                }, false);
 
-            request.onloadend = function() {
-                if (this.status == 200) {
-                    var uploadItem = document.getElementById(file.webkitRelativePath + file.name + file.size + "item");
-                    uploadItem.classList.remove("notuploaded");
-                    uploadItem.classList.add("hide");
-                    var notdone = document.getElementsByClassName("notuploaded").length;
-                    if (notdone > 0) {
-                        console.log("Files still in queue");
+                request.onloadend = function() {
+                    if (this.status == 200) {
+                        var uploadItem = document.getElementById(file.size + "item");
+                        uploadItem.classList.remove("notuploaded");
+                        uploadItem.classList.add("hide");
+                        var notdone = document.getElementsByClassName("notuploaded").length;
+                        if (notdone > 0) {
+                            console.log("Files still in queue");
+                        } else {
+                            M.toast({
+                                html: 'Upload finished successfuly!'
+                            });
+                            setTimeout(function() {
+                                window.location.reload(true);
+                            }, 2000);
+                        }
                     } else {
-                        setTimeout(function() {
-                            window.location.reload(true);
-                        }, 2000);
+                        console.log("error " + this.status);
                     }
-                } else {
-                    console.log("error " + this.status);
-                }
-            };
+                };
+            } else {
+
+                /*                 request.addEventListener("readystatechange", function() {
+                                    if (this.status == 200) {
+                                        uploadedFiles++;
+                                        alert(uploadedFiles);
+                                        if (uploadedFiles < totalUploadFiles) {
+                                            var progress = Math.round(uploadedFiles * 100 / totalUploadFiles)
+                                            var uploadProgressBar = document.getElementById("upload-progress-bar");
+                                            uploadProgressBar.style.width = progress + "%";
+                                            fileDisplayEl.innerHTML = "Uploaded: " + uploadedFiles + " / " + totalUploadFiles;
+                                        }else{
+                                            var uploadProgressBar = document.getElementById("upload-progress-bar");
+                                            uploadProgressBar.style.width = "100%";
+                                            M.toast({
+                                                html: 'Upload finished successfuly!'
+                                            });
+                                            setTimeout(function() {
+                                                window.location.reload(true);
+                                            }, 2000);
+                                        }
+
+                                    } else {
+                                        console.log("error " + this.status);
+                                    }
+                                }, false); */
+                request.onloadend = function() {
+                    if (this.status == 200) {
+                        uploadedFiles++;
+                        if (uploadedFiles < totalUploadFiles) {
+                            var progress = Math.round(uploadedFiles * 100 / totalUploadFiles)
+                            var uploadProgressBar = document.getElementById("upload-progress-bar");
+                            uploadProgressBar.style["width"] = progress + "%";
+                            var uploadStatus = document.getElementById("upload-counter");
+                            uploadStatus.textContent = "Uploaded: " + uploadedFiles + " / " + totalUploadFiles;
+                        } else {
+                            var uploadProgressBar = document.getElementById("upload-progress-bar");
+                            uploadProgressBar.style["width"] = "100%";
+                            M.toast({
+                                html: 'Upload finished successfuly!'
+                            });
+                            setTimeout(function() {
+                                window.location.reload(true);
+                            }, 2000);
+                        }
+
+                    } else {
+                        console.log("error " + this.status);
+                    }
+                };
+            }
+
+
+
+
+
             request.open("POST", $("#" + form).attr("action"));
             request.send(formData);
         };
