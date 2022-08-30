@@ -132,7 +132,7 @@
         <div class="footer-copyright blue-grey darken-4">
             <div class="container">
                 Copyright &copy; 2021 - {{date('Y')}} Nikistag - All Rights Reserved
-                <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+                <span class="grey-text text-lighten-4 right">V. <b>{{config('app.version')}}</b></span>
             </div>
         </div>
     </footer>
