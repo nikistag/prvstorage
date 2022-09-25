@@ -70,7 +70,7 @@
 <div class="row hoverable tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files" style="border-bottom: 1px solid gray;">
     <div class="col s8 valign-wrapper">
         <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">
-            <i class="material-icons orange-text" style="font-size:40px;">folder</i>
+            <i class="material-icons medium orange-text">folder</i>
             <span class="hide-on-small-only">{{$directory['foldername']}}</span>
             <span class="hide-on-med-and-up">{{$directory['shortfoldername']}}</span><br>
             <span class="new badge" data-badge-caption="{{ $directory['foldersize']['type']}}">{{ $directory['foldersize']['size']}}</span>
@@ -155,7 +155,7 @@
         @endif
     </div>
 </div>
-<div class="row"  style="border-bottom: 1px solid gray;">
+<div class="row" style="border-bottom: 1px solid gray;">
     <div class="col s12 left-align">
         <label>
             <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
@@ -922,6 +922,12 @@
 
         }));
         /*  fixed bottom menu bar */
+
+        if (document.documentElement.scrollHeight >= window.innerHeight) {
+            if ($("#selectedaction").hasClass("selectedaction")) {
+                $("#selectedaction").removeClass("selectedaction");
+            }
+        } 
         window.onscroll = function() {
             if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 100) {
                 if ($("#selectedaction").hasClass("selectedaction")) {
