@@ -10,7 +10,7 @@
 </div>
 <div class="row">
     @if($current_folder != "/ZTemp")
-    <div class="col s12 center">
+    <div class="col s12 center blue-grey lighten-4">
         <a href="Multiple files">
             <i class="material-icons medium purple-text tooltipped modal-trigger" data-target="modalfilesupload" data-position="bottom" data-tooltip="Upload multiple files" onclick="jsUpload('multiupload','filesupload','file-list-display')">
                 playlist_add
@@ -135,7 +135,7 @@
 
 @foreach($files as $file)
 <div class="row hoverable" style="border-bottom: 1px solid gray;">
-    <div class="col s8 valign-wrapper left-align">
+    <div class="col s8 valign-wrapper left-align" style="background-image: url('{{asset('docs_100px.png')}}'); background-repeat: no-repeat; height: 120px;">
         <label>
             <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
             <span></span>
@@ -164,20 +164,27 @@
 
 @if($current_folder == '/ZTemp')
 @else
-<div class="row center left-align">
-    &nbsp;
-    <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
-    &nbsp;
-    <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
-    &nbsp;
-    <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
-    &nbsp;
-    <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
-    &nbsp;
+
+<div class="row center left-align blue-grey lighten-4">
+    <div class="selectedaction blue-grey lighten-4" id="selectedaction">
+        &nbsp;
+        <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
+        &nbsp;
+        <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
+        &nbsp;
+        <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
+        &nbsp;
+        <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+        &nbsp;
+    </div>
+
 </div>
+
 @endif
 @endif
-</div>
+
+
+
 
 <!-- Form for downloading multiple files -->
 <form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
@@ -539,11 +546,11 @@
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
-    <!-- Needed for counting uploaded files and progress-->
-    <input type="hidden" id="totalUploadFiles" name="totalUploadFiles" value="" />
-    <input type="hidden" id="uploadedFiles" name="uploadedFiles" value="" />
+    <!-- Upload and saving progress -->
+    <div class="collection" id='folder-list-display'>
 
-    <div class="collection" id='folder-list-display'></div>
+    </div>
+
 </div>
 <!-- Empty temporary folder modal -->
 <div id="modalemptytemp" class="modal">
@@ -907,6 +914,18 @@
             }
 
         }));
+       /*  fixed bottom menu bar */
+        window.onscroll = function() {
+            if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+                if ($("#selectedaction").hasClass("selectedaction")) {
+                    $("#selectedaction").removeClass("selectedaction");
+                }
+            } else {
+                if (!$("#selectedaction").hasClass("selectedaction")) {
+                    $("#selectedaction").addClass("selectedaction blue-grey lighten-4");
+                }
+            }
+        }
 
     });
 
@@ -914,10 +933,6 @@
         var fileCatcher = document.getElementById(form); //form
         var fileInput = document.getElementById(input); //input        
         var fileListDisplay = document.getElementById(display); //display
-        var totalUploadFilesInput = document.getElementById(display); //total files to upload
-        var uploadedFilesInput = document.getElementById(display); //uploded files
-        var totalUploadFiles = 0; //total files to upload
-        var uploadedFiles = 0; //uploded files
         var fileList = [];
         var renderFileList, sendFile;
 
@@ -929,11 +944,9 @@
             evnt.preventDefault();
             closeButton.classList.add("hide"); //my
             submitButton.classList.add("hide"); //my
-
             fileList.forEach(function(file) {
                 sendFile(file);
             });
-
         });
 
         fileInput.addEventListener('change', function(evnt) {
@@ -946,54 +959,29 @@
             for (var i = 0; i < fileInput.files.length; i++) {
                 fileList.push(clientFiles[i]);
             }
-            if (fileInput.files.length < 20) {
-                renderFileList();
-            } else {
-                renderFileCounter()
-            }
-            totalUploadFiles = fileInput.files.length;
-
+            renderFileList();
         });
-        renderFileCounter = function() {
-            fileListDisplay.innerHTML = '';
-            var fileDisplayEl = document.createElement("div");
-            fileDisplayEl.setAttribute("class", "collection-item");
-            fileDisplayEl.setAttribute("id", "upload-counter");
-            fileDisplayEl.innerHTML = "Uploaded: 0 / " + fileInput.files.length;
-            fileListDisplay.appendChild(fileDisplayEl);
-            var progressDisplayEl = document.createElement("div");
-            progressDisplayEl.setAttribute("class", "progress");
-            progressDisplayEl.setAttribute("id", "upload-progress");
-            progressDisplayEl.innerHTML = "";
-            fileDisplayEl.appendChild(progressDisplayEl);
-            var progressBarEl = document.createElement("div");
-            progressBarEl.setAttribute("class", "determinate");
-            progressBarEl.setAttribute("id", "upload-progress-bar");
-            progressBarEl.setAttribute("style", "width:1%");
-            progressBarEl.innerHTML = "";
-            progressDisplayEl.appendChild(progressBarEl);
-
-        };
 
         renderFileList = function() {
             fileListDisplay.innerHTML = '';
             fileList.forEach(function(file) { //added index
                 var fileDisplayEl = document.createElement("div");
                 fileDisplayEl.setAttribute("class", "collection-item notuploaded");
-                fileDisplayEl.setAttribute("id", file.size + "item");
+                fileDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "item");
                 fileDisplayEl.innerHTML = file.name;
                 fileListDisplay.appendChild(fileDisplayEl);
                 var progressDisplayEl = document.createElement("div");
                 progressDisplayEl.setAttribute("class", "progress");
-                progressDisplayEl.setAttribute("id", file.size + "progress");
+                progressDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "progress");
                 progressDisplayEl.innerHTML = "";
                 fileDisplayEl.appendChild(progressDisplayEl);
                 var progressBarEl = document.createElement("div");
                 progressBarEl.setAttribute("class", "determinate");
-                progressBarEl.setAttribute("id", file.size);
+                progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size);
                 progressBarEl.setAttribute("style", "width:1%");
                 progressBarEl.innerHTML = "";
                 progressDisplayEl.appendChild(progressBarEl);
+                console.log(file.webkitRelativePath + file.name + file.size);
             });
         };
 
@@ -1006,99 +994,38 @@
             formData.set('filepath', file.webkitRelativePath);
             formData.set('current_folder', $('input[name=current_folder]').val());
 
-            if (fileInput.files.length < 20) {
-                request.upload.addEventListener("progress", function(evt) {
-                    if (evt.lengthComputable) {
-                        var progressBar = document.getElementById(file.size);
-                        var progresspc = Math.round(evt.loaded * 100 / evt.total);
-                        var handbreak = 0;
-                        progressBar.style.width = progresspc + "%";
-                        if ((progresspc == 100) && (handbreak == 0)) {
-                            console.log("Saved one file!");
-                            M.toast({
-                                html: 'Saving ' + file.name + ' to server!'
-                            });
-                            handbreak = 1;
-                        }
+            request.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var progressBar = document.getElementById(file.webkitRelativePath + file.name + file.size);
+                    var progresspc = Math.round(evt.loaded * 100 / evt.total);
+                    var handbreak = 0;
+                    progressBar.style.width = progresspc + "%";
+                    if (progresspc == 100) {
+                        console.log("Saved one file!");
+                        M.toast({
+                            html: 'Saving ' + file.name + ' to server!'
+                        });
                     }
-                }, false);
+                }
+            }, false);
 
-                request.onloadend = function() {
-                    if (this.status == 200) {
-                        var uploadItem = document.getElementById(file.size + "item");
-                        uploadItem.classList.remove("notuploaded");
-                        uploadItem.classList.add("hide");
-                        var notdone = document.getElementsByClassName("notuploaded").length;
-                        if (notdone > 0) {
-                            console.log("Files still in queue");
-                        } else {
-                            M.toast({
-                                html: 'Upload finished successfuly!'
-                            });
-                            setTimeout(function() {
-                                window.location.reload(true);
-                            }, 2000);
-                        }
+            request.onloadend = function() {
+                if (this.status == 200) {
+                    var uploadItem = document.getElementById(file.webkitRelativePath + file.name + file.size + "item");
+                    uploadItem.classList.remove("notuploaded");
+                    uploadItem.classList.add("hide");
+                    var notdone = document.getElementsByClassName("notuploaded").length;
+                    if (notdone > 0) {
+                        console.log("Files still in queue");
                     } else {
-                        console.log("error " + this.status);
+                        setTimeout(function() {
+                            window.location.reload(true);
+                        }, 2000);
                     }
-                };
-            } else {
-
-                /*                 request.addEventListener("readystatechange", function() {
-                                    if (this.status == 200) {
-                                        uploadedFiles++;
-                                        alert(uploadedFiles);
-                                        if (uploadedFiles < totalUploadFiles) {
-                                            var progress = Math.round(uploadedFiles * 100 / totalUploadFiles)
-                                            var uploadProgressBar = document.getElementById("upload-progress-bar");
-                                            uploadProgressBar.style.width = progress + "%";
-                                            fileDisplayEl.innerHTML = "Uploaded: " + uploadedFiles + " / " + totalUploadFiles;
-                                        }else{
-                                            var uploadProgressBar = document.getElementById("upload-progress-bar");
-                                            uploadProgressBar.style.width = "100%";
-                                            M.toast({
-                                                html: 'Upload finished successfuly!'
-                                            });
-                                            setTimeout(function() {
-                                                window.location.reload(true);
-                                            }, 2000);
-                                        }
-
-                                    } else {
-                                        console.log("error " + this.status);
-                                    }
-                                }, false); */
-                request.onloadend = function() {
-                    if (this.status == 200) {
-                        uploadedFiles++;
-                        if (uploadedFiles < totalUploadFiles) {
-                            var progress = Math.round(uploadedFiles * 100 / totalUploadFiles)
-                            var uploadProgressBar = document.getElementById("upload-progress-bar");
-                            uploadProgressBar.style["width"] = progress + "%";
-                            var uploadStatus = document.getElementById("upload-counter");
-                            uploadStatus.textContent = "Uploaded: " + uploadedFiles + " / " + totalUploadFiles;
-                        } else {
-                            var uploadProgressBar = document.getElementById("upload-progress-bar");
-                            uploadProgressBar.style["width"] = "100%";
-                            M.toast({
-                                html: 'Upload finished successfuly!'
-                            });
-                            setTimeout(function() {
-                                window.location.reload(true);
-                            }, 2000);
-                        }
-
-                    } else {
-                        console.log("error " + this.status);
-                    }
-                };
-            }
-
-
-
-
-
+                } else {
+                    console.log("error " + this.status);
+                }
+            };
             request.open("POST", $("#" + form).attr("action"));
             request.send(formData);
         };

@@ -10,7 +10,7 @@
 </div>
 <div class="row">
     @if($current_folder != "/ZTemp")
-    <div class="col s12 center">
+    <div class="col s12 center blue-grey lighten-4">
         <a href="Multiple files">
             <i class="material-icons medium purple-text tooltipped modal-trigger" data-target="modalfilesupload" data-position="bottom" data-tooltip="Upload multiple files" onclick="jsUpload('multiupload','filesupload','file-list-display')">
                 playlist_add
@@ -134,23 +134,19 @@
 @else
 
 @foreach($files as $file)
-<div class="row hoverable" style="border-bottom: 1px solid gray;">
-    <div class="col s8 valign-wrapper left-align">
-        <label>
-            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
-            <span></span>
-        </label>
-        <i class="material-icons" style="font-size:40px;">description</i>
-        <p style="margin:0; text-align: left;">
-            <span class="hide-on-small-only">{{$file['fullfilename']}}</span>
-            <span class="hide-on-med-and-up tooltipped" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
-            <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
-        </p>
+<div class="row">
+    <div class="col s4 left-align" style="position: relative;">
+        <img src="{{asset($file['fileimageurl'])}}" alt="file image">
+        <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
+    </div>
+    <div class="col s4">
+        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
         @if($current_folder == '/ZTemp')
         @else
         <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <br />
         <a href="{{$file['fullfilename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
         <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <br />
@@ -159,25 +155,43 @@
         @endif
     </div>
 </div>
+<div class="row"  style="border-bottom: 1px solid gray;">
+    <div class="col s12 left-align">
+        <label>
+            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
+            <span>
+                <span class="hide-on-small-only grey-text text-darken-3">{{$file['fullfilename']}}</span>
+                <span class="hide-on-med-and-up tooltipped grey-text text-darken-3" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
+            </span>
+        </label>
+    </div>
+</div>
 
 @endforeach
 
 @if($current_folder == '/ZTemp')
 @else
-<div class="row center left-align">
-    &nbsp;
-    <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
-    &nbsp;
-    <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
-    &nbsp;
-    <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
-    &nbsp;
-    <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
-    &nbsp;
+
+<div class="row center left-align blue-grey lighten-4">
+    <div class="selectedaction blue-grey lighten-4" id="selectedaction">
+        &nbsp;
+        <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
+        &nbsp;
+        <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
+        &nbsp;
+        <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
+        &nbsp;
+        <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+        &nbsp;
+    </div>
+
 </div>
+
 @endif
 @endif
-</div>
+
+
+
 
 <!-- Form for downloading multiple files -->
 <form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
@@ -907,6 +921,18 @@
             }
 
         }));
+        /*  fixed bottom menu bar */
+        window.onscroll = function() {
+            if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 100) {
+                if ($("#selectedaction").hasClass("selectedaction")) {
+                    $("#selectedaction").removeClass("selectedaction");
+                }
+            } else {
+                if (!$("#selectedaction").hasClass("selectedaction")) {
+                    $("#selectedaction").addClass("selectedaction blue-grey lighten-4");
+                }
+            }
+        }
 
     });
 

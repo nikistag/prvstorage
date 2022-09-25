@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 use App\Models\Share;
+use Illuminate\Support\Facades\Cache;
 
 class FolderController extends Controller
 {
@@ -58,16 +59,23 @@ class FolderController extends Controller
         $NShare['foldersize'] = $this->getFolderSize('NShare');
         $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
 
+        /* Process files */
+
         $files = [];
         foreach ($fls as $file) {
             $fullfilename = substr($file, strlen($path));
+            $extensionWithDot = strrchr($file, ".");
+            $extensionNoDot = substr($extensionWithDot, 1, strlen($extensionWithDot));
             array_push($files, [
                 'fullfilename' =>  $fullfilename,
+                'fileurl' => $path . "/" . $fullfilename,
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
-                'shortfilename' => strlen($filename) > 15 ? substr($filename, 0, 10) . "*~" : $filename,
-                'extension' => strrchr($file, "."),
+                'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
+                'extension' => $extensionWithDot,
+                'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
+            // dd($files);
         }
         //Data to compute free space
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
@@ -140,10 +148,16 @@ class FolderController extends Controller
         }
         //Copy or move folder
         if ($request->has('foldercopy')) {
+            //main
             $done = (new Filesystem)->copyDirectory(Storage::path($old_path), Storage::path($new_path));
+            //thumbs
+            $thumbdone = (new Filesystem)->copyDirectory(Storage::disk('public')->path('/thumb' . $old_path), Storage::disk('public')->path('/thumb' . $new_path));
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly copied!');
         } else {
+            //main
             $done = Storage::move($old_path, $new_path);
+            //thumbs
+            $thumbdone = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
         }
     }
@@ -154,7 +168,10 @@ class FolderController extends Controller
 
         $path = $this->getPath($current_folder);
         $garbage = $path . "/" . $request->input('folder');
+        //delete main
         Storage::deleteDirectory($garbage);
+        //delete thumbs
+        Storage::disk('public')->deleteDirectory('/thumb' . $garbage);
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly removed!');
     }
 
@@ -254,7 +271,10 @@ class FolderController extends Controller
         $old_path = $path . "/" . $request->input('oldrenamefilename');
         $new_path = $path . "/" . $request->input('renamefilename');
 
+        //main
         Storage::move($old_path, $new_path);
+        //thumb
+        Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly renamed!');
     }
@@ -273,9 +293,11 @@ class FolderController extends Controller
         } else {
             if ($request->has('filecopy')) {   //Check if copy or move file
                 $done = Storage::copy($old_path, $new_path);
+                $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
             } else {
                 $done = Storage::move($old_path, $new_path);
+                $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!');
             }
         }
@@ -295,9 +317,11 @@ class FolderController extends Controller
             } else {
                 if ($request->has('filecopy')) {   //Check if copy or move file
                     $done = Storage::copy($old_path, $new_path);
+                    $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
                     /* return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!'); */
                 } else {
                     $done = Storage::move($old_path, $new_path);
+                    $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
                     /*  return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!'); */
                 }
             }
@@ -315,8 +339,10 @@ class FolderController extends Controller
         $path = $this->getPath($current_folder);
 
         $garbage = $path . "/" . $request->input('filename');
-
+        //main
         Storage::delete($garbage);
+        //thumbs
+        Storage::disk('public')->delete('/thumb' . $garbage);
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly removed!');
     }
@@ -328,7 +354,10 @@ class FolderController extends Controller
         foreach ($request->input("filesDelete") as $file) {
 
             $garbage = $path . "/" . $file;
+            //main
             Storage::delete($garbage);
+            //thumbs
+            Storage::disk('public')->delete('/thumb' . $garbage);
         }
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Files successfuly removed!');
@@ -700,5 +729,75 @@ class FolderController extends Controller
             return $folderSize;
         }
         return $folderSize;
+    }
+    private function getFileImage($extension, $path, $fullfilename, $filename)
+    {
+        /* Cache file extensions */
+        $fileExtensions = Cache::remember('extensions', 3600, function () {
+            $extensionArray = [];
+
+            if (($open = fopen(public_path() . "/extension.csv", "r")) !== FALSE) {
+
+                while (($data = fgetcsv($open)) !== FALSE) {
+                    array_push($extensionArray, $data);
+                }
+                fclose($open);
+            }
+            return $extensionArray;
+        });
+
+        /* SET FILE IMAGE*/
+        $fileimage = 'storage/img/file_100px.png';
+        //supported extensions
+        $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
+
+        foreach ($fileExtensions as $fext) {
+            if (array_search(strtolower($extension), $supportedExt) !== false) {
+                //Check if thumbnail already set
+                $thumbfile = 'thumb' . $path . "/" . $filename . '.jpg';
+                if (Storage::disk('public')->has($thumbfile)) {
+                    return 'storage/' . $thumbfile;
+                } else {
+                    // Get image original size, 0->width, 1->height
+                    $imgsize_arr = getimagesize(Storage::path($path . "/" . $fullfilename));
+                    // Analize image to set crop 
+                    if ($imgsize_arr[0] > $imgsize_arr[1]) {
+                        $cropSize = $imgsize_arr[1];
+                        $cropX = ($imgsize_arr[0] - $imgsize_arr[1]) / 2;
+                        $cropY = 0;
+                    } else {
+                        $cropSize =  $imgsize_arr[0];
+                        $cropX = 0;
+                        $cropY = ($imgsize_arr[1] - $imgsize_arr[0]) / 2;
+                    }
+
+                    $img = imagecreatefromstring(file_get_contents(Storage::path($path . "/" . $fullfilename)));
+                    $area = ["x" => $cropX, "y" => $cropY, "width" => $cropSize, "height" => $cropSize];
+                    $crop = imagecrop($img, $area);
+
+                    if (Storage::disk('public')->exists('thumb' . $path)) {
+                    } else {
+                        Storage::disk('public')->makeDirectory('thumb' . $path);
+                    }
+                    $thumb = imagecreatetruecolor(100, 100);
+
+                    // Resize
+                    imagecopyresized($thumb, $crop, 0, 0, 0, 0, 100, 100, $cropSize, $cropSize);
+
+                    imagejpeg($thumb, Storage::disk('public')->path($thumbfile), 50);
+
+                    imagedestroy($img);
+                    imagedestroy($crop);
+                    imagedestroy($thumb);
+                    return 'storage/' . $thumbfile;
+                }
+            }
+
+            if (strtolower($extension) == strtolower($fext[0])) {
+                return ('storage/img/' . $fext[2] . '_100px.png');
+            }
+        }
+
+        return $fileimage;
     }
 }
