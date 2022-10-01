@@ -113,7 +113,10 @@ class FolderController extends Controller
             if (Storage::exists($new_folder_path)) {
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'Folder already exists!');
             } else {
+                //main
                 Storage::makeDirectory($new_folder_path);
+                //thumb
+                Storage::disk('public')->makeDirectory('/thumb'.$new_folder_path);
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'New folder created!');
             }
         }
@@ -129,8 +132,12 @@ class FolderController extends Controller
             $path = $this->getPath($current_folder);
             $old_path = $path . "/" . $request->input('oldfolder');
             $new_path = $path . "/" . $request->input('editfolder');
+            //main
             Storage::move($old_path, $new_path);
-
+            //thumbs
+            if(Storage::disk('public')->has('/thumb' . $old_path)){
+                Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+            }            
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder renamed!');
         }
     }
@@ -186,8 +193,10 @@ class FolderController extends Controller
 
         $new_folder = $clientFolder;
         $new_folder_path = $path . "/" . $new_folder;
-
+        //main
         Storage::makeDirectory($new_folder_path);
+        //thumb
+        Storage::disk('public')->makeDirectory('/thumb'.$new_folder_path);
         $upload_path = Storage::putFileAs($new_folder_path, $request->file('file'), $name);
     }
 
@@ -270,11 +279,14 @@ class FolderController extends Controller
 
         $old_path = $path . "/" . $request->input('oldrenamefilename');
         $new_path = $path . "/" . $request->input('renamefilename');
-
+       // dd($old_path);
         //main
         Storage::move($old_path, $new_path);
         //thumb
-        Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+        if(Storage::disk('public')->has('/thumb' . $old_path)){
+            Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+        }
+        
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly renamed!');
     }
@@ -293,11 +305,15 @@ class FolderController extends Controller
         } else {
             if ($request->has('filecopy')) {   //Check if copy or move file
                 $done = Storage::copy($old_path, $new_path);
-                $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
+                if(Storage::disk('public')->has('/thumb' . $old_path)){
+                    $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
+                }                
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
             } else {
                 $done = Storage::move($old_path, $new_path);
-                $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+                if(Storage::disk('public')->has('/thumb' . $old_path)){
+                    $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+                }                
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!');
             }
         }
@@ -317,11 +333,15 @@ class FolderController extends Controller
             } else {
                 if ($request->has('filecopy')) {   //Check if copy or move file
                     $done = Storage::copy($old_path, $new_path);
-                    $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
+                    if(Storage::disk('public')->has('/thumb' . $old_path)){
+                        $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
+                    }                    
                     /* return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!'); */
                 } else {
                     $done = Storage::move($old_path, $new_path);
-                    $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+                    if(Storage::disk('public')->has('/thumb' . $old_path)){
+                        $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+                    }                    
                     /*  return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!'); */
                 }
             }
@@ -342,7 +362,9 @@ class FolderController extends Controller
         //main
         Storage::delete($garbage);
         //thumbs
-        Storage::disk('public')->delete('/thumb' . $garbage);
+        if(Storage::disk('public')->has('/thumb' . $garbage)){
+            Storage::disk('public')->delete('/thumb' . $garbage);
+        }        
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly removed!');
     }
@@ -357,7 +379,9 @@ class FolderController extends Controller
             //main
             Storage::delete($garbage);
             //thumbs
-            Storage::disk('public')->delete('/thumb' . $garbage);
+            if(Storage::disk('public')->has('/thumb' . $garbage)){
+                Storage::disk('public')->delete('/thumb' . $garbage);
+            }            
         }
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Files successfuly removed!');
