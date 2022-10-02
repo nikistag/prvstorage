@@ -37,6 +37,7 @@ class FolderController extends Controller
                 array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
             }
         }
+        dd(Storage::directories(auth()->user()->name));
         $share_directory_paths = Storage::allDirectories('NShare');
         array_push($directory_paths, "NShare");
         foreach ($share_directory_paths as $dir) {

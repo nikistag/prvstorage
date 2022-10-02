@@ -29,6 +29,7 @@ Route::get('/dashboard', function () {
 
 require __DIR__ . '/auth.php';
 
+//work route - testing route
 Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
 
 //Folder routes
