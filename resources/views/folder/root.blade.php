@@ -34,8 +34,15 @@
     </div>
     @endif
 </div>
+
+<!-- {!!$folderTreeView!!} -->
+
 <div class="row blue-grey">
-    <div class="col s12 center white-text">
+    <div class="col s12 left-align valign-wrapper white-text">
+        <!-- Sidenav directory tree -->
+        <!-- <a href="#" data-target="folder-tree-view" class="sidenav-trigger left-align"><i class="material-icons medium orange-text">view_list</i></a> -->
+       <!--  Modal directory tree -->
+        <a href="#directoryTreeModal" class="left-align modal-trigger"><i class="material-icons medium orange-text">view_list</i></a>
         <strong>Current folder:</strong>
         @foreach($breadcrumbs as $piece)
         @if ($loop->last)
@@ -202,6 +209,16 @@
 <!-- Form for checking file readiness -->
 <form action="{{route('folder.fileReadiness')}}" id="fileReadinessForm"></form>
 
+<!-- Directory tree modal -->
+<div id="directoryTreeModal" class="modal">
+    <div class="modal-content">
+      <h4>Folder tree</h4>
+      {!!$folderTreeView!!}
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
 <!-- New folder modal -->
 <div id="modal1" class="modal">
     <form method="POST" action="{{ route('folder.newfolder') }}">
@@ -637,6 +654,9 @@
             dismissible: false,
         });
         $('select').formSelect();
+        $('#folder-tree-view').sidenav({
+                edge: 'left'
+            });
         /* Manage link to share file */
         $('.sharelink').on("click", (function(e) {
             e.preventDefault();
@@ -927,7 +947,7 @@
             if ($("#selectedaction").hasClass("selectedaction")) {
                 $("#selectedaction").removeClass("selectedaction");
             }
-        } 
+        }
         window.onscroll = function() {
             if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 100) {
                 if ($("#selectedaction").hasClass("selectedaction")) {

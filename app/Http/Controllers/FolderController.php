@@ -37,7 +37,7 @@ class FolderController extends Controller
                 array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
             }
         }
-        dd(Storage::directories(auth()->user()->name));
+
         $share_directory_paths = Storage::allDirectories('NShare');
         array_push($directory_paths, "NShare");
         foreach ($share_directory_paths as $dir) {
@@ -82,6 +82,9 @@ class FolderController extends Controller
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
+        //Generate folder tree view
+        //$folderTreeView = $this->generateLevelSidenav(auth()->user()->name, true, '');//sidenav variant
+        $folderTreeView = '<div class="collection left-align">'. $this->generateLevelModal(auth()->user()->name, $path, '') . '</div>';//modal variant
 
         return view('folder.root', compact(
             'directories',
@@ -95,7 +98,8 @@ class FolderController extends Controller
             'NShare',
             'ztemp',
             'path',
-            'breadcrumbs'
+            'breadcrumbs',
+            'folderTreeView'
         ));
     }
 
@@ -117,7 +121,7 @@ class FolderController extends Controller
                 //main
                 Storage::makeDirectory($new_folder_path);
                 //thumb
-                Storage::disk('public')->makeDirectory('/thumb'.$new_folder_path);
+                Storage::disk('public')->makeDirectory('/thumb' . $new_folder_path);
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'New folder created!');
             }
         }
@@ -136,9 +140,9 @@ class FolderController extends Controller
             //main
             Storage::move($old_path, $new_path);
             //thumbs
-            if(Storage::disk('public')->has('/thumb' . $old_path)){
+            if (Storage::disk('public')->has('/thumb' . $old_path)) {
                 Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
-            }            
+            }
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder renamed!');
         }
     }
@@ -197,7 +201,7 @@ class FolderController extends Controller
         //main
         Storage::makeDirectory($new_folder_path);
         //thumb
-        Storage::disk('public')->makeDirectory('/thumb'.$new_folder_path);
+        Storage::disk('public')->makeDirectory('/thumb' . $new_folder_path);
         $upload_path = Storage::putFileAs($new_folder_path, $request->file('file'), $name);
     }
 
@@ -280,14 +284,14 @@ class FolderController extends Controller
 
         $old_path = $path . "/" . $request->input('oldrenamefilename');
         $new_path = $path . "/" . $request->input('renamefilename');
-       // dd($old_path);
+        // dd($old_path);
         //main
         Storage::move($old_path, $new_path);
         //thumb
-        if(Storage::disk('public')->has('/thumb' . $old_path)){
+        if (Storage::disk('public')->has('/thumb' . $old_path)) {
             Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
         }
-        
+
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly renamed!');
     }
@@ -306,15 +310,15 @@ class FolderController extends Controller
         } else {
             if ($request->has('filecopy')) {   //Check if copy or move file
                 $done = Storage::copy($old_path, $new_path);
-                if(Storage::disk('public')->has('/thumb' . $old_path)){
+                if (Storage::disk('public')->has('/thumb' . $old_path)) {
                     $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
-                }                
+                }
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
             } else {
                 $done = Storage::move($old_path, $new_path);
-                if(Storage::disk('public')->has('/thumb' . $old_path)){
+                if (Storage::disk('public')->has('/thumb' . $old_path)) {
                     $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
-                }                
+                }
                 return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!');
             }
         }
@@ -334,15 +338,15 @@ class FolderController extends Controller
             } else {
                 if ($request->has('filecopy')) {   //Check if copy or move file
                     $done = Storage::copy($old_path, $new_path);
-                    if(Storage::disk('public')->has('/thumb' . $old_path)){
+                    if (Storage::disk('public')->has('/thumb' . $old_path)) {
                         $thumbs = Storage::disk('public')->copy('/thumb' . $old_path, '/thumb' . $new_path);
-                    }                    
+                    }
                     /* return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!'); */
                 } else {
                     $done = Storage::move($old_path, $new_path);
-                    if(Storage::disk('public')->has('/thumb' . $old_path)){
+                    if (Storage::disk('public')->has('/thumb' . $old_path)) {
                         $thumbs = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
-                    }                    
+                    }
                     /*  return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly moved!'); */
                 }
             }
@@ -363,9 +367,9 @@ class FolderController extends Controller
         //main
         Storage::delete($garbage);
         //thumbs
-        if(Storage::disk('public')->has('/thumb' . $garbage)){
+        if (Storage::disk('public')->has('/thumb' . $garbage)) {
             Storage::disk('public')->delete('/thumb' . $garbage);
-        }        
+        }
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly removed!');
     }
@@ -380,9 +384,9 @@ class FolderController extends Controller
             //main
             Storage::delete($garbage);
             //thumbs
-            if(Storage::disk('public')->has('/thumb' . $garbage)){
+            if (Storage::disk('public')->has('/thumb' . $garbage)) {
                 Storage::disk('public')->delete('/thumb' . $garbage);
-            }            
+            }
         }
 
         return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Files successfuly removed!');
@@ -824,5 +828,94 @@ class FolderController extends Controller
         }
 
         return $fileimage;
+    }
+    private function generateLevelSidenav($directory, $first, $trail)
+    {
+        $html = '';
+        if ($first) {
+            $html .= '<ul id="folder-tree-view" class="sidenav left-align">';
+        } else {
+            $html .= '<ul>';
+        }
+
+        if ($directory == auth()->user()->name) {
+            $html .= '<li><a href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons">folder</i>Root</a>';
+        } else {
+            $trail .= strrchr($directory, "/");
+            $html .= '<li><a href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons">folder</i>';
+            $indet = explode('/', $trail);
+            for($i=0; $i<=count($indet); $i++){
+                $html .= '&nbsp;&nbsp;';
+            }
+            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
+            $html .= '</a>';
+        }
+        $subdirectories = Storage::directories($directory);
+        if (count($subdirectories) > 0) {
+            foreach ($subdirectories as $subdir) {
+                $html .= $this->generateLevelSidenav($subdir, false, $trail);
+            }
+        }
+        $html .= '</li>';
+        $html .= '</ul>';
+        return $html;
+    }
+    private function generateLevelModalV1($directory, $first, $trail)
+    {
+        $html = '';
+
+        if ($directory == auth()->user()->name) {
+            $html .= '<li class="collection-item avatar">';
+            $html .= '<i class="material-icons circle">folder</i>';
+            $html .= '<span class="title"><a href="' . route('folder.root', ['current_folder' => $trail]) . '" >Root</a></span>';
+         } else {
+            $trail .= strrchr($directory, "/");            
+            $html .= '<li class="collection-item avatar">';
+            $indet = explode('/', $trail);
+            for($i=0; $i<=count($indet); $i++){
+                $html .= '&nbsp;&nbsp;';
+            }
+            $html .= '<i class="material-icons circle">folder</i>';
+            $html .= '<span class="title"><a href="' . route('folder.root', ['current_folder' => $trail]) . '" >';
+            
+            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
+            $html .= '</a></span></li>';
+        }
+        $subdirectories = Storage::directories($directory);
+        if (count($subdirectories) > 0) {
+            foreach ($subdirectories as $subdir) {
+                $html .= $this->generateLevelModal($subdir, false, $trail);
+            }
+        }
+        return $html;
+    }
+    private function generateLevelModal($directory, $path, $trail)
+    {
+        $html = '';
+
+        if ($directory == auth()->user()->name) {
+            $html .= '<a class="collection-item blue-grey-text text-darken-3';
+            $html .= $path == '/'.$directory ? ' active"':'"';
+            $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons orange-text">folder</i>Root</a>';
+         } else {
+            $trail .= strrchr($directory, "/");            
+            $html .= '<a class="collection-item blue-grey-text text-darken-3';
+            $html .= $path == '/'.$directory ? ' active"':'"';
+            $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" >';
+            $indet = explode('/', $trail);
+            for($i=0; $i<count($indet)-1; $i++){
+                $html .= '<span class="black-text">-</span>';
+            }
+            $html .= '<i class="material-icons orange-text">folder</i>';            
+            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
+            $html .= '</a>';
+        }
+        $subdirectories = Storage::directories($directory);
+        if (count($subdirectories) > 0) {
+            foreach ($subdirectories as $subdir) {
+                $html .= $this->generateLevelModal($subdir, $path, $trail);
+            }
+        }
+        return $html;
     }
 }

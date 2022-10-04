@@ -40,8 +40,9 @@ class WorkController extends Controller
 
  */
         //test 2
+        $trail = '';
 
-                echo $this->generateLevel(auth()->user()->name);
+                echo $this->generateLevel(auth()->user()->name, true, $trail);
 
 
     }
@@ -57,24 +58,40 @@ class WorkController extends Controller
             }
             return $path;
         }
-        private function generateLevel($directory)
+        private function generateLevel($directory, $first, $trail)
         {
             $html = '';
-            $html .= '<ul>';
-            if ($directory == auth()->user()->name ){
-                 $html .= '<li>Root' ;
+            if($first){
+               $html .= '<ul id="slide-out" class="sidenav">'; 
             }else{
-                $html .= '<li>' . substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/"))-1);
+                $html .= '<ul>'; 
+            }
+            
+            if ($directory == auth()->user()->name ){
+                 $html .= '<li><a href="'.route('folder.root', ['current_folder' => $trail]).'" ><i class="material-icons">cloud</i>Root</a>' ;
+            }else{
+                $trail .= strrchr($directory, "/");
+                $html .= '<li><a href="'.route('folder.root', ['current_folder' => $trail]).'" ><i class="material-icons">cloud</i>' 
+                                . substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/"))-1). '</a>';
             }
             $subdirectories = Storage::directories($directory);
             if(count($subdirectories) > 0){
                 foreach($subdirectories as $subdir){
-                    $html .= $this->generateLevel($subdir);
+                    $html .= $this->generateLevel($subdir, false, $trail);
                 }
             }
             $html .= '</li>';
             $html .= '</ul>';
             return $html;
         }
-
+/* 
+        <ul id="slide-out" class="sidenav">
+        <li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
+        <li><a href="#!">Second Link</a></li>
+        <li><div class="divider"></div></li>
+        <li><a class="subheader">Subheader</a></li>
+        <li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
+      </ul>
+      <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+       */     
 }

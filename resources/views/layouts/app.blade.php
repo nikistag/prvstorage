@@ -142,7 +142,7 @@
     <script>
         $(document).ready(function() {
             //M.AutoInit();
-            $('.sidenav').sidenav({
+            $('#mobile-nav-menu').sidenav({
                 edge: 'right'
             });
             $('#logouttrigger').on('click', function(e) {
