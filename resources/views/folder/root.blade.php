@@ -35,14 +35,10 @@
     @endif
 </div>
 
-<!-- {!!$folderTreeView!!} -->
-
 <div class="row blue-grey">
     <div class="col s12 left-align valign-wrapper white-text">
-        <!-- Sidenav directory tree -->
-        <!-- <a href="#" data-target="folder-tree-view" class="sidenav-trigger left-align"><i class="material-icons medium orange-text">view_list</i></a> -->
-       <!--  Modal directory tree -->
-        <a href="#directoryTreeModal" class="left-align modal-trigger"><i class="material-icons medium orange-text">view_list</i></a>
+        <!--  Modal directory tree -->
+        <a href="#directoryTreeModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
         <strong>Current folder:</strong>
         @foreach($breadcrumbs as $piece)
         @if ($loop->last)
@@ -56,18 +52,6 @@
         @endforeach
     </div>
 </div>
-
-<!-- If in subfolder print back button -->
-@if($current_folder != "")
-<div class="row">
-    <div class="col s12">
-        <a href="{{route('folder.root', ['current_folder' => $parent_folder])}}" class="left">
-            <i class="material-icons blue-text">arrow_back</i>
-        </a>
-    </div>
-</div>
-@endif
-
 
 @if(count($directories) == 0)
 
@@ -211,14 +195,107 @@
 
 <!-- Directory tree modal -->
 <div id="directoryTreeModal" class="modal">
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
     <div class="modal-content">
-      <h4>Folder tree</h4>
-      {!!$folderTreeView!!}
+        <h5>Folder tree</h5>
+        {!!$folderTreeView!!}
     </div>
     <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
     </div>
-  </div>
+</div>
+<!-- Directory tree move folder modal -->
+<div id="treeMoveFolderModal" class="modal">
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+    <div class="modal-content">
+        <h5>Folder tree</h5>
+        {!!$treeMoveFolder!!}
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+</div>
+<!-- Directory tree move file modal -->
+<div id="treeMoveFileModal" class="modal">
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+    <div class="modal-content">
+        <h5>Folder tree</h5>
+        {!!$treeMoveFile!!}
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+</div>
+<!-- Move file BIG modal -->
+<div id="modalmovefilebig" class="modal">
+    <form method="POST" action="{{ route('folder.moveFileBig') }}" id="bigFileForm">
+        <div class="modal-content">
+            <h5>Move/Copy file</h5>
+            @csrf
+            <div class="row">
+                <div class="col s4 centered">
+                    <div class="input-field inline">
+                        <label>
+                            <input type="checkbox" class="filled-in" name="filecopy" />
+                            <span>Copy</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col s8 left-align">
+                    Move file:
+                    <div class="input-field inline">
+                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30" disabled />
+                        <label for="fileDisplay"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s4 right-align">
+                    <a href="#treeMoveFileModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
+                </div>
+                <div class="col s8 left-align">
+                    To folder:
+                    <div class="input-field inline">
+                        <input id="viewWhereToFolder" type="text" class="valid treeMoveFileModalTrigger" value="" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" id="current_folder_big" name="current_folder_big" value="{{$current_folder}}" />
+            <input type="hidden" id="file_big" name="file_big" value="" />
+            <input type="hidden" id="whereToFolder" name="whereToFolder" value="" />
+            <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyBigFileSubmit">Submit
+                <i class="material-icons right">send</i>
+            </button>
+            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+        </div>
+    </form>
+
+    <div class="progress">
+        <div class="determinate" style="width: 0%;" id="copyFileProgress"></div>
+    </div>
+
+</div>
+<!-- Directory tree move multi modal -->
+<div id="treeMoveMultiModal" class="modal">
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+    <div class="modal-content">
+        <h5>Folder tree</h5>
+        {!!$treeMoveMulti!!}
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+    </div>
+</div>
 <!-- New folder modal -->
 <div id="modal1" class="modal">
     <form method="POST" action="{{ route('folder.newfolder') }}">
@@ -277,14 +354,7 @@
             <h5>Move folder</h5>
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30" disabled />
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
+                <div class="col s4 centered">
                     <div class="input-field inline">
                         <label>
                             <input type="checkbox" class="filled-in" name="foldercopy" />
@@ -292,22 +362,29 @@
                         </label>
                     </div>
                 </div>
+                <div class="col s8 left-align">
+                    Move folder:
+                    <div class="input-field inline">
+                        <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30" disabled />
+                    </div>
+                </div>
             </div>
             <div class="row">
-                <div class="input-field col s12">
-                    <select id="target" name="target">
-                        <option value="" disabled>Choose where</option>
-                        @foreach($directory_paths as $dpath)
-                        <option value="{{$dpath}}">{{$dpath}}</option>
-                        @endforeach
-                    </select>
-                    <label>Choose folder</label>
+                <div class="col s4 right-align">
+                    <a href="#treeMoveFolderModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
+                </div>
+                <div class="col s8 left-align">
+                    To folder:
+                    <div class="input-field inline">
+                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" readonly />
+                    </div>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
             <input type="hidden" name="current_folder" value="{{$current_folder}}" />
             <input type="hidden" id="whichfolder" name="whichfolder" value="" />
+            <input type="hidden" id="target" name="target" value="" />
             <button id="moveFolderSubmit" class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -378,57 +455,7 @@
 </div>
 
 
-<!-- Move file BIG modal -->
-<div id="modalmovefilebig" class="modal">
-    <form method="POST" action="{{ route('folder.moveFileBig') }}" id="bigFileForm">
-        <div class="modal-content">
-            <h5>Move/Copy file</h5>
-            @csrf
-            <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30" disabled />
-                        <label for="fileDisplay"></label>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <label>
-                            <input type="checkbox" class="filled-in" name="filecopy" />
-                            <span>Copy</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-field col s12">
-                    <select id="targetfolderbig" name="targetfolderbig">
-                        <option value="" disabled>Choose where</option>
-                        @foreach($directory_paths as $dpath)
-                        <option value="{{$dpath}}">{{$dpath}}</option>
-                        @endforeach
-                    </select>
-                    <label>Choose folder</label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <input type="hidden" id="current_folder_big" name="current_folder_big" value="{{$current_folder}}" />
-            <input type="hidden" id="file_big" name="file_big" value="" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyBigFileSubmit">Submit
-                <i class="material-icons right">send</i>
-            </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
-        </div>
-    </form>
 
-    <div class="progress">
-        <div class="determinate" style="width: 0%" id="copyFileProgress"></div>
-    </div>
-
-</div>
 <!-- Move multiple files modal -->
 <div id="modalmovefiles" class="modal">
     <form method="POST" action="{{ route('folder.moveFileMulti') }}" id="multiFileForm">
@@ -436,15 +463,7 @@
             <h5>Move/Copy file</h5>
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="100" disabled />
-                        <label for="fileDisplayMulti"></label>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
+                <div class="col s4 centered">
                     <div class="input-field inline">
                         <label>
                             <input type="checkbox" class="filled-in" name="filecopy" />
@@ -452,24 +471,31 @@
                         </label>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <div class="input-field">
-                        <select id="targetfoldermulti" name="targetfoldermulti">
-                            <option value="" disabled>Choose where</option>
-                            @foreach($directory_paths as $dpath)
-                            <option value="{{$dpath}}">{{$dpath}}</option>
-                            @endforeach
-                        </select>
-                        <label></label>
+                <div class="col s8 left-align">
+                    <div class="input-field inline">
+                        Move files:
+                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="100" disabled />
+                        <label for="fileDisplayMulti"></label>
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col s4 right-align">
+                    <a href="#treeMoveMultiModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
+                </div>
+                <div class="col s8 left-align">
+                    To folder:
+                    <div class="input-field inline">
+                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value="" readonly />
+                    </div>
+                </div>
+            </div>
+            
         </div>
         <div class="modal-footer">
             <input type="hidden" id="targetFolderSize" name="targetFolderSize" value="" />
             <input type="hidden" id="current_folder_multi" name="current_folder_multi" value="{{$current_folder}}" />
+            <input type="hidden" id="targetfoldermulti" name="targetfoldermulti" value="" />
             <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyMultiFileSubmit">Submit
                 <i class="material-icons right">send</i>
             </button>
@@ -655,8 +681,8 @@
         });
         $('select').formSelect();
         $('#folder-tree-view').sidenav({
-                edge: 'left'
-            });
+            edge: 'left'
+        });
         /* Manage link to share file */
         $('.sharelink').on("click", (function(e) {
             e.preventDefault();
@@ -728,12 +754,37 @@
             $('input[name=oldrenamefilename]').val(filename);
 
         }));
+        /* Move/copy file mechanics */
         $('.move-file-big').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');
             $('input[name=fileDisplay]').val(filename);
             $('input[name=file_big]').val(filename);
+            var viewFolderInput = document.getElementById('viewWhereToFolder');
+            var jsFolderInput = document.getElementById('whereToFolder');
+            jsFolderInput.value = "";
+            viewFolderInput.value = "";
         }));
+        $('.tree-move-file').on("click", (function(e) {
+            /* Select target folder from folder tree */
+            e.preventDefault();
+            var target = $(this).attr('data-folder');
+            var viewFolderInput = document.getElementById('viewWhereToFolder');
+            var jsFolderInput = document.getElementById('whereToFolder');
+            var moveFileModal = document.getElementById('treeMoveFileModal');
+            var instance = M.Modal.getInstance(moveFileModal);
+            instance.close();
+            jsFolderInput.value = target;
+            viewFolderInput.value = target;
+        }));
+        $('#viewWhereToFolder').on("click", (function(e) {
+            /* Open folder tree if disabled input clicked */
+            e.preventDefault();
+            var moveFileModal = document.getElementById('treeMoveFileModal');
+            var instance = M.Modal.getInstance(moveFileModal);
+            instance.open();
+        }));
+
 
         $('#copyBigFileSubmit').on("click", (function(e) {
             e.preventDefault();
@@ -775,6 +826,27 @@
                 });
                 $('input[name=fileDisplayMulti]').val(filename);
             }
+        }));
+
+        $('#viewWhereToFolderMulti').on("click", (function(e) {
+            /* Open folder tree if disabled input clicked */
+            e.preventDefault();
+            var moveMultiModal = document.getElementById('treeMoveMultiModal');
+            var instance = M.Modal.getInstance(moveMultiModal);
+            instance.open();
+        }));
+
+        $('.tree-move-multi').on("click", (function(e) {
+            /* Select target folder from folder tree */
+            e.preventDefault();
+            var target = $(this).attr('data-folder');
+            var viewInput = document.getElementById('viewWhereToFolderMulti');
+            var jsInput = document.getElementById('targetfoldermulti');
+            var moveMultiModal = document.getElementById('treeMoveMultiModal');
+            var instance = M.Modal.getInstance(moveMultiModal);
+            instance.close();
+            jsInput.value = target;
+            viewInput.value = target;
         }));
 
         $('#copyMultiFileSubmit').on("click", (function(e) {
@@ -827,12 +899,36 @@
             }, 1000);
 
         }));
+
+        /* Folder move / copy mechanics */
         $('.move-folder').on("click", (function(e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
             $('input[name=movefolder]').val(foldername);
             $('input[name=whichfolder]').val(foldername);
-
+            var viewInput = document.getElementById('viewtarget');
+            var jsInput = document.getElementById('target');
+            jsInput.value = "";
+            viewInput.value = "";
+        }));
+        $('.tree-move-folder').on("click", (function(e) {
+            /* Select target folder from folder tree */
+            e.preventDefault();
+            var target = $(this).attr('data-folder');
+            var viewInput = document.getElementById('viewtarget');
+            var jsInput = document.getElementById('target');
+            var moveFolderModal = document.getElementById('treeMoveFolderModal');
+            var instance = M.Modal.getInstance(moveFolderModal);
+            instance.close();
+            jsInput.value = target;
+            viewInput.value = target;
+        }));
+        $('#viewtarget').on("click", (function(e) {
+            /* Open folder tree if disabled input clicked */
+            e.preventDefault();
+            var moveFolderModal = document.getElementById('treeMoveFolderModal');
+            var instance = M.Modal.getInstance(moveFolderModal);
+            instance.open();
         }));
         $('#moveFolderSubmit').on("click", (function(e) {
             e.preventDefault();
@@ -845,7 +941,7 @@
                         '_token': $('input[name=_token]').val(),
                         'current_folder': $('input[name=current_folder]').val(),
                         'whichfolder': $('input[name=whichfolder]').val(),
-                        'target': $('select[name=target]').val()
+                        'target': $('input[name=target]').val()
                     },
                     success: function(data) {
                         if (typeof data.progress !== "undefined") {
@@ -857,6 +953,7 @@
             }, 2000);
 
         }));
+        /*  Remove files mechanics */
         $('.remove-file').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');

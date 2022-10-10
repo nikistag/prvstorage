@@ -23,7 +23,7 @@ class FolderController extends Controller
     {
         $current_folder = $request->current_folder;
 
-        $parent_folder = $this->getParentFolder($current_folder);
+        //$parent_folder = $this->getParentFolder($current_folder); // No need for this
 
         $path = $this->getPath($current_folder);
 
@@ -76,15 +76,20 @@ class FolderController extends Controller
                 'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
-            // dd($files);
+
         }
         //Data to compute free space
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         //Generate folder tree view
-        //$folderTreeView = $this->generateLevelSidenav(auth()->user()->name, true, '');//sidenav variant
-        $folderTreeView = '<div class="collection left-align">'. $this->generateLevelModal(auth()->user()->name, $path, '') . '</div>';//modal variant
+        $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
+        //Remove ZTemp folder from specific folder tree view
+        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3"href="http://192.168.0.66:8080/index.php/folder/root?current_folder=%2FZTemp" data-folder="ZTemp" ><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
+        $folderTreeViewTemp = str_replace($stringToRemove,"",$folderTreeView);
+        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-folder",$folderTreeViewTemp);
+        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-file",$folderTreeViewTemp);
+        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-multi",$folderTreeViewTemp);
 
         return view('folder.root', compact(
             'directories',
@@ -93,13 +98,16 @@ class FolderController extends Controller
             'disk_total_space',
             'quota',
             'current_folder',
-            'parent_folder',
+            //'parent_folder', No need for this
             'directory_paths',
             'NShare',
             'ztemp',
             'path',
             'breadcrumbs',
-            'folderTreeView'
+            'folderTreeView',
+            'treeMoveFolder',
+            'treeMoveFile',
+            'treeMoveMulti',
         ));
     }
 
@@ -149,7 +157,7 @@ class FolderController extends Controller
     public function moveFolder(Request $request)
     {
 
-        $current_folder = "/" . $request->input('target');
+        $current_folder = $request->input('target') == "" ? "":"/" . $request->input('target');
 
         $new_path = $this->getPath($current_folder) . "/" . $request->input('whichfolder');
         $old_path = $this->getPath($request->current_folder) . "/" . $request->input('whichfolder');
@@ -298,7 +306,8 @@ class FolderController extends Controller
 
     public function moveFileBig(Request $request)
     {
-        $current_folder = "/" . $request->input('targetfolderbig');
+
+        $current_folder = $request->input('whereToFolder') == "" ? "":"/" . $request->input('whereToFolder');
         $path = $this->getPath($request->current_folder_big);
 
         $old_path = $path . "/" . $request->input('file_big');
@@ -701,7 +710,6 @@ class FolderController extends Controller
                 }
             }
         }
-        // dd($parent_folder);
         return $parent_folder;
     }
     private function getBreadcrumbs($current_folder)
@@ -829,93 +837,38 @@ class FolderController extends Controller
 
         return $fileimage;
     }
-    private function generateLevelSidenav($directory, $first, $trail)
+  
+    private function generateFolderTree($directories, $path, $trail)
     {
         $html = '';
-        if ($first) {
-            $html .= '<ul id="folder-tree-view" class="sidenav left-align">';
-        } else {
-            $html .= '<ul>';
-        }
-
-        if ($directory == auth()->user()->name) {
-            $html .= '<li><a href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons">folder</i>Root</a>';
-        } else {
-            $trail .= strrchr($directory, "/");
-            $html .= '<li><a href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons">folder</i>';
-            $indet = explode('/', $trail);
-            for($i=0; $i<=count($indet); $i++){
-                $html .= '&nbsp;&nbsp;';
-            }
-            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
-            $html .= '</a>';
-        }
-        $subdirectories = Storage::directories($directory);
-        if (count($subdirectories) > 0) {
-            foreach ($subdirectories as $subdir) {
-                $html .= $this->generateLevelSidenav($subdir, false, $trail);
-            }
-        }
-        $html .= '</li>';
-        $html .= '</ul>';
-        return $html;
-    }
-    private function generateLevelModalV1($directory, $first, $trail)
-    {
-        $html = '';
-
-        if ($directory == auth()->user()->name) {
-            $html .= '<li class="collection-item avatar">';
-            $html .= '<i class="material-icons circle">folder</i>';
-            $html .= '<span class="title"><a href="' . route('folder.root', ['current_folder' => $trail]) . '" >Root</a></span>';
-         } else {
-            $trail .= strrchr($directory, "/");            
-            $html .= '<li class="collection-item avatar">';
-            $indet = explode('/', $trail);
-            for($i=0; $i<=count($indet); $i++){
-                $html .= '&nbsp;&nbsp;';
-            }
-            $html .= '<i class="material-icons circle">folder</i>';
-            $html .= '<span class="title"><a href="' . route('folder.root', ['current_folder' => $trail]) . '" >';
-            
-            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
-            $html .= '</a></span></li>';
-        }
-        $subdirectories = Storage::directories($directory);
-        if (count($subdirectories) > 0) {
-            foreach ($subdirectories as $subdir) {
-                $html .= $this->generateLevelModal($subdir, false, $trail);
-            }
-        }
-        return $html;
-    }
-    private function generateLevelModal($directory, $path, $trail)
-    {
-        $html = '';
-
-        if ($directory == auth()->user()->name) {
+        $html .= '<a class="collection-item blue-grey-text text-darken-3';
+        $html .= $path == '/' . auth()->user()->name ? ' active"' : '"';
+        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="" ><i class="material-icons orange-text">folder</i>Root</a>';
+        //dd($directories);
+        foreach ($directories as $directory) {
+            $ceva = explode('/', $directory);
             $html .= '<a class="collection-item blue-grey-text text-darken-3';
-            $html .= $path == '/'.$directory ? ' active"':'"';
-            $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" ><i class="material-icons orange-text">folder</i>Root</a>';
-         } else {
-            $trail .= strrchr($directory, "/");            
-            $html .= '<a class="collection-item blue-grey-text text-darken-3';
-            $html .= $path == '/'.$directory ? ' active"':'"';
-            $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" >';
-            $indet = explode('/', $trail);
-            for($i=0; $i<count($indet)-1; $i++){
+            $html .= $path == '/' . $directory ? ' active"' : '"';
+            $html .= 'href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="'.substr($this->getFolderURLParam($ceva), 1).'" >';
+            for ($i = 0; $i < count($ceva) - 1; $i++) {
                 $html .= '<span class="black-text">-</span>';
             }
-            $html .= '<i class="material-icons orange-text">folder</i>';            
+            $html .= '<i class="material-icons orange-text">folder</i>';
             $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
             $html .= '</a>';
         }
-        $subdirectories = Storage::directories($directory);
-        if (count($subdirectories) > 0) {
-            foreach ($subdirectories as $subdir) {
-                $html .= $this->generateLevelModal($subdir, $path, $trail);
-            }
-        }
+        $html .= '<a class="collection-item blue-grey-text text-darken-3';
+        $html .= $path == '/NShare'  ? ' active"' : '"';
+        $html .= 'href="' . route('folder.root', ['current_folder' => '/NShare']) . '" data-folder="NShare" ><i class="material-icons blue-text">folder</i>NShare</a>';
         return $html;
+    }
+
+    private function getFolderURLParam($explodedFolder)
+    {
+        $back = '';
+        for ($i = 1; $i < count($explodedFolder); $i++) {
+            $back .= '/' . $explodedFolder[$i];
+        }
+        return $back;
     }
 }
