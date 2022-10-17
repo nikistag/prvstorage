@@ -23,8 +23,6 @@ class FolderController extends Controller
     {
         $current_folder = $request->current_folder;
 
-        //$parent_folder = $this->getParentFolder($current_folder); // No need for this
-
         $path = $this->getPath($current_folder);
 
         $breadcrumbs = $this->getBreadcrumbs($current_folder);
@@ -162,6 +160,12 @@ class FolderController extends Controller
         $new_path = $this->getPath($current_folder) . "/" . $request->input('whichfolder');
         $old_path = $this->getPath($request->current_folder) . "/" . $request->input('whichfolder');
 
+        //Check for path inside moved folder
+        if(strpos($new_path, $old_path) == 0){
+            return redirect()->route('folder.root', ['current_folder' => $request->current_folder])->with('warning', 'NO action done. Not good practice to move folder to itself!');
+        }
+
+
         //Check for duplicate folder
         if (Storage::exists($new_path)) {
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('warning', 'NO action done. Duplicate folder found!');
@@ -177,7 +181,9 @@ class FolderController extends Controller
             //main
             $done = Storage::move($old_path, $new_path);
             //thumbs
-            $thumbdone = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+            if(Storage::disk('public')->exists('/thumb' . $old_path)){
+                $thumbdone = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
+            }            
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
         }
     }
@@ -843,7 +849,7 @@ class FolderController extends Controller
         $html = '';
         $html .= '<a class="collection-item blue-grey-text text-darken-3';
         $html .= $path == '/' . auth()->user()->name ? ' active"' : '"';
-        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="" ><i class="material-icons orange-text">folder</i>Root</a>';
+        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="Root" ><i class="material-icons orange-text">folder</i>Root</a>';
         //dd($directories);
         foreach ($directories as $directory) {
             $ceva = explode('/', $directory);

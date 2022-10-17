@@ -25,6 +25,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $initialStatus = $user->active;
         $user->email = $request->input('email');
 
         if ($request->has('active')) {
@@ -41,6 +42,32 @@ class UserController extends Controller
 
         $user->save();
 
+        $updatedStatus = $user->active;
+
+        if (env('MAIL_CONFIGURATION') == true) {
+            if ($updatedStatus != $initialStatus) {
+                if ($updatedStatus == 1) {
+                    $message = "has been granted access to " . env('APP_NAME') . ' private storage. Click button below to get to your private storage.';
+                    $access = 1;
+                } else {
+                    $message = " no longer has access to " . env('APP_NAME') . ' private storage. Click button below if you wat to contact administrator.';
+                    $access = 0;
+                }
+                $details = [
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_id' => $user->id,
+                    'message' => $message,
+                    'access' => $access,
+                ];
+                try {
+                    Mail::to($user->email)->send(new \App\Mail\AccountStatusNotification($details));
+                } catch (Exception $ex) {
+                   dd($ex->getMessage());
+                }
+            }
+        }
+
         return redirect(route('user.index'));
     }
 
@@ -52,9 +79,9 @@ class UserController extends Controller
             //Check if needs backup
             if ($request->input('backup') != null) { //Backup of user storage required
 
-                $path = '/'.$request->userName;
+                $path = '/' . $request->userName;
 
-                Storage::deleteDirectory($path . "/ZTemp");//Empty user temp folder
+                Storage::deleteDirectory($path . "/ZTemp"); //Empty user temp folder
 
                 $file_full_paths = Storage::allFiles($path);
 
@@ -69,15 +96,15 @@ class UserController extends Controller
                 $zipFileName = 'deleted_' . $request->userName . '.zip';
 
                 //Backup folder
-                $backupFolder = '/'.auth()->user()->name.'/DeletedAccountsBackup';
+                $backupFolder = '/' . auth()->user()->name . '/DeletedAccountsBackup';
 
                 // Check if Backup folder exists and create if needed
-                if(Storage::exists($backupFolder)){
-                }else{
+                if (Storage::exists($backupFolder)) {
+                } else {
                     Storage::makeDirectory($backupFolder);
                 }
 
-                $zip_path = Storage::path($backupFolder. '/' . $zipFileName);
+                $zip_path = Storage::path($backupFolder . '/' . $zipFileName);
 
                 // Creating file names and path names to be archived
                 $files_n_paths = [];
@@ -102,7 +129,6 @@ class UserController extends Controller
                     // Close ZipArchive     
                     $zip->close();
                 }
-
             }
             //Delete user directory
             $user_folder = "/" . $user->name;
@@ -116,7 +142,7 @@ class UserController extends Controller
         } else {
             return redirect(route('user.index'))->with('error', 'You don\'t have permissions to delete this user!!!');
         }
-        
+
 
         $users = User::orderBy('email', 'asc')->get();
         return view('user.index', compact('users'));

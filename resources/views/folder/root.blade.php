@@ -920,7 +920,11 @@
             var moveFolderModal = document.getElementById('treeMoveFolderModal');
             var instance = M.Modal.getInstance(moveFolderModal);
             instance.close();
-            jsInput.value = target;
+            if(target == 'Root'){
+                jsInput.value = "";
+            }else{
+                jsInput.value = target;
+            }            
             viewInput.value = target;
         }));
         $('#viewtarget').on("click", (function(e) {

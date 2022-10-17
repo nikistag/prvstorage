@@ -21,7 +21,7 @@ use App\Http\Controllers\NetshareController;
 
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
