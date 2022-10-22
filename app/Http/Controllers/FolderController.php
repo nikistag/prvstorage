@@ -50,7 +50,7 @@ class FolderController extends Controller
             if ($dir !== auth()->user()->name . "/ZTemp") {
                 array_push($directories, [
                     'foldername' => substr($dir, strlen($path)),
-                    'shortfoldername' => strlen(substr($dir, strlen($path))) > 15 ? substr(substr($dir, strlen($path)), 0, 12) . "..." :  substr($dir, strlen($path)),
+                    'shortfoldername' => strlen(substr($dir, strlen($path))) > 30 ? substr(substr($dir, strlen($path)), 0, 25) . "..." :  substr($dir, strlen($path)),
                     'foldersize' => $this->getFolderSize($dir),
                 ]);
             }
@@ -233,7 +233,7 @@ class FolderController extends Controller
 
             $zip_directory_paths = [];
             foreach ($directory_full_paths as $dir) {
-                array_push($zip_directory_paths, substr($dir, strlen($path) - 1));
+                array_push($zip_directory_paths, substr($dir, strlen($path)));
             }
 
             $zipFileName = 'zpd_' . $directory . '.zip';
@@ -250,6 +250,7 @@ class FolderController extends Controller
                 ]);
             }
 
+            //dd($files_n_paths);
             $zip = new ZipArchive();
             if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
                 //Add folders to archive
@@ -258,7 +259,7 @@ class FolderController extends Controller
                 }
                 // Add Files in ZipArchive
                 foreach ($files_n_paths as $file) {
-                    $zip->addFile($file['path']);
+                    $zip->addFile($file['path'], $file['zip_path']);
                 }
                 // Close ZipArchive     
                 $zip->close();
