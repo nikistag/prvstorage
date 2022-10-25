@@ -74,7 +74,6 @@ class FolderController extends Controller
                 'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
-
         }
         //Data to compute free space
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
@@ -83,12 +82,11 @@ class FolderController extends Controller
         //Generate folder tree view
         $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
         //Remove ZTemp folder from specific folder tree view
-        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3"href="http://192.168.0.66:8080/index.php/folder/root?current_folder=%2FZTemp" data-folder="ZTemp" ><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
-        $folderTreeViewTemp = str_replace($stringToRemove,"",$folderTreeView);
-        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-folder",$folderTreeViewTemp);
-        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-file",$folderTreeViewTemp);
-        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3","collection-item blue-grey-text text-darken-3 tree-move-multi",$folderTreeViewTemp);
-
+        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3" href="' . route('folder.root', ["current_folder" => "/ZTemp"]) . '" data-folder="ZTemp"><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
+        $folderTreeViewTemp = str_replace($stringToRemove, "", $folderTreeView);
+        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeViewTemp);
+        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeViewTemp);
+        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeViewTemp);
         return view('folder.root', compact(
             'directories',
             'files',
@@ -96,7 +94,6 @@ class FolderController extends Controller
             'disk_total_space',
             'quota',
             'current_folder',
-            //'parent_folder', No need for this
             'directory_paths',
             'NShare',
             'ztemp',
@@ -155,16 +152,15 @@ class FolderController extends Controller
     public function moveFolder(Request $request)
     {
 
-        $current_folder = $request->input('target') == "" ? "":"/" . $request->input('target');
+        $current_folder = $request->input('target') == "" ? "" : "/" . $request->input('target');
 
         $new_path = $this->getPath($current_folder) . "/" . $request->input('whichfolder');
         $old_path = $this->getPath($request->current_folder) . "/" . $request->input('whichfolder');
 
         //Check for path inside moved folder
-        if(strpos($new_path, $old_path) == 0){
+        if (strrpos($new_path, $old_path) === 0) {
             return redirect()->route('folder.root', ['current_folder' => $request->current_folder])->with('warning', 'NO action done. Not good practice to move folder to itself!');
         }
-
 
         //Check for duplicate folder
         if (Storage::exists($new_path)) {
@@ -181,9 +177,9 @@ class FolderController extends Controller
             //main
             $done = Storage::move($old_path, $new_path);
             //thumbs
-            if(Storage::disk('public')->exists('/thumb' . $old_path)){
+            if (Storage::disk('public')->exists('/thumb' . $old_path)) {
                 $thumbdone = Storage::disk('public')->move('/thumb' . $old_path, '/thumb' . $new_path);
-            }            
+            }
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder successfuly moved!');
         }
     }
@@ -314,7 +310,7 @@ class FolderController extends Controller
     public function moveFileBig(Request $request)
     {
 
-        $current_folder = $request->input('whereToFolder') == "" ? "":"/" . $request->input('whereToFolder');
+        $current_folder = $request->input('whereToFolder') == "" ? "" : "/" . $request->input('whereToFolder');
         $path = $this->getPath($request->current_folder_big);
 
         $old_path = $path . "/" . $request->input('file_big');
@@ -566,7 +562,7 @@ class FolderController extends Controller
             if ($dir !== auth()->user()->name . "/ZTemp") {
                 array_push($directories, [
                     'foldername' => substr($dir, strlen($path)),
-                    'shortfoldername' => strlen(substr($dir, strlen($path))) > 15 ? substr(substr($dir, strlen($path)), 0, 12) . "..." :  substr($dir, strlen($path)),
+                    'shortfoldername' => strlen(substr($dir, strlen($path))) > 30 ? substr(substr($dir, strlen($path)), 0, 25) . "..." :  substr($dir, strlen($path)),
                     'foldersize' => $this->getFolderSize($dir),
                 ]);
             }
@@ -577,11 +573,15 @@ class FolderController extends Controller
         $files = [];
         foreach ($fls as $file) {
             $fullfilename = substr($file, strlen($path));
+            $extensionWithDot = strrchr($file, ".");
+            $extensionNoDot = substr($extensionWithDot, 1, strlen($extensionWithDot));
             array_push($files, [
                 'fullfilename' =>  $fullfilename,
+                'fileurl' => $path . "/" . $fullfilename,
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
-                'shortfilename' => strlen($filename) > 15 ? substr($filename, 0, 10) . "*~" : $filename,
-                'extension' => strrchr($file, "."),
+                'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
+                'extension' => $extensionWithDot,
+                'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
         }
@@ -589,6 +589,14 @@ class FolderController extends Controller
         $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
         $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
+        //Generate folder tree view
+        $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
+        //Remove ZTemp folder from specific folder tree view        
+        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3" href="' . route('folder.root', ["current_folder" => "/ZTemp"]) . '" data-folder="ZTemp"><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
+        $folderTreeViewTemp = str_replace($stringToRemove, "", $folderTreeView);
+        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeViewTemp);
+        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeViewTemp);
+        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeViewTemp);
 
         return view('folder.searchForm', compact(
             'directories',
@@ -602,7 +610,11 @@ class FolderController extends Controller
             'NShare',
             'ztemp',
             'path',
-            'breadcrumbs'
+            'breadcrumbs',
+            'folderTreeView',
+            'treeMoveFolder',
+            'treeMoveFile',
+            'treeMoveMulti',
         ));
     }
     public function search(Request $request)
@@ -634,7 +646,7 @@ class FolderController extends Controller
                         'foldername' => $trueFolderName,
                         'folderpath' => $dir,
                         'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
-                        'shortfoldername' => strlen($trueFolderName) > 15 ? substr($trueFolderName, 0, 12) . "..." :   $trueFolderName,
+                        'shortfoldername' => strlen($trueFolderName) > 30 ? substr($trueFolderName, 0, 25) . "..." :   $trueFolderName,
                         'foldersize' => $this->getFolderSize($dir),
                     ]);
                 } elseif (strstr(strtolower($trueFolderName), $searchstring) !== false) {
@@ -642,14 +654,12 @@ class FolderController extends Controller
                         'foldername' => $trueFolderName,
                         'folderpath' => $dir,
                         'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
-                        'shortfoldername' => strlen($trueFolderName) > 15 ? substr($trueFolderName, 0, 12) . "..." :   $trueFolderName,
+                        'shortfoldername' => strlen($trueFolderName) > 30 ? substr($trueFolderName, 0, 25) . "..." :   $trueFolderName,
                         'foldersize' => $this->getFolderSize($dir),
                     ]);
                 }
             }
         }
-
-        //return dd($directories);
 
         $files = [];
         foreach ($fls as $file) {
@@ -661,7 +671,7 @@ class FolderController extends Controller
                     'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
                     'fullfilename' => $fullfilename,
                     'filename' => $trueFileName,
-                    'shortfilename' => strlen($trueFileName) > 15 ? substr($trueFileName, 0, 10) . "*~" : $trueFileName,
+                    'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                     'extension' => strrchr($file, "."),
                     'filesize' => $this->getFileSize($file)
                 ]);
@@ -671,13 +681,12 @@ class FolderController extends Controller
                     'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
                     'fullfilename' => $fullfilename,
                     'filename' => $trueFileName,
-                    'shortfilename' => strlen($trueFileName) > 15 ? substr($trueFileName, 0, 10) . "*~" : $trueFileName,
+                    'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                     'extension' => strrchr($file, "."),
                     'filesize' => $this->getFileSize($file)
                 ]);
             }
         }
-        //return dd($files);
 
         $results = view('folder.search_results', compact('directories', 'files', 'current_folder'));
 
@@ -844,7 +853,7 @@ class FolderController extends Controller
 
         return $fileimage;
     }
-  
+
     private function generateFolderTree($directories, $path, $trail)
     {
         $html = '';
@@ -856,7 +865,7 @@ class FolderController extends Controller
             $ceva = explode('/', $directory);
             $html .= '<a class="collection-item blue-grey-text text-darken-3';
             $html .= $path == '/' . $directory ? ' active"' : '"';
-            $html .= 'href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="'.substr($this->getFolderURLParam($ceva), 1).'" >';
+            $html .= ' href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="' . substr($this->getFolderURLParam($ceva), 1) . '" data-folder-view ="'. substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1) .'">';
             for ($i = 0; $i < count($ceva) - 1; $i++) {
                 $html .= '<span class="black-text">-</span>';
             }
