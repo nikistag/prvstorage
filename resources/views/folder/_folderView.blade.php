@@ -153,18 +153,20 @@
 <div id="modalmove" class="modal">
     <form id="moveFolderForm" method="POST" action="{{ route('folder.moveFolder') }}">
         <div class="modal-content">
-            <h5>Move folder</h5>
+            <h5>Move/copy folder</h5>
             @csrf
             <div class="row">
-                <div class="col s4 centered">
-                    <div class="input-field inline">
+                <div class="col s12 centered">
+                    <p>
                         <label>
                             <input type="checkbox" class="filled-in" name="foldercopy" />
                             <span>Copy</span>
                         </label>
-                    </div>
+                    </p>
                 </div>
-                <div class="col s8 left-align">
+            </div>
+            <div class="row">
+                <div class="col s12 centered">
                     Move folder:
                     <div class="input-field inline">
                         <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30" disabled />
@@ -172,13 +174,10 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s4 right-align">
-                    <a href="#treeMoveFolderModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
-                </div>
-                <div class="col s8 left-align">
+                <div class="col s12 centered">
                     To folder:
                     <div class="input-field inline">
-                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" readonly />
+                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" size="30" readonly />
                     </div>
                 </div>
             </div>
