@@ -14,8 +14,8 @@ class FolderController extends Controller
 {
     public function index()
     {
-        $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
+        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
+        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         return view('folder.index', compact('disk_free_space', 'disk_total_space', 'quota'));
     }
@@ -76,8 +76,8 @@ class FolderController extends Controller
             ]);
         }
         //Data to compute free space
-        $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
+        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
+        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         //Generate folder tree view
         $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
@@ -586,8 +586,8 @@ class FolderController extends Controller
             ]);
         }
         //Data to compute free space
-        $disk_free_space = round(disk_free_space(storage_path('app/prv/')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(storage_path('app/prv/')) / 1073741824, 2);
+        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
+        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
         $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
         //Generate folder tree view
         $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
@@ -649,14 +649,16 @@ class FolderController extends Controller
                         'shortfoldername' => strlen($trueFolderName) > 30 ? substr($trueFolderName, 0, 25) . "..." :   $trueFolderName,
                         'foldersize' => $this->getFolderSize($dir),
                     ]);
-                } elseif (strstr(strtolower($trueFolderName), $searchstring) !== false) {
-                    array_push($directories, [
-                        'foldername' => $trueFolderName,
-                        'folderpath' => $dir,
-                        'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
-                        'shortfoldername' => strlen($trueFolderName) > 30 ? substr($trueFolderName, 0, 25) . "..." :   $trueFolderName,
-                        'foldersize' => $this->getFolderSize($dir),
-                    ]);
+                } else {
+                    if (strstr(strtolower($trueFolderName), $searchstring) !== false) {
+                        array_push($directories, [
+                            'foldername' => $trueFolderName,
+                            'folderpath' => $dir,
+                            'personalfolderpath' => substr($dir, strlen(auth()->user()->name) + 1),
+                            'shortfoldername' => strlen($trueFolderName) > 30 ? substr($trueFolderName, 0, 25) . "..." :   $trueFolderName,
+                            'foldersize' => $this->getFolderSize($dir),
+                        ]);
+                    }
                 }
             }
         }
@@ -675,16 +677,18 @@ class FolderController extends Controller
                     'extension' => strrchr($file, "."),
                     'filesize' => $this->getFileSize($file)
                 ]);
-            } elseif (strstr(strtolower($trueFileName), $searchstring) !== false) {
-                array_push($files, [
-                    'filepath' => $file,
-                    'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
-                    'fullfilename' => $fullfilename,
-                    'filename' => $trueFileName,
-                    'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
-                    'extension' => strrchr($file, "."),
-                    'filesize' => $this->getFileSize($file)
-                ]);
+            } else {
+                if (strstr(strtolower($trueFileName), $searchstring) !== false) {
+                    array_push($files, [
+                        'filepath' => $file,
+                        'filefolder' => substr($fullfilename, 0, strlen($fullfilename) - strlen($trueFileName) - 1),
+                        'fullfilename' => $fullfilename,
+                        'filename' => $trueFileName,
+                        'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
+                        'extension' => strrchr($file, "."),
+                        'filesize' => $this->getFileSize($file)
+                    ]);
+                }
             }
         }
 
@@ -865,7 +869,7 @@ class FolderController extends Controller
             $ceva = explode('/', $directory);
             $html .= '<a class="collection-item blue-grey-text text-darken-3';
             $html .= $path == '/' . $directory ? ' active"' : '"';
-            $html .= ' href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="' . substr($this->getFolderURLParam($ceva), 1) . '" data-folder-view ="'. substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1) .'">';
+            $html .= ' href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="' . substr($this->getFolderURLParam($ceva), 1) . '" data-folder-view ="' . substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1) . '">';
             for ($i = 0; $i < count($ceva) - 1; $i++) {
                 $html .= '<span class="black-text">-</span>';
             }

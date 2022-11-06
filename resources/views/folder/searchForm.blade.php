@@ -17,6 +17,7 @@
                 <div class="col s12">
                     <div class="input-field inline">
                         <input id="searchstring" name="searchstring" type="text" class="valid" value="" size="40" />
+                        <input type="hidden" name="current_folder" value="{{$current_folder}}" />
                         <label for="searchstring"></label>
                     </div>
                 </div>

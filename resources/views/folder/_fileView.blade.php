@@ -179,37 +179,35 @@
 <div id="modalmovefiles" class="modal">
     <form method="POST" action="{{ route('folder.moveFileMulti') }}" id="multiFileForm">
         <div class="modal-content">
-            <h5>Move/Copy file</h5>
+            <h5>Move/Copy files</h5>
             @csrf
             <div class="row">
-                <div class="col s4 centered">
-                    <div class="input-field inline">
+                <div class="col s12 centered">
+                    <p>
                         <label>
                             <input type="checkbox" class="filled-in" name="filecopy" />
                             <span>Copy</span>
                         </label>
-                    </div>
+                    </p>
                 </div>
-                <div class="col s8 left-align">
+            </div>
+            <div class="row">
+                <div class="col s12 centered">
+                    Move files:
                     <div class="input-field inline">
-                        Move files:
-                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="100" disabled />
+                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="30" disabled />
                         <label for="fileDisplayMulti"></label>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col s4 right-align">
-                    <a href="#treeMoveMultiModal" class="left-align modal-trigger tooltipped" data-tooltip="Folder tree"><i class="material-icons medium orange-text">view_list</i></a>
-                </div>
-                <div class="col s8 left-align">
+                <div class="col s12 centered">
                     To folder:
                     <div class="input-field inline">
-                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value="" readonly />
+                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value="" size="30" readonly />
                     </div>
                 </div>
             </div>
-
         </div>
         <div class="modal-footer">
             <input type="hidden" id="targetFolderSize" name="targetFolderSize" value="" />
