@@ -145,29 +145,72 @@
             renderFileList();
         });
 
+        /*         renderFileList = function() {
+                    fileListDisplay.innerHTML = '';
+                    fileList.forEach(function(file) { //added index
+                        var fileDisplayEl = document.createElement("div");
+                        fileDisplayEl.setAttribute("class", "collection-item notuploaded");
+                        fileDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "item");
+                        fileDisplayEl.innerHTML = file.name;
+                        fileListDisplay.appendChild(fileDisplayEl);
+                        var progressDisplayEl = document.createElement("div");
+                        progressDisplayEl.setAttribute("class", "progress");
+                        progressDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "progress");
+                        progressDisplayEl.innerHTML = "";
+                        fileDisplayEl.appendChild(progressDisplayEl);
+                        var progressBarEl = document.createElement("div");
+                        progressBarEl.setAttribute("class", "determinate");
+                        progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size);
+                        progressBarEl.setAttribute("style", "width:1%");
+                        progressBarEl.innerHTML = "";
+                        progressDisplayEl.appendChild(progressBarEl);
+                        console.log(file.webkitRelativePath + file.name + file.size);
+
+                    });
+                }; */
         renderFileList = function() {
             fileListDisplay.innerHTML = '';
             fileList.forEach(function(file) { //added index
                 var fileDisplayEl = document.createElement("div");
                 fileDisplayEl.setAttribute("class", "collection-item notuploaded");
                 fileDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "item");
-                fileDisplayEl.innerHTML = file.name;
+                fileDisplayEl.innerHTML = '';
                 fileListDisplay.appendChild(fileDisplayEl);
-                var progressDisplayEl = document.createElement("div");
+
+                var fileDisplayNameNProgress = document.createElement("div"); // create row for progress bar and info
+                fileDisplayNameNProgress.setAttribute("class", "row");
+                fileDisplayNameNProgress.innerHTML = '';
+                fileDisplayEl.appendChild(fileDisplayNameNProgress);
+
+                var fileDisplayName = document.createElement("div"); // create div for file info
+                fileDisplayName.setAttribute("class", "col s9 right-align");
+                fileDisplayName.innerHTML = file.name;
+                fileDisplayNameNProgress.appendChild(fileDisplayName);
+
+                var fileDisplayProgress = document.createElement("div"); // create div for progress percentage
+                fileDisplayProgress.setAttribute("class", "col s3 right-align green-text");
+                fileDisplayProgress.setAttribute("id", file.webkitRelativePath + file.name + file.size + "percent");
+                fileDisplayProgress.innerHTML = '0%';
+                fileDisplayNameNProgress.appendChild(fileDisplayProgress);
+
+                var progressDisplayEl = document.createElement("div"); // create div for progress bar
                 progressDisplayEl.setAttribute("class", "progress");
                 progressDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "progress");
                 progressDisplayEl.innerHTML = "";
                 fileDisplayEl.appendChild(progressDisplayEl);
-                var progressBarEl = document.createElement("div");
+
+                var progressBarEl = document.createElement("div"); // create progress bar div
                 progressBarEl.setAttribute("class", "determinate");
-                progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size);
+                progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "bar");
                 progressBarEl.setAttribute("style", "width:1%");
                 progressBarEl.innerHTML = "";
+
                 progressDisplayEl.appendChild(progressBarEl);
-                console.log(file.webkitRelativePath + file.name + file.size);
+
+                // console.log(file.webkitRelativePath + file.name + file.size);
+
             });
         };
-
         sendFile = function(file) {
             var formData = new FormData();
             var request = new XMLHttpRequest();
@@ -179,15 +222,18 @@
 
             request.upload.addEventListener("progress", function(evt) {
                 if (evt.lengthComputable) {
-                    var progressBar = document.getElementById(file.webkitRelativePath + file.name + file.size);
+                    var progressBar = document.getElementById(file.webkitRelativePath + file.name + file.size + "bar");
+                    var progressPercent = document.getElementById(file.webkitRelativePath + file.name + file.size + "percent");
                     var progresspc = Math.round(evt.loaded * 100 / evt.total);
                     var handbreak = 0;
                     progressBar.style.width = progresspc + "%";
+                    progressPercent.innerHTML = progresspc + "%";
                     if (progresspc == 100) {
                         console.log("Saved one file!");
                         M.toast({
                             html: 'Saving ' + file.name + ' to server!'
                         });
+
                     }
                 }
             }, false);

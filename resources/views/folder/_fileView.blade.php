@@ -486,7 +486,6 @@
                 }
             });
 
-
             document.getElementById('multiFileForm').submit();
 
             setInterval(function() {
