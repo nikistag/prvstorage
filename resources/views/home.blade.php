@@ -13,6 +13,8 @@
 
     <h4>Please authenticate!!!</h4>
 
+    <h5><a href="{{route('login')}}"><span class="blue-text">Login</span></a> or, If new account, <a href="{{route('register')}}"><span class="blue-text">Register</span></a></h5>
+
     @endguest
 </div>
 
