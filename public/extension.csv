@@ -550,7 +550,7 @@
 .IOBIT,Advanced SystemCare PRO backup,backup
 .IPD,BlackBerry backup (pre 2012),backup
 .IPE,Wacom Pen system.ini and win.ini backup,backup
-.ISO,CD/DVD/HD DVD/Blu-ray disc ISO binary image,backup
+.ISO,CD/DVD/HD DVD/Blu-ray disc ISO binary image,diskimage
 .IV2I,Norton Ghost disk drive image,backup
 .J01,Akeeba Backup multi-part backup,backup
 .JAF,Just A Frequency Logger backup file,backup
@@ -930,7 +930,7 @@
 .XLK,Microsoft Excel backup,backup
 .ZALOHA,Miranda IM backup file,backup
 .ZAP13,TIA Portal V13 to backup PLC project,backup
-.ZIP,WinZIP Compressed ZIP archive,backup
+.ZIP,WinZIP Compressed ZIP archive,archive
 .ZW1,EPLAN project backup,backup
 .ZW2,EPLAN symbols backup,backup
 .ZW3,EPLAN standard sheet backup,backup

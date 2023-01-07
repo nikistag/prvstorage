@@ -131,7 +131,7 @@
         </div>
         <div class="footer-copyright blue-grey darken-4">
             <div class="container">
-                Copyright &copy; 2021 - {{date('Y')}} Nikistag - All Rights Reserved
+                Copyright &copy; 2021 - {{date('Y')}} Nichita Sandu / <a href="https://nikistag.com" target="_blank">nikistag.com</a> - All Rights Reserved
                 <span class="grey-text text-lighten-4 right">V. <b>{{config('app.version')}}</b></span>
             </div>
         </div>

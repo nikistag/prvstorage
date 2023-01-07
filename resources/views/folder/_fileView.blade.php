@@ -6,7 +6,16 @@
 
 <div class="row">
     <div class="col s4 left-align" style="position: relative;">
+        @if($file['filevideourl'] === null)
+        <!-- Image preview -->
         <img src="{{asset($file['fileimageurl'])}}" alt="file image">
+        @else
+        <!-- Video preview -->
+        <video width="100" height="100" autoplay muted loop>
+            <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        @endif
         <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
     </div>
     <div class="col s4">

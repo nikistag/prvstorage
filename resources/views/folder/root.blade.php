@@ -145,29 +145,6 @@
             renderFileList();
         });
 
-        /*         renderFileList = function() {
-                    fileListDisplay.innerHTML = '';
-                    fileList.forEach(function(file) { //added index
-                        var fileDisplayEl = document.createElement("div");
-                        fileDisplayEl.setAttribute("class", "collection-item notuploaded");
-                        fileDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "item");
-                        fileDisplayEl.innerHTML = file.name;
-                        fileListDisplay.appendChild(fileDisplayEl);
-                        var progressDisplayEl = document.createElement("div");
-                        progressDisplayEl.setAttribute("class", "progress");
-                        progressDisplayEl.setAttribute("id", file.webkitRelativePath + file.name + file.size + "progress");
-                        progressDisplayEl.innerHTML = "";
-                        fileDisplayEl.appendChild(progressDisplayEl);
-                        var progressBarEl = document.createElement("div");
-                        progressBarEl.setAttribute("class", "determinate");
-                        progressBarEl.setAttribute("id", file.webkitRelativePath + file.name + file.size);
-                        progressBarEl.setAttribute("style", "width:1%");
-                        progressBarEl.innerHTML = "";
-                        progressDisplayEl.appendChild(progressBarEl);
-                        console.log(file.webkitRelativePath + file.name + file.size);
-
-                    });
-                }; */
         renderFileList = function() {
             fileListDisplay.innerHTML = '';
             fileList.forEach(function(file) { //added index
@@ -225,7 +202,7 @@
                     var progressBar = document.getElementById(file.webkitRelativePath + file.name + file.size + "bar");
                     var progressPercent = document.getElementById(file.webkitRelativePath + file.name + file.size + "percent");
                     var progresspc = Math.round(evt.loaded * 100 / evt.total);
-                    var handbreak = 0;
+                    var handbreak = "";
                     progressBar.style.width = progresspc + "%";
                     progressPercent.innerHTML = progresspc + "%";
                     if (progresspc == 100) {
@@ -233,7 +210,6 @@
                         M.toast({
                             html: 'Saving ' + file.name + ' to server!'
                         });
-
                     }
                 }
             }, false);
@@ -247,9 +223,7 @@
                     if (notdone > 0) {
                         console.log("Files still in queue");
                     } else {
-                        setTimeout(function() {
-                            window.location.reload(true);
-                        }, 2000);
+                        window.location.reload(true);
                     }
                 } else {
                     console.log("error " + this.status);
