@@ -423,8 +423,21 @@ class FolderController extends Controller
             } else {
                 $path = '/' . auth()->user()->name . $request->path;
             }
-
             return Storage::download($path);
+        } else {
+            return back()->with('error', 'File / Folder not found on server');
+        }
+    }
+    public function filestream(Request $request)
+    {
+        if ($request->has('path')) {
+            if (substr($request->path, 1, 6) == "NShare") {
+                $path = $request->path;
+            } else {
+                $path = auth()->user()->name . $request->path;
+            }
+            $headers = $this->getStreamHeaders($path);
+            return response()->file(Storage::path($path), $headers);
         } else {
             return back()->with('error', 'File / Folder not found on server');
         }
@@ -768,6 +781,10 @@ class FolderController extends Controller
         }
         return $file_size;
     }
+    private function getFileName($path)
+    {
+        return substr($path, strripos($path, "/") + 1, strlen($path));
+    }
     private function getFolderSize($dir)
     {
         $allFiles = Storage::allFiles($dir);
@@ -932,7 +949,19 @@ class FolderController extends Controller
 
         return null; //No video preview generated
     }
-
+    private function getStreamHeaders($path)
+    {
+        $fileToStream = Storage::path($path);
+        $headers = [];
+        array_push($headers, ['Content-Type' => mime_content_type($fileToStream)]);
+        array_push($headers, ['Cache-Control' => 'max-age=2592000, public']);
+        array_push($headers, ['Expires' => gmdate('D, d M Y H:i:s', time() + 2592000) . ' GMT']);
+        array_push($headers, ['Last-Modified' => gmdate('D, d M Y H:i:s', @filemtime($fileToStream)) . ' GMT']);
+        array_push($headers, ['Content-Length' => filesize($fileToStream)]);
+        array_push($headers, ['Accept-Ranges' => '0-' . filesize($fileToStream) - 1]);
+        array_push($headers, ['Content-Disposition' => 'attachment; filename=' . $this->getFileName($path)]);    
+        return $headers;
+    }
     private function generateFolderTree($directories, $path, $trail)
     {
         $html = '';

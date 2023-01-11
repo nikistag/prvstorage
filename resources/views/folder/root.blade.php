@@ -184,7 +184,6 @@
 
                 progressDisplayEl.appendChild(progressBarEl);
 
-                // console.log(file.webkitRelativePath + file.name + file.size);
 
             });
         };
