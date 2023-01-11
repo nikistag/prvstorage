@@ -6,7 +6,16 @@
 
 <div class="row">
     <div class="col s4 left-align" style="position: relative;">
+        @if($file['filevideourl'] === null)
+        <!-- Image preview -->
         <img src="{{asset($file['fileimageurl'])}}" alt="file image">
+        @else
+        <!-- Video preview -->
+        <video width="100" height="100" autoplay muted loop>
+            <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        @endif
         <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
     </div>
     <div class="col s4">
@@ -21,7 +30,11 @@
         <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
         <br />
-        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+        @if($file['filevideourl'] === null)
+        @else
+        <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
+        @endif        
+        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>        
         @endif
     </div>
 </div>

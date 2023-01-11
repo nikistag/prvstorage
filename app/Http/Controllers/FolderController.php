@@ -42,7 +42,7 @@ class FolderController extends Controller
             array_push($directory_paths, $dir);
         }
 
-        //Get folders an fils of current directory
+        //Get folders an files of current directory
         $dirs = Storage::directories($path);
         $fls = Storage::files($path);
         $directories = [];
@@ -59,7 +59,6 @@ class FolderController extends Controller
         $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
 
         /* Process files */
-
         $files = [];
         foreach ($fls as $file) {
             $fullfilename = substr($file, strlen($path));
@@ -71,7 +70,8 @@ class FolderController extends Controller
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
-                'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
+                'fileimageurl' => $this->getPreviewImage($extensionWithDot, $path, $fullfilename, $filename),
+                'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
         }
@@ -418,8 +418,26 @@ class FolderController extends Controller
     public function filedownload(Request $request)
     {
         if ($request->has('path')) {
-            $path = '/' . auth()->user()->name . $request->path;
+            if (substr($request->path, 1, 6) == "NShare") {
+                $path = $request->path;
+            } else {
+                $path = '/' . auth()->user()->name . $request->path;
+            }
             return Storage::download($path);
+        } else {
+            return back()->with('error', 'File / Folder not found on server');
+        }
+    }
+    public function filestream(Request $request)
+    {
+        if ($request->has('path')) {
+            if (substr($request->path, 1, 6) == "NShare") {
+                $path = $request->path;
+            } else {
+                $path = auth()->user()->name . $request->path;
+            }
+            $headers = $this->getStreamHeaders($path);
+            return response()->file(Storage::path($path), $headers);
         } else {
             return back()->with('error', 'File / Folder not found on server');
         }
@@ -581,7 +599,8 @@ class FolderController extends Controller
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
-                'fileimageurl' => $this->getFileImage($extensionWithDot, $path, $fullfilename, $filename),
+                'fileimageurl' => $this->getPreviewImage($extensionWithDot, $path, $fullfilename, $filename),
+                'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
         }
@@ -762,6 +781,10 @@ class FolderController extends Controller
         }
         return $file_size;
     }
+    private function getFileName($path)
+    {
+        return substr($path, strripos($path, "/") + 1, strlen($path));
+    }
     private function getFolderSize($dir)
     {
         $allFiles = Storage::allFiles($dir);
@@ -787,7 +810,7 @@ class FolderController extends Controller
         }
         return $folderSize;
     }
-    private function getFileImage($extension, $path, $fullfilename, $filename)
+    private function getPreviewImage($extension, $path, $fullfilename, $filename)
     {
         /* Cache file extensions */
         $fileExtensions = Cache::remember('extensions', 3600, function () {
@@ -807,7 +830,6 @@ class FolderController extends Controller
         $fileimage = 'storage/img/file_100px.png';
         //supported extensions
         $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
-
         foreach ($fileExtensions as $fext) {
             if (array_search(strtolower($extension), $supportedExt) !== false) {
                 //Check if thumbnail already set
@@ -815,6 +837,7 @@ class FolderController extends Controller
                 if (Storage::disk('public')->has($thumbfile)) {
                     return 'storage/' . $thumbfile;
                 } else {
+
                     // Get image original size, 0->width, 1->height
                     $imgsize_arr = getimagesize(Storage::path($path . "/" . $fullfilename));
                     // Analize image to set crop 
@@ -849,21 +872,102 @@ class FolderController extends Controller
                     return 'storage/' . $thumbfile;
                 }
             }
-
             if (strtolower($extension) == strtolower($fext[0])) {
-                return ('storage/img/' . $fext[2] . '_100px.png');
+                return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
             }
         }
 
         return $fileimage;
     }
+    private function getPreviewVideo($extension, $path, $fullfilename, $filename)
+    {
+        /* Cache file extensions */
+        $fileExtensions = Cache::remember('extensions', 3600, function () {
+            $extensionArray = [];
+            if (($open = fopen(public_path() . "/extension.csv", "r")) !== FALSE) {
+                while (($data = fgetcsv($open)) !== FALSE) {
+                    array_push($extensionArray, $data);
+                }
+                fclose($open);
+            }
+            return $extensionArray;
+        });
 
+        //supported extensions
+        $supportedExt = ['.3g2', '.3gp', '.3gp2', '.asf', '.avi', '.dvr-ms', '.flv', '.h261', '.h263', '.h264', '.m2t', '.m2ts', '.m4v', '.mkv', '.mod', '.mp4', '.mpg', '.mxf', '.tod', '.vob', '.webm', '.wmv', '.xmv'];
+
+        //dd($fullfilename);
+        if (array_search(strtolower($extension), $supportedExt) !== false) {
+            //Check if video preview file already set
+            $thumbfile = 'thumb' . $path . "/" . $filename . '.mp4';
+            if (Storage::disk('public')->has($thumbfile)) {
+
+                return 'storage/' . $thumbfile;
+            } else {
+                $pathToOriginal = Storage::path($path . "/" . $fullfilename);
+
+                $dur = shell_exec("ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '$pathToOriginal'");
+                $seconds = round($dur);
+
+                $thumb_0 = gmdate('H:i:s', $seconds / 8);
+                $thumb_1 = gmdate('H:i:s', $seconds / 4);
+                $thumb_2 = gmdate('H:i:s', $seconds / 2 + $seconds / 8);
+                $thumb_3 = gmdate('H:i:s', $seconds / 2 + $seconds / 4);
+
+                $path_clip = Storage::disk('public')->path('thumb' . $path . "/");
+
+                $preview_list = fopen($path_clip . 'list.txt', "w");
+                $preview_array = [];
+
+                for ($i = 0; $i <= 3; $i++) {
+                    $thumb = ${'thumb_' . $i};
+                    shell_exec("ffmpeg -i '$pathToOriginal' -an -ss $thumb -t 2 -vf 'scale=100:100:force_original_aspect_ratio=decrease,pad=100:100:(ow-iw)/2:(oh-ih)/2,setsar=1' -y $path_clip/$i.p.mp4");
+
+                    $output = $path_clip . $i . '.p.mp4';
+
+                    if (file_exists($output)) {
+                        fwrite($preview_list, "file '" . $output . "'\n");
+                        array_push($preview_array, $output);
+                    }
+                }
+
+                fclose($preview_list);
+
+                shell_exec("ffmpeg -f concat -safe 0 -i $path_clip/list.txt -y $path_clip/$fullfilename");
+
+                if (!empty($preview_array)) {
+                    foreach ($preview_array as $v) {
+                        unlink($v);
+                    }
+                }
+                // remove preview list
+                unlink($path_clip . 'list.txt');
+
+                return 'storage/' . $thumbfile;
+            }
+        }
+
+        return null; //No video preview generated
+    }
+    private function getStreamHeaders($path)
+    {
+        $fileToStream = Storage::path($path);
+        $headers = [];
+        array_push($headers, ['Content-Type' => mime_content_type($fileToStream)]);
+        array_push($headers, ['Cache-Control' => 'max-age=2592000, public']);
+        array_push($headers, ['Expires' => gmdate('D, d M Y H:i:s', time() + 2592000) . ' GMT']);
+        array_push($headers, ['Last-Modified' => gmdate('D, d M Y H:i:s', @filemtime($fileToStream)) . ' GMT']);
+        array_push($headers, ['Content-Length' => filesize($fileToStream)]);
+        array_push($headers, ['Accept-Ranges' => '0-' . filesize($fileToStream) - 1]);
+        array_push($headers, ['Content-Disposition' => 'attachment; filename=' . $this->getFileName($path)]);    
+        return $headers;
+    }
     private function generateFolderTree($directories, $path, $trail)
     {
         $html = '';
         $html .= '<a class="collection-item blue-grey-text text-darken-3';
         $html .= $path == '/' . auth()->user()->name ? ' active"' : '"';
-        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="Root" ><i class="material-icons orange-text">folder</i>Root</a>';
+        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="Root" data-folder-view="Root"><i class="material-icons orange-text">folder</i>Root</a>';
         //dd($directories);
         foreach ($directories as $directory) {
             $ceva = explode('/', $directory);
@@ -879,7 +983,7 @@ class FolderController extends Controller
         }
         $html .= '<a class="collection-item blue-grey-text text-darken-3';
         $html .= $path == '/NShare'  ? ' active"' : '"';
-        $html .= 'href="' . route('folder.root', ['current_folder' => '/NShare']) . '" data-folder="NShare" ><i class="material-icons blue-text">folder</i>NShare</a>';
+        $html .= 'href="' . route('folder.root', ['current_folder' => '/NShare']) . '" data-folder="NShare" data-folder-view="NShare"><i class="material-icons blue-text">folder</i>NShare</a>';
         return $html;
     }
 

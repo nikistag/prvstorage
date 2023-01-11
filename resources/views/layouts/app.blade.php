@@ -8,9 +8,7 @@
     <meta name="csrf-token" value="{{ csrf_token() }}">
 
     <link rel="stylesheet" type="text/css" href={{ asset('css/materialize.css')}} />
-    <!-- <link rel="stylesheet" type="text/css" href={{ asset('css/iconfont/material-icons.css')}} /> -->
-    <!--  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-
+    <link rel="icon" type="image/x-icon" href="{{asset('img/prvstorage.ico')}}">
 
     <script src={{ asset('js/jquery3_6.js') }}></script>
     <script src={{ asset('js/materialize.js') }}></script>
@@ -68,7 +66,9 @@
             @endauth
             @guest
             &nbsp;
-            <a href="/index.php" class="brand-logo left">Private storage</a>
+            <a href="/index.php" class="brand-logo left "><img src="{{asset('img/prvstorage_logo2_40_40.png')}}" alt="Prvstorage logo">
+                <span class="hide-on-med-and-down">Private storage</span><span class="hide-on-large-only">Prvstorage</span>
+            </a>
             <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li><a href="{{route('login')}}"><span class="white-text">Login</span></a></li>
@@ -131,7 +131,7 @@
         </div>
         <div class="footer-copyright blue-grey darken-4">
             <div class="container">
-                Copyright &copy; 2021 - {{date('Y')}} Nikistag - All Rights Reserved
+                Copyright &copy; 2021 - {{date('Y')}} Nichita Sandu / <a href="https://nikistag.com" target="_blank">nikistag.com</a> - All Rights Reserved
                 <span class="grey-text text-lighten-4 right">V. <b>{{config('app.version')}}</b></span>
             </div>
         </div>
