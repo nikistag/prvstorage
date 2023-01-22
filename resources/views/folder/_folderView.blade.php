@@ -54,7 +54,7 @@
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
     <div class="col s12 left-align">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">NShare</a>
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/NShare'])}}" class="valign-wrapper">NShare</a>
     </div>
 </div>
 
