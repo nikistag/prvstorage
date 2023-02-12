@@ -120,13 +120,11 @@
         var renderFileList, sendFile;
 
         //personal addings
-        var submitButton = document.getElementById('submit-files-upload');
-        var closeButton = document.getElementById('close-upload-modal');
+        var multiFileUploadFooter = document.getElementById('multifilefooter');
 
         fileCatcher.addEventListener('submit', function(evnt) {
             evnt.preventDefault();
-            closeButton.classList.add("hide"); //my
-            submitButton.classList.add("hide"); //my
+            multiFileUploadFooter.classList.add("hide"); //my
             fileList.forEach(function(file) {
                 sendFile(file);
             });
@@ -161,7 +159,7 @@
 
                 var fileDisplayName = document.createElement("div"); // create div for file info
                 fileDisplayName.setAttribute("class", "col s9 right-align");
-                fileDisplayName.innerHTML = file.name;
+                fileDisplayName.innerHTML = file.name.length > 38 ? file.name.substr(0,35) + "~..." : file.name;
                 fileDisplayNameNProgress.appendChild(fileDisplayName);
 
                 var fileDisplayProgress = document.createElement("div"); // create div for progress percentage
@@ -206,9 +204,7 @@
                     progressPercent.innerHTML = progresspc + "%";
                     if (progresspc == 100) {
                         console.log("Saved one file!");
-                        M.toast({
-                            html: 'Saving ' + file.name + ' to server!'
-                        });
+                        progressPercent.innerHTML ="Processing";
                     }
                 }
             }, false);

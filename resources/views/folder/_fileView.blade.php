@@ -321,8 +321,8 @@
             </div>
         </div>
         <div class="modal-footer" id="multifilefooter">
-            <button id="submit-files-upload" class="btn-small waves-effect waves-light" type="submit" name="action">Submit
-                <i class="material-icons right">send</i>
+            <button id="submit-files-upload" class="btn-small waves-effect waves-light" type="submit" name="action">Upload
+                <i class="material-icons right">cloud_upload</i>
             </button>
             <a href="#!" id="close-upload-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>

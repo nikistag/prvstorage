@@ -34,6 +34,7 @@ return array(
     'App\\Http\\Middleware\\TrustProxies' => $baseDir . '/app/Http/Middleware/TrustProxies.php',
     'App\\Http\\Middleware\\VerifyCsrfToken' => $baseDir . '/app/Http/Middleware/VerifyCsrfToken.php',
     'App\\Http\\Requests\\Auth\\LoginRequest' => $baseDir . '/app/Http/Requests/Auth/LoginRequest.php',
+    'App\\Mail\\AccountStatusNotification' => $baseDir . '/app/Mail/AccountStatusNotification.php',
     'App\\Mail\\NewUser' => $baseDir . '/app/Mail/NewUser.php',
     'App\\Mail\\Test' => $baseDir . '/app/Mail/Test.php',
     'App\\Models\\Share' => $baseDir . '/app/Models/Share.php',
