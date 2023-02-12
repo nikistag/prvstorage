@@ -21,7 +21,6 @@ class FolderController extends Controller
     }
     public function root(Request $request)
     {
-        //dd('got this');
 
         $current_folder = $request->current_folder;
 
@@ -968,41 +967,7 @@ class FolderController extends Controller
             if (array_search(strtolower($extension), $supportedExt) !== false) {
 
                 return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
-                /* 
-                // Get image original size, 0->width, 1->height
-                $imgsize_arr = getimagesize(Storage::path($path . "/" . $fullfilename));
-                // Analize image to set crop 
-                if ($imgsize_arr[0] > $imgsize_arr[1]) {
-                    $cropSize = $imgsize_arr[1];
-                    $cropX = ($imgsize_arr[0] - $imgsize_arr[1]) / 2;
-                    $cropY = 0;
-                } else {
-                    $cropSize =  $imgsize_arr[0];
-                    $cropX = 0;
-                    $cropY = ($imgsize_arr[1] - $imgsize_arr[0]) / 2;
-                }
-
-                $img = imagecreatefromstring(file_get_contents(Storage::path($path . "/" . $fullfilename)));
-                $area = ["x" => $cropX, "y" => $cropY, "width" => $cropSize, "height" => $cropSize];
-                $crop = imagecrop($img, $area);
-
-                if (Storage::disk('public')->exists('thumb' . $path)) {
-                } else {
-                    Storage::disk('public')->makeDirectory('thumb' . $path);
-                }
-                $thumb = imagecreatetruecolor(100, 100);
-
-                // Resize
-                imagecopyresized($thumb, $crop, 0, 0, 0, 0, 100, 100, $cropSize, $cropSize);
-
-                imagejpeg($thumb, Storage::disk('public')->path($thumbfile), 50);
-
-                imagedestroy($img);
-                imagedestroy($crop);
-                imagedestroy($thumb);
-                return 'storage/' . $thumbfile;
-                 */
-
+  
             }
             if (strtolower($extension) == strtolower($fext[0])) {
                 return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
@@ -1013,11 +978,9 @@ class FolderController extends Controller
     }
     private function getPreviewVideo($extension, $path, $fullfilename, $filename)
     {
-
         //supported extensions
         $supportedExt = ['.3g2', '.3gp', '.3gp2', '.asf', '.avi', '.dvr-ms', '.flv', '.h261', '.h263', '.h264', '.m2t', '.m2ts', '.m4v', '.mkv', '.mod', '.mp4', '.mpg', '.mxf', '.tod', '.vob', '.webm', '.wmv', '.xmv'];
 
-        //dd($fullfilename);
         if (array_search(strtolower($extension), $supportedExt) !== false) {
             //Check if video preview file already set
             $thumbfile = 'thumb' . $path . "/" . $filename . '.mp4';
@@ -1025,47 +988,7 @@ class FolderController extends Controller
                 return 'storage/' . $thumbfile;
             } else {
                 return $this->generateVideoThumbnail($extension, $path, $fullfilename, $filename);
-                /* 
-                $pathToOriginal = Storage::path($path . "/" . $fullfilename);
-
-                $dur = shell_exec("ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '$pathToOriginal'");
-                $seconds = round($dur);
-
-                $thumb_0 = gmdate('H:i:s', $seconds / 8);
-                $thumb_1 = gmdate('H:i:s', $seconds / 4);
-                $thumb_2 = gmdate('H:i:s', $seconds / 2 + $seconds / 8);
-                $thumb_3 = gmdate('H:i:s', $seconds / 2 + $seconds / 4);
-
-                $path_clip = Storage::disk('public')->path('thumb' . $path . "/");
-
-                $preview_list = fopen($path_clip . 'list.txt', "w");
-                $preview_array = [];
-
-                for ($i = 0; $i <= 3; $i++) {
-                    $thumb = ${'thumb_' . $i};
-                    shell_exec("ffmpeg -i '$pathToOriginal' -an -ss $thumb -t 2 -vf 'scale=100:100:force_original_aspect_ratio=decrease,pad=100:100:(ow-iw)/2:(oh-ih)/2,setsar=1' -y '$path_clip'/$i.p.mp4");
-
-                    $output = $path_clip . $i . '.p.mp4';
-
-                    if (file_exists($output)) {
-                        fwrite($preview_list, "file '" . $output . "'\n");
-                        array_push($preview_array, $output);
-                    }
-                }
-
-                fclose($preview_list);
-
-                shell_exec("ffmpeg -f concat -safe 0 -i '$path_clip'/list.txt -y '$path_clip/$fullfilename'");
-
-                if (!empty($preview_array)) {
-                    foreach ($preview_array as $v) {
-                        unlink($v);
-                    }
-                }
-                // remove preview list
-                unlink($path_clip . 'list.txt');
-
-                return 'storage/' . $thumbfile; */
+               
             }
         }
 
