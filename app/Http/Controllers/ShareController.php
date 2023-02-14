@@ -24,10 +24,7 @@ class ShareController extends Controller
 
         $path = '/' . auth()->user()->name;
         $directories = Storage::allDirectories(storage_path($path));
-        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
-        return view('share.index', compact('shares', 'quota', 'disk_free_space'));
+        return view('share.index', compact('shares'));
     }
 
     public function file(Request $request)

@@ -6,7 +6,6 @@ use App\Http\Controllers\WorkController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\NetshareController;
 
 /*
 |--------------------------------------------------------------------------
