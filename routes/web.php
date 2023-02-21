@@ -74,7 +74,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/share/fileMulti', [ShareController::class, 'fileMulti'])->name('share.fileMulti');
         Route::post('/share/folder', [ShareController::class, 'folder'])->name('share.folder');
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
-
+        Route::get('/share/{share}/edit', [ShareController::class, 'edit'])->name('share.edit');
+        Route::put('/share/{share}/update', [ShareController::class, 'update'])->name('share.update');
         //User administration routes
         
         Route::middleware(['isadmin'])->group(function () {
