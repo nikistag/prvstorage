@@ -14,7 +14,7 @@
     </div>
     <div class="col s4 right-align">
         <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$directory['foldername']}}" class="tooltipped sharelink-folder" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger share-folder tooltipped" data-target="modalfoldershare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
         <br />
         <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
@@ -279,12 +279,83 @@
         </div>
     </form>
 </div>
-
+<!-- Share folder modal -->
+<div id="pickerContainer"></div>
+<div id="modalfoldershare" class="modal">
+    <form id="foldershareform" method="POST" action="{{ route('share.folder') }}">
+        <div class="modal-content">
+            <h5>Share folder with "the wild"</h5>
+            @csrf
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+            <div class="row">
+                <div class="col s12">
+                    <i>Folder to share:</i>
+                    <strong><i><span id="showFolderToShare"></span></i></strong>
+                    <input type="hidden" name="folderToShareInput" id="folderToShareInput" value="" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <div class="switch">
+                            <label>
+                                With unlimited downloads
+                                <input type="checkbox" name="unlimited_folder" id="unlimited_folder">
+                                <span class="lever"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="expiration_folder" name="expiration_folder" type="text" class="datepicker">
+                    <label for="expiration_folder">Available till:</label>
+                </div>
+            </div>
+            <div class="modal-footer" id="folderfooter">
+                <button id="submit-share-folder" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                    <i class="material-icons right">share</i>
+                </button>
+                <a href="#!" id="close-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
 <!-- SCRIPTS FOR FOLDER MANIPULATION -->
 <script>
     $(document).ready(function() {
+        $('.datepicker').datepicker({
+            container: $('#pickerContainer'),
+        });
+        /* SHARE FOLDER MECHANICS */
+        /* Clear share folder modal form */
+        $('#close-share-folder-modal').on("click", (function(e) {
+            $('#showFolderToShare').html("");
+            $('#folderToShareInput').val("");
+            $('#expiration_folder').val("");
+            $('#unlimited_folder').prop('checked', false);
+        }));
+        /* Open modal to share folder with the wild */
+        $('.share-folder').on("click", (function(e) {
+            e.preventDefault();
+            var folderToShare = $(this).attr('href');
+            $('#showFolderToShare').html(folderToShare);
+            $('#folderToShareInput').val('{{$path}}' + '/' + folderToShare);
+        }));
+        /** Submit folder share with the wild form */
+        $('#submit-share-folder').on("click", (function(e) {
+            e.preventDefault();
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing share";
+            document.getElementById('foldershareform').submit();
+        }));
+        /* END OF SHARE FOLDER MECHANICS */
         /* Manage link to share folder */
-        $('.sharelink-folder').on("click", (function(e) {
+       /*  $('.sharelink-folder').on("click", (function(e) {
             e.preventDefault();
             var elem = document.getElementById('modalbgworking');
             var instance = M.Modal.getInstance(elem);
@@ -295,7 +366,7 @@
             folderShareForm = 'shareform' + $(this).attr('href');
             document.getElementById(folderShareForm).submit();
         }));
-
+ */
         $('.edit-folder').on("click", (function(e) {
             e.preventDefault();
             var foldername = $(this).attr('href');

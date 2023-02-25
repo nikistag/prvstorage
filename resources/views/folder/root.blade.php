@@ -86,17 +86,7 @@
         <div class="progress">
             <div class="indeterminate"></div>
         </div>
-    </div>
-    <!-- Form used to initiate file share -->
-    <form method="POST" id="fileshareform" action="{{route('share.file')}}">
-        @csrf
-        <input id="fileshareinput" type="hidden" name="fileshare" value="">
-    </form>
-    <!-- Form used to initiate multiple files share -->
-    <form method="POST" id="multifileshareform" action="{{route('share.fileMulti')}}">
-        @csrf
-        <input id="path" type="hidden" name="path" value="{{$path}}">
-    </form>
+    </div>    
 </div>
 
 <script>
@@ -104,6 +94,9 @@
         $('.tooltipped').tooltip();
         $('.modal').modal();
         $('.modalupload').modal({
+            dismissible: false,
+        });
+        $('#modalfileshare').modal({
             dismissible: false,
         });
         $('select').formSelect();

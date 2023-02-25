@@ -11,10 +11,8 @@
     <form class="col s12">
         <div class="row">
             <div class="input-field col s12">
-                <textarea id="sharelink" class="materialize-textarea">
-                {{route('share.download', ['code' => $share->code])}}
-                </textarea>
-                <label for="textarea1">Share link</label>
+                <input type="text" id="sharelink" name="sharelink" value="{{route('share.download', ['code' => $share->code])}}" />
+                <label for="sharelink">Share link</label>
             </div>
             <button class="btn waves-effect waves-light" name="copy" id="clipboardCopy">Copy
                 <i class="material-icons right">content_copy</i>
@@ -35,9 +33,9 @@
             document.execCommand('copy')
             /* Alert the copied text */
             M.toast({
-                html: "Copied the text: " + sharelink.value
+                html: "Copied download link: " + sharelink.value
             });
-           
+
         }));
     });
 </script>

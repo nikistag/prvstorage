@@ -14,10 +14,7 @@ class FolderController extends Controller
 {
     public function index()
     {
-        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
-        return view('folder.index', compact('disk_free_space', 'disk_total_space', 'quota'));
+        return view('folder.index');
     }
     public function root(Request $request)
     {
@@ -76,10 +73,7 @@ class FolderController extends Controller
                 'filesize' => $this->getFileSize($file)
             ]);
         }
-        //Data to compute free space
-        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
+
         //Generate folder tree view
         $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
         //Remove ZTemp folder from specific folder tree view
@@ -91,9 +85,6 @@ class FolderController extends Controller
         return view('folder.root', compact(
             'directories',
             'files',
-            'disk_free_space',
-            'disk_total_space',
-            'quota',
             'current_folder',
             'directory_paths',
             'NShare',
@@ -627,9 +618,6 @@ class FolderController extends Controller
         return view('folder.searchForm', compact(
             'directories',
             'files',
-            'disk_free_space',
-            'disk_total_space',
-            'quota',
             'current_folder',
             'parent_folder',
             'directory_paths',
@@ -819,6 +807,9 @@ class FolderController extends Controller
     }
     private function generateImageThumbnail($extension, $path, $fullfilename, $filename)
     {
+        if (getimagesize(Storage::path($path . "/" . $fullfilename)) == 0) {
+            return null;
+        }
         $fileimage = null;
         //supported extensions
         $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
@@ -965,9 +956,12 @@ class FolderController extends Controller
         }
         foreach ($fileExtensions as $fext) {
             if (array_search(strtolower($extension), $supportedExt) !== false) {
-
-                return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
-  
+                //Managing files with image extenssion but not images
+                if ($this->generateImageThumbnail($extension, $path, $fullfilename, $filename) == null) {
+                    return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
+                } else {
+                    return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
+                }
             }
             if (strtolower($extension) == strtolower($fext[0])) {
                 return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
@@ -988,7 +982,6 @@ class FolderController extends Controller
                 return 'storage/' . $thumbfile;
             } else {
                 return $this->generateVideoThumbnail($extension, $path, $fullfilename, $filename);
-               
             }
         }
 

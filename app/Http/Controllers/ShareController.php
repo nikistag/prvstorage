@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Share;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
+use Illuminate\Support\Facades\File;
 use DateTime;
 
 class ShareController extends Controller
@@ -14,7 +15,7 @@ class ShareController extends Controller
     {
         $old_shares = Share::where('user_id', auth()->user()->id)->get();
 
-        foreach($old_shares as $share){
+        foreach ($old_shares as $share) {
             if ($share->expiration < time()) {
                 $share->status = 'expired';
                 $share->save();
@@ -24,99 +25,133 @@ class ShareController extends Controller
 
         $path = '/' . auth()->user()->name;
         $directories = Storage::allDirectories(storage_path($path));
-        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
-        return view('share.index', compact('shares', 'quota', 'disk_free_space'));
+        return view('share.index', compact('shares'));
     }
 
     public function file(Request $request)
     {
-        $share_name = substr($request->input('fileshare'), strripos($request->input('fileshare'), '/') + 1);
-        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
+
+        $sharedFile = $request->input('fileToShareInput');
+
+        $share_name = substr($sharedFile, strripos($sharedFile, '/') + 1);
+
+        $zip_file_name = 'zpd_' . $share_name . "_" . time() . ".zip";
 
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
+
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
         //Create archive
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             // Add File in ZipArchive
-            $zip->addFile(Storage::path($request->input('fileshare')), $share_name);
+            $zip->addFile(Storage::path($sharedFile), $share_name);
             // Close ZipArchive     
             $zip->close();
         }
-
+        //Populate share model and save it
         $share = new Share();
         $share->user_id = auth()->user()->id;
         $share->path = $db_zip_path;
         $share->code = hash('ripemd160', time());
-        $share->expiration = time() + 259200;
-        $share->status = 'active';
+        $share->type = "file";
+        $share->storage = File::size(Storage::path($sharedFile));
+        if (strlen($share_name) >= 200) {
+            $share->composition = substr($share_name, 0, 196) . "...";
+        } else {
+            $share->composition = $share_name;
+        }
+        if ($request->has('unlimited')) {
+            $share->unlimited = 1;
+        }
+        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+
+        if ($share->expiration <= time()) {
+            $share->status = 'expired';
+        } else {
+            $share->status = 'active';
+        }
+
         $share->save();
 
         return view('share.create', compact('share', 'share_name'));
     }
     public function fileMulti(Request $request)
     {
-        
-        $share_name = $request->input("fileshare")[0]."-multi";
-        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
+ 
+        $share_name = $request->input("fileshare")[0] . "-multi";
+        $zip_file_name = 'zpd_' . $share_name . "_" . time() . ".zip";
 
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
+        $currentFolder = $this->getPath($request->input("current_folder_multifileshare"));
 
         //Create archive
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             // Add File in ZipArchive
-            foreach($request->input("fileshare") as $file){
-                $zip->addFile(Storage::path($request->input("path")."/".$file), $file);
-            }            
+            foreach ($request->input("fileshare") as $file) {
+                $zip->addFile(str_replace("//", "/", Storage::path($currentFolder . "/" . $file)), $file);
+            }
             // Close ZipArchive     
             $zip->close();
         }
 
+        //Populate share model and save it
         $share = new Share();
         $share->user_id = auth()->user()->id;
         $share->path = $db_zip_path;
         $share->code = hash('ripemd160', time());
-        $share->expiration = time() + 259200;
-        $share->status = 'active';
+        $share->type = "multiple files";
+        $share->storage = File::size(Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name));
+        if (strlen($request->input("composition_multifileshare")) >= 200) {
+            $share->composition = substr($request->input("composition_multifileshare"), 0, 185) . "... and more";
+        } else {
+            $share->composition = $request->input("composition_multifileshare");
+        }
+        if ($request->has('unlimited_multifileshare')) {
+            $share->unlimited = 1;
+        }
+        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration_multifileshare'))->format("U");
+
+        if ($share->expiration <= time()) {
+            $share->status = 'expired';
+        } else {
+            $share->status = 'active';
+        }
+
         $share->save();
+
         return view('share.create', compact('share', 'share_name'));
     }
 
     public function folder(Request $request)
     {
-        $path = $request->input('share-folder');
-        $share_name = substr($request->input('share-folder'), strripos($request->input('share-folder'), '/') + 1);
-        $zip_file_name = 'zpd_' . $share_name ."_". time() . ".zip";
+ 
+        $sharedFolder = $request->input('folderToShareInput');
 
+        $share_name = substr($sharedFolder, strripos($sharedFolder, '/') + 1);
+        $zip_file_name = 'zpd_' . $share_name . "_" . time() . ".zip";
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
 
-        $file_full_paths = Storage::allFiles($path);
-
-        $directory_full_paths = Storage::allDirectories($path);
-
+        $file_full_paths = Storage::allFiles($sharedFolder);
+        $directory_full_paths = Storage::allDirectories($sharedFolder);
+ 
         $zip_directory_paths = [];
         foreach ($directory_full_paths as $dir) {
-            array_push($zip_directory_paths, substr($dir, strlen($path)));
+            array_push($zip_directory_paths, substr($dir, strlen($sharedFolder)));
         }
-
         // Creating file names and path names to be archived
         $files_n_paths = [];
         foreach ($file_full_paths as $fl) {
             array_push($files_n_paths, [
                 'name' => substr($fl, strripos($fl, '/') + 1),
                 'path' => Storage::path($fl),
-                'zip_path' => substr($fl, strlen($path)),
+                'zip_path' => substr($fl, strlen($sharedFolder)),
             ]);
         }
-
-        //dd($zip_path);
-
+        // Create archive
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
             //Add folders to archive
@@ -131,13 +166,29 @@ class ShareController extends Controller
             $zip->close();
         }
 
-
+        //Populate share model and save it
         $share = new Share();
         $share->user_id = auth()->user()->id;
         $share->path = $db_zip_path;
         $share->code = hash('ripemd160', time());
-        $share->expiration = time() + 259200;
-        $share->status = 'active';
+        $share->type = "folder";
+        $share->storage = File::size(Storage::path($sharedFolder));
+        if (strlen($share_name) >= 200) {
+            $share->composition = substr($share_name, 0, 196) . "...";
+        } else {
+            $share->composition = $share_name;
+        }
+        if ($request->has('unlimited_folder')) {
+            $share->unlimited = 1;
+        }
+        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration_folder'))->format("U");
+
+        if ($share->expiration <= time()) {
+            $share->status = 'expired';
+        } else {
+            $share->status = 'active';
+        }
+
         $share->save();
 
         return view('share.create', compact('share', 'share_name'));
@@ -159,8 +210,31 @@ class ShareController extends Controller
         }
     }
 
-    public function delete(Request $request){
-        
+    public function update(Request $request, Share $share)
+    {
+
+        //Update share model and save it
+        if ($request->has('unlimited')) {
+            $share->unlimited = 1;
+        } else {
+            $share->unlimited = 0;
+        }
+        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+
+        if ($share->expiration <= time()) {
+            $share->status = 'expired';
+        } else {
+            $share->status = 'active';
+        }
+
+        $share->save();
+
+        return redirect(route('share.index'));
+    }
+
+    public function delete(Request $request)
+    {
+
         $share = Share::where('path', $request->input('filename'))->first();
 
         Storage::delete($share->path);
@@ -170,4 +244,16 @@ class ShareController extends Controller
         return redirect(route('share.index'))->with('success', 'Shared file/folder removed');
     }
 
+    //PRIVATE FUNCTIONS
+    private function getPath($current_folder)
+    {
+        $parent_search = explode("/", $current_folder);
+
+        if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
+            $path = $current_folder;                                               //Path to local network share           
+        } else {
+            $path = "/" . auth()->user()->name . $current_folder;                   //Path to folder of specific user               
+        }
+        return $path;
+    }
 }

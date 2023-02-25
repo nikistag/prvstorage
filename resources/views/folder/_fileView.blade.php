@@ -25,7 +25,7 @@
         @if($current_folder == '/ZTemp')
         @else
         <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$file['fullfilename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger share-file tooltipped" data-target="modalfileshare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
         <br />
         <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
@@ -33,8 +33,8 @@
         @if($file['filevideourl'] === null)
         @else
         <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
-        @endif        
-        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>        
+        @endif
+        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
         @endif
     </div>
 </div>
@@ -67,14 +67,10 @@
         <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
         &nbsp;
     </div>
-
 </div>
 
 @endif
 @endif
-
-<!-- MODALS FOR FILE MANIPULATION -->
-
 
 <!-- Form for downloading multiple files -->
 <form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
@@ -84,6 +80,8 @@
 
 <!-- Form for checking file readiness -->
 <form action="{{route('folder.fileReadiness')}}" id="fileReadinessForm"></form>
+
+<!-- MODALS FOR FILE MANIPULATION -->
 
 <!-- Directory tree move file modal -->
 <div id="treeMoveFileModal" class="modal">
@@ -299,7 +297,7 @@
     </form>
 </div>
 
-<!-- upload files modal -->
+<!-- Upload files modal -->
 <div id="modalfilesupload" class="modal modalupload">
     <form id="multiupload" method="POST" action="{{ route('folder.multiupload') }}" enctype="multipart/form-data">
         <div class="modal-content">
@@ -329,23 +327,137 @@
     </form>
     <div class="collection" id='file-list-display'></div>
 </div>
+<!-- Share file modal -->
+<div id="pickerContainer"></div>
+<div id="modalfileshare" class="modal">
+    <form id="fileshareform" method="POST" action="{{ route('share.file') }}">
+        <div class="modal-content">
+            <h5>Share file with "the wild"</h5>
+            @csrf
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+            <div class="row">
+                <div class="col s12">
+                    <i>File to share:</i>
+                    <strong><i><span id="showFileToShare"></span></i></strong>
+                    <input type="hidden" name="fileToShareInput" id="fileToShareInput" value="" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <div class="switch">
+                            <label>
+                                With unlimited downloads
+                                <input type="checkbox" name="unlimited" id="unlimited">
+                                <span class="lever"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="expiration" name="expiration" type="text" class="datepicker">
+                    <label for="expiration">Available till:</label>
+                </div>
+            </div>
+            <div class="modal-footer" id="multifilefooter">
+                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                    <i class="material-icons right">share</i>
+                </button>
+                <a href="#!" id="close-share-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- Share multi file modal -->
+<div id="modalfilemultishare" class="modal">
+    <form id="filemultishareform" method="POST" action="{{ route('share.fileMulti') }}">
+        <div class="modal-content">
+            <h5>Share selected files with "the wild"</h5>
+            @csrf            
+            <div class="row">
+                <div class="col s12">
+                    <i>Files to share:</i>
+                    <strong><i><span id="showFileMultiToShare"></span></i></strong>
+                    <input type="hidden" name="composition_multifileshare" id="composition_multifileshare" value="" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field inline">
+                        <div class="switch">
+                            <label>
+                                With unlimited downloads
+                                <input type="checkbox" name="unlimited_multifileshare" id="unlimited_multifileshare">
+                                <span class="lever"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="expiration_multifileshare" name="expiration_multifileshare" type="text" class="datepicker">
+                    <label for="expiration_multifileshare">Available till:</label>
+                </div>
+            </div>
+            <div class="modal-footer" id="multifilefooter">
+                <button id="submit-share-multi-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                    <i class="material-icons right">share</i>
+                </button>
+                <a href="#!" id="close-share-multi-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
+        </div>
+        <input type="hidden" name="current_folder_multifileshare" id="current_folder_multifileshare" value="{{$current_folder}}" />
+    </form>
+</div>
 
 <!-- SCRRIPTS FOR FILE MANIPULATION -->
 <script>
     $(document).ready(function() {
-        /* Manage link to share file */
-        $('.sharelink').on("click", (function(e) {
+        $('.datepicker').datepicker({
+            container: $('#pickerContainer'),
+        });
+        /* SHARE FILE MECHANICS */
+        /* Clear share file modal form */
+        $('#close-share-file-modal').on("click", (function(e) {
+            $('#showFileToShare').html("");
+            $('#fileToShareInput').val("");
+            $('#expiration').val("");
+            $('#unlimited').prop('checked', false);
+        }));
+        /* Open modal to share file with the wild */
+        $('.share-file').on("click", (function(e) {
+            e.preventDefault();
+            var fileToShare = $(this).attr('href');
+            $('#showFileToShare').html(fileToShare);
+            $('#fileToShareInput').val('{{$path}}' + '/' + fileToShare);
+        }));
+        /** Submit file share with the wild form */
+        $('#submit-share-file').on("click", (function(e) {
             e.preventDefault();
             var elem = document.getElementById('modalbgworking');
             var instance = M.Modal.getInstance(elem);
             instance.open();
             var forWhat = document.getElementById('preparing');
             forWhat.innerHTML = "Preparing share";
-            var fileshareinput = document.getElementById('fileshareinput');
-            fileshareinput.value = '{{$path}}' + '/' + $(this).attr('href');
             document.getElementById('fileshareform').submit();
         }));
-        /* Manage link to share multiple files */
+        /* END OF SHARE FILE MECHANICS */
+
+        /* SHARE MULTIPLE FILES MECHANICS */
+        /* Clear share file modal form */
+        $('#close-share-multi-file-modal').on("click", (function(e) {
+            $('#showFileMultiToShare').html("");
+            $('#expiration_multifileshare').val("");
+            $('#composition_multifileshare').val("");
+            $('#unlimited_multifileshare').prop('checked', false);
+            var currentFolderInput = document.getElementById('current_folder_multifileshare');
+            while (currentFolderInput.lastElementChild) {
+                currentFolderInput.removeChild(currentFolderInput.lastElementChild);
+            }
+        }));
         $('.sharelink-files').on("click", (function(e) {
             e.preventDefault();
             if ($('input[name="selectedFile"]:checked').length == 0) {
@@ -353,24 +465,38 @@
                     html: 'Nothing to do! No files selected'
                 });
             } else {
-                var elem = document.getElementById('modalbgworking');
-                var instance = M.Modal.getInstance(elem);
-                instance.open();
-                var forWhat = document.getElementById('preparing');
-                forWhat.innerHTML = "Preparing share";
+                var composition = "";
                 $('input[name="selectedFile"]:checked').each(function() {
                     var newInput = document.createElement("input");
                     newInput.type = "hidden";
                     newInput.name = "fileshare[]";
                     newInput.value = this.value;
-                    var path = document.getElementById('path');
-                    path.appendChild(newInput);
+                    var currentFolderInput = document.getElementById('current_folder_multifileshare');
+                    currentFolderInput.appendChild(newInput);
+                    composition = composition + this.value + "; ";
                 });
-                document.getElementById('multifileshareform').submit();
+                /* populate modal */
+                $('#showFileMultiToShare').html(composition);
+                $('#composition_multifileshare').val(composition);
+                /* open modal */
+                var multiFileShareModal = document.getElementById('modalfilemultishare');
+                var fileShareModalInstance = M.Modal.getInstance(multiFileShareModal);
+                fileShareModalInstance.open();
             }
-
         }));
+         /** Submit multi file share with the wild form */
+         $('#submit-share-multi-file').on("click", (function(e) {
+            e.preventDefault();
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing share";
+            document.getElementById('filemultishareform').submit();
+        }));
+        /* END OF SHARE MULTI FILE MECHANICS */
 
+        /* Rename file */
         $('.rename-file').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');
