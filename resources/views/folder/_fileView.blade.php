@@ -2,75 +2,74 @@
 <p>You have no files stored in this directory.</p>
 @else
 
-    @foreach($files as $file)
+@foreach($files as $file)
 
-    <div class="row">
-        <div class="col s4 left-align" style="position: relative;">
-            @if($file['filevideourl'] === null)
-            <!-- Image preview -->
-            <img src="{{asset($file['fileimageurl'])}}" alt="file image">
-            @else
-            <!-- Video preview -->
-            <video width="100" height="100" autoplay muted loop>
-                <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            @endif
-            <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
-        </div>
-        <div class="col s4">
-            <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
-        </div>
-        <div class="col s4 right-align">
-            @if($current_folder == '/ZTemp')
-            @else
-            <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-            <a href="{{$file['fullfilename']}}" class="tooltipped sharelink" data-tooltip="Share"><i class="material-icons blue-text">share</i></a>
-            <a href="{{$file['fullfilename']}}" class="modal-trigger share-file tooltipped" data-target="modalfileshare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
-            <br />
-            <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
-            <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
-            <br />
-            @if($file['filevideourl'] === null)
-            @else
-            <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
-            @endif
-            <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
-            @endif
-        </div>
+<div class="row">
+    <div class="col s4 left-align" style="position: relative;">
+        @if($file['filevideourl'] === null)
+        <!-- Image preview -->
+        <img src="{{asset($file['fileimageurl'])}}" alt="file image">
+        @else
+        <!-- Video preview -->
+        <video width="100" height="100" autoplay muted loop>
+            <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        @endif
+        <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
     </div>
-    <div class="row" style="border-bottom: 1px solid gray;">
-        <div class="col s12 left-align">
-            <label>
-                <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
-                <span>
-                    <span class="hide-on-small-only grey-text text-darken-3">{{$file['fullfilename']}}</span>
-                    <span class="hide-on-med-and-up tooltipped grey-text text-darken-3" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
-                </span>
-            </label>
-        </div>
+    <div class="col s4">
+        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
     </div>
-
-    @endforeach
-
-    @if($current_folder == '/ZTemp')
-    @else
-
-    <div class="row center left-align blue-grey lighten-4">
-        <div class="selectedaction blue-grey lighten-4" id="selectedaction">
-            &nbsp;
-            <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
-            &nbsp;
-            <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
-            &nbsp;
-            <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
-            &nbsp;
-            <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
-            &nbsp;
-        </div>
+    <div class="col s4 right-align">
+        @if($current_folder == '/ZTemp')
+        @else
+        <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger share-file tooltipped" data-target="modalfileshare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
+        <br />
+        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
+        <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
+        <br />
+        @if($file['filevideourl'] === null)
+        @else
+        <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
+        @endif
+        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+        @endif
     </div>
+</div>
+<div class="row" style="border-bottom: 1px solid gray;">
+    <div class="col s12 left-align">
+        <label>
+            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
+            <span>
+                <span class="hide-on-small-only grey-text text-darken-3">{{$file['fullfilename']}}</span>
+                <span class="hide-on-med-and-up tooltipped grey-text text-darken-3" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
+            </span>
+        </label>
+    </div>
+</div>
 
-    @endif
+@endforeach
+
+@if($current_folder == '/ZTemp')
+@else
+
+<div class="row center left-align blue-grey lighten-4">
+    <div class="selectedaction blue-grey lighten-4" id="selectedaction">
+        &nbsp;
+        <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
+        &nbsp;
+        <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
+        &nbsp;
+        <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
+        &nbsp;
+        <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+        &nbsp;
+    </div>
+</div>
+
+@endif
 @endif
 
 <!-- Form for downloading multiple files -->
@@ -329,7 +328,7 @@
     <div class="collection" id='file-list-display'></div>
 </div>
 <!-- Share file modal -->
-<div id="testPickerContainer"></div>
+<div id="pickerContainer"></div>
 <div id="modalfileshare" class="modal">
     <form id="fileshareform" method="POST" action="{{ route('share.file') }}">
         <div class="modal-content">
@@ -359,7 +358,7 @@
             <div class="row">
                 <div class="input-field col s12">
                     <input id="expiration" name="expiration" type="text" class="datepicker">
-                    <label for="first_name">Available till:</label>
+                    <label for="expiration">Available till:</label>
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
@@ -372,18 +371,16 @@
     </form>
 </div>
 <!-- Share multi file modal -->
-<div id="pickerContainer"></div>
 <div id="modalfilemultishare" class="modal">
     <form id="filemultishareform" method="POST" action="{{ route('share.fileMulti') }}">
         <div class="modal-content">
             <h5>Share selected files with "the wild"</h5>
-            @csrf
-            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+            @csrf            
             <div class="row">
                 <div class="col s12">
-                    <i>File to share:</i>
+                    <i>Files to share:</i>
                     <strong><i><span id="showFileMultiToShare"></span></i></strong>
-                    <input type="hidden" name="fileMultiToShareInput" id="fileMultiToShareInput" value="" />
+                    <input type="hidden" name="composition_multifileshare" id="composition_multifileshare" value="" />
                 </div>
             </div>
             <div class="row">
@@ -392,7 +389,7 @@
                         <div class="switch">
                             <label>
                                 With unlimited downloads
-                                <input type="checkbox" name="unlimited" id="unlimited">
+                                <input type="checkbox" name="unlimited_multifileshare" id="unlimited_multifileshare">
                                 <span class="lever"></span>
                             </label>
                         </div>
@@ -401,32 +398,20 @@
             </div>
             <div class="row">
                 <div class="input-field col s12">
-                    <input id="expiration" name="expiration" type="text" class="datepicker">
-                    <label for="first_name">Available till:</label>
+                    <input id="expiration_multifileshare" name="expiration_multifileshare" type="text" class="datepicker">
+                    <label for="expiration_multifileshare">Available till:</label>
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
-                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                <button id="submit-share-multi-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-multi-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
+        <input type="hidden" name="current_folder_multifileshare" id="current_folder_multifileshare" value="{{$current_folder}}" />
     </form>
 </div>
-<!-- Form used to initiate file share -->
-<!-- 
-<form method="POST" id="fileshareform" action="{{route('share.file')}}">
-    @csrf
-    <input id="fileshareinput" type="hidden" name="fileshare" value="">
-</form>
-
- -->
-<!-- Form used to initiate multiple files share -->
-<form method="POST" id="multifileshareform" action="{{route('share.fileMulti')}}">
-    @csrf
-    <input id="path" type="hidden" name="path" value="{{$path}}" />
-</form>
 
 <!-- SCRRIPTS FOR FILE MANIPULATION -->
 <script>
@@ -434,6 +419,8 @@
         $('.datepicker').datepicker({
             container: $('#pickerContainer'),
         });
+        /* SHARE FILE MECHANICS */
+        /* Clear share file modal form */
         $('#close-share-file-modal').on("click", (function(e) {
             $('#showFileToShare').html("");
             $('#fileToShareInput').val("");
@@ -447,7 +434,7 @@
             $('#showFileToShare').html(fileToShare);
             $('#fileToShareInput').val('{{$path}}' + '/' + fileToShare);
         }));
-        /** Submit file share form */
+        /** Submit file share with the wild form */
         $('#submit-share-file').on("click", (function(e) {
             e.preventDefault();
             var elem = document.getElementById('modalbgworking');
@@ -457,20 +444,20 @@
             forWhat.innerHTML = "Preparing share";
             document.getElementById('fileshareform').submit();
         }));
+        /* END OF SHARE FILE MECHANICS */
 
-        /* Manage link to share file */
-        $('.sharelink').on("click", (function(e) {
-            e.preventDefault();
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            instance.open();
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing share";
-            var fileshareinput = document.getElementById('fileshareinput');
-            fileshareinput.value = '{{$path}}' + '/' + $(this).attr('href');
-            document.getElementById('fileshareform').submit();
+        /* SHARE MULTIPLE FILES MECHANICS */
+        /* Clear share file modal form */
+        $('#close-share-multi-file-modal').on("click", (function(e) {
+            $('#showFileMultiToShare').html("");
+            $('#expiration_multifileshare').val("");
+            $('#composition_multifileshare').val("");
+            $('#unlimited_multifileshare').prop('checked', false);
+            var currentFolderInput = document.getElementById('current_folder_multifileshare');
+            while (currentFolderInput.lastElementChild) {
+                currentFolderInput.removeChild(currentFolderInput.lastElementChild);
+            }
         }));
-        /* Manage link to share multiple files */
         $('.sharelink-files').on("click", (function(e) {
             e.preventDefault();
             if ($('input[name="selectedFile"]:checked').length == 0) {
@@ -478,24 +465,38 @@
                     html: 'Nothing to do! No files selected'
                 });
             } else {
-                var elem = document.getElementById('modalbgworking');
-                var instance = M.Modal.getInstance(elem);
-                instance.open();
-                var forWhat = document.getElementById('preparing');
-                forWhat.innerHTML = "Preparing share";
+                var composition = "";
                 $('input[name="selectedFile"]:checked').each(function() {
                     var newInput = document.createElement("input");
                     newInput.type = "hidden";
                     newInput.name = "fileshare[]";
                     newInput.value = this.value;
-                    var path = document.getElementById('path');
-                    path.appendChild(newInput);
+                    var currentFolderInput = document.getElementById('current_folder_multifileshare');
+                    currentFolderInput.appendChild(newInput);
+                    composition = composition + this.value + "; ";
                 });
-                document.getElementById('multifileshareform').submit();
+                /* populate modal */
+                $('#showFileMultiToShare').html(composition);
+                $('#composition_multifileshare').val(composition);
+                /* open modal */
+                var multiFileShareModal = document.getElementById('modalfilemultishare');
+                var fileShareModalInstance = M.Modal.getInstance(multiFileShareModal);
+                fileShareModalInstance.open();
             }
-
         }));
+         /** Submit multi file share with the wild form */
+         $('#submit-share-multi-file').on("click", (function(e) {
+            e.preventDefault();
+            var elem = document.getElementById('modalbgworking');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            var forWhat = document.getElementById('preparing');
+            forWhat.innerHTML = "Preparing share";
+            document.getElementById('filemultishareform').submit();
+        }));
+        /* END OF SHARE MULTI FILE MECHANICS */
 
+        /* Rename file */
         $('.rename-file').on("click", (function(e) {
             e.preventDefault();
             var filename = $(this).attr('href');

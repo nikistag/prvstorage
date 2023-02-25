@@ -73,7 +73,7 @@ class FolderController extends Controller
                 'filesize' => $this->getFileSize($file)
             ]);
         }
-        
+
         //Generate folder tree view
         $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
         //Remove ZTemp folder from specific folder tree view
@@ -807,6 +807,9 @@ class FolderController extends Controller
     }
     private function generateImageThumbnail($extension, $path, $fullfilename, $filename)
     {
+        if (getimagesize(Storage::path($path . "/" . $fullfilename)) == 0) {
+            return null;
+        }
         $fileimage = null;
         //supported extensions
         $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
@@ -953,9 +956,12 @@ class FolderController extends Controller
         }
         foreach ($fileExtensions as $fext) {
             if (array_search(strtolower($extension), $supportedExt) !== false) {
-
-                return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
-  
+                //Managing files with image extenssion but not images
+                if ($this->generateImageThumbnail($extension, $path, $fullfilename, $filename) == null) {
+                    return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
+                } else {
+                    return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
+                }
             }
             if (strtolower($extension) == strtolower($fext[0])) {
                 return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
@@ -976,7 +982,6 @@ class FolderController extends Controller
                 return 'storage/' . $thumbfile;
             } else {
                 return $this->generateVideoThumbnail($extension, $path, $fullfilename, $filename);
-               
             }
         }
 
