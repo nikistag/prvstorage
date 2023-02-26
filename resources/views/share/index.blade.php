@@ -8,7 +8,15 @@
         <div class="determinate" style="width: {{$quota}}%"></div>
     </div>
 </div>
-<a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+<div class="row">
+    <div class="col s6 left-align">
+        <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+    </div>
+    <div class="col s6 right-align">
+        <a href="{{route('share.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i class="material-icons right">delete_forever</i>Purge all</a>
+    </div>
+</div>
+
 <h4>Shares</h4>
 <table class="responsive-table">
     <thead>

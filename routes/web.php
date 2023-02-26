@@ -76,8 +76,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
         Route::get('/share/{share}/edit', [ShareController::class, 'edit'])->name('share.edit');
         Route::put('/share/{share}/update', [ShareController::class, 'update'])->name('share.update');
-        //User administration routes
+        Route::get('/share/purge', [ShareController::class, 'purge'])->name('share.purge');
         
+        //User administration routes
         Route::middleware(['isadmin'])->group(function () {
             Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
