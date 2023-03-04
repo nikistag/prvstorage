@@ -91,7 +91,10 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        {!!$treeMoveFolder!!}
+        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <ul id="treeViewFolder" class="browser-default left-align">
+            {!!$treeMoveFolder!!}
+        </ul>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
@@ -354,19 +357,7 @@
             document.getElementById('foldershareform').submit();
         }));
         /* END OF SHARE FOLDER MECHANICS */
-        /* Manage link to share folder */
-       /*  $('.sharelink-folder').on("click", (function(e) {
-            e.preventDefault();
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            instance.open();
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing share";
-            var fileshareinput = document.getElementById('fileshareinput');
-            folderShareForm = 'shareform' + $(this).attr('href');
-            document.getElementById(folderShareForm).submit();
-        }));
- */
+
         $('.edit-folder').on("click", (function(e) {
             e.preventDefault();
             var foldername = $(this).attr('href');

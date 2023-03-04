@@ -90,7 +90,10 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        {!!$treeMoveFile!!}
+        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <ul id="treeViewFile" class="browser-default left-align">
+            {!!$treeMoveFile!!}
+        </ul>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
@@ -153,7 +156,10 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        {!!$treeMoveMulti!!}
+        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <ul id="treeViewMulti" class="browser-default left-align">
+            {!!$treeMoveMulti!!}
+        </ul>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
@@ -375,7 +381,7 @@
     <form id="filemultishareform" method="POST" action="{{ route('share.fileMulti') }}">
         <div class="modal-content">
             <h5>Share selected files with "the wild"</h5>
-            @csrf            
+            @csrf
             <div class="row">
                 <div class="col s12">
                     <i>Files to share:</i>
@@ -484,8 +490,8 @@
                 fileShareModalInstance.open();
             }
         }));
-         /** Submit multi file share with the wild form */
-         $('#submit-share-multi-file').on("click", (function(e) {
+        /** Submit multi file share with the wild form */
+        $('#submit-share-multi-file').on("click", (function(e) {
             e.preventDefault();
             var elem = document.getElementById('modalbgworking');
             var instance = M.Modal.getInstance(elem);
@@ -566,7 +572,7 @@
                 M.toast({
                     html: 'Nothing to do! No files selected'
                 });
-            } else {
+            } else {                
                 var elem = document.getElementById('modalmovefiles');
                 var instance = M.Modal.getInstance(elem);
                 instance.open();
@@ -575,6 +581,9 @@
                     filename = filename + this.value + ', ';
                 });
                 $('input[name=fileDisplayMulti]').val(filename);
+                var viewFolder = document.getElementById('viewWhereToFolderMulti');  
+                viewFolder.value = '';
+       
             }
         }));
 
@@ -596,7 +605,7 @@
             var instance = M.Modal.getInstance(moveMultiModal);
             instance.close();
             jsInput.value = target;
-            viewInput.value = target;
+            viewInput.value = $(this).attr('data-folder-view');
         }));
 
         $('#copyMultiFileSubmit').on("click", (function(e) {

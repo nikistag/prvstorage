@@ -74,14 +74,30 @@ class FolderController extends Controller
             ]);
         }
 
-        //Generate folder tree view
-        $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
-        //Remove ZTemp folder from specific folder tree view
-        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3" href="' . route('folder.root', ["current_folder" => "/ZTemp"]) . '" data-folder="ZTemp"><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
-        $folderTreeViewTemp = str_replace($stringToRemove, "", $folderTreeView);
-        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeViewTemp);
-        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeViewTemp);
-        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeViewTemp);
+        //Generate folder tree view - collection
+        $collection = collect($full_private_directory_paths);
+
+        $treeDirectories = $collection->reject(function ($value, $key) {
+            return $value == auth()->user()->name."/ZTemp";
+        });
+
+        $treeCollection = $treeDirectories->map(function ($item) {
+            $dir = substr($item, strlen(auth()->user()->name));
+            return explode('/', $dir);
+        });
+        $userRoot = $this->convertPathsToTree($treeCollection)->first();
+
+       // dd($userRoot['children']);
+
+        //$html = '<ul id="treeView" class="browser-default left-align">';
+        $folderTreeView = '<li><span class="folder-tree-root"></span>';
+        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
+        $folderTreeView .= $this->generateView($userRoot['children']);
+        //$html .='</ul>';
+
+        $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
+        $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
+        $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
         return view('folder.root', compact(
             'directories',
             'files',
@@ -1000,38 +1016,53 @@ class FolderController extends Controller
         array_push($headers, ['Content-Disposition' => 'attachment; filename=' . $this->getFileName($path)]);
         return $headers;
     }
-    private function generateFolderTree($directories, $path, $trail)
+    private function generateView($directories)
     {
-        $html = '';
-        $html .= '<a class="collection-item blue-grey-text text-darken-3';
-        $html .= $path == '/' . auth()->user()->name ? ' active"' : '"';
-        $html .= 'href="' . route('folder.root', ['current_folder' => $trail]) . '" data-folder="Root" data-folder-view="Root"><i class="material-icons orange-text">folder</i>Root</a>';
-        //dd($directories);
+       // dd($directories);
+        $view = '';   
         foreach ($directories as $directory) {
-            $ceva = explode('/', $directory);
-            $html .= '<a class="collection-item blue-grey-text text-darken-3';
-            $html .= $path == '/' . $directory ? ' active"' : '"';
-            $html .= ' href="' . route('folder.root', ['current_folder' => $this->getFolderURLParam($ceva)]) . '" data-folder="' . substr($this->getFolderURLParam($ceva), 1) . '" data-folder-view ="' . substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1) . '">';
-            for ($i = 0; $i < count($ceva) - 1; $i++) {
-                $html .= '<span class="black-text">-</span>';
+            $withChildren = count($directory['children']) > 0 ? true : false;
+            $view .= '<li>';
+            if($withChildren){
+                $view .= '<span class="folder-tree"></span>';
+                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path']. '" data-folder-view ="' . $directory['label'] . '">';
+                $view .= $directory['label'] . '</a>';
+                $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
+                $view .= $this->generateView($directory['children']);
+                $view .= '</ul>';
+
+            }else{
+                $view .= '<span class="folder-tree-empty"></span>';
+                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path']. '" data-folder-view ="' . $directory['label'] . '">';
+                $view .= $directory['label'] . '</a>';
             }
-            $html .= '<i class="material-icons orange-text">folder</i>';
-            $html .= substr(strrchr($directory, "/"), 1, strlen(strrchr($directory, "/")) - 1);
-            $html .= '</a>';
+            $view .= '</li>';
+            
         }
-        $html .= '<a class="collection-item blue-grey-text text-darken-3';
-        $html .= $path == '/NShare'  ? ' active"' : '"';
-        $html .= 'href="' . route('folder.root', ['current_folder' => '/NShare']) . '" data-folder="NShare" data-folder-view="NShare"><i class="material-icons blue-text">folder</i>NShare</a>';
-        return $html;
+
+        return $view;
     }
 
-    private function getFolderURLParam($explodedFolder)
+    private function convertPathsToTree($paths, $separator = '/', $parent = null)
     {
-        $back = '';
-        for ($i = 1; $i < count($explodedFolder); $i++) {
-            $back .= '/' . $explodedFolder[$i];
-        }
-        return $back;
+        return $paths
+            ->groupBy(function ($parts) {
+                return $parts[0];
+            })->map(function ($parts, $key) use ($separator, $parent) {
+                $childrenPaths = $parts->map(function ($parts) {
+                    return array_slice($parts, 1);
+                })->filter();
+
+                return [
+                    'label' => (string) $key,
+                    'path' => $parent . $key,
+                    'children' => $this->convertPathsToTree(
+                        $childrenPaths,
+                        $separator,
+                        $parent . $key . $separator
+                    ),
+                ];
+            })->values();
     }
 
     private function removeThumbs($file, $path)

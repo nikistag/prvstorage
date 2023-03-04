@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 //Controllers
-use App\Http\Controllers\WorkController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\UserController;
@@ -28,8 +28,8 @@ Route::get('/dashboard', function () {
 
 require __DIR__ . '/auth.php';
 
-//work route - testing route
-Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
+//TEST route - testing route
+Route::get('/test', [TestController::class, 'test'])->name('test');
 
 //Folder routes
 Route::middleware(['auth'])->group(function () {
