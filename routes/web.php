@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 //Controllers
-use App\Http\Controllers\WorkController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\UserController;
@@ -28,8 +28,8 @@ Route::get('/dashboard', function () {
 
 require __DIR__ . '/auth.php';
 
-//work route - testing route
-Route::get('/makedir', [WorkController::class, 'makedir'])->name('makedir');
+//TEST route - testing route
+Route::get('/test', [TestController::class, 'test'])->name('test');
 
 //Folder routes
 Route::middleware(['auth'])->group(function () {
@@ -76,8 +76,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/share/delete', [ShareController::class, 'delete'])->name('share.delete');
         Route::get('/share/{share}/edit', [ShareController::class, 'edit'])->name('share.edit');
         Route::put('/share/{share}/update', [ShareController::class, 'update'])->name('share.update');
-        //User administration routes
+        Route::get('/share/purge', [ShareController::class, 'purge'])->name('share.purge');
         
+        //User administration routes
         Route::middleware(['isadmin'])->group(function () {
             Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
             Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');

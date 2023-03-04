@@ -7,8 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" value="{{ csrf_token() }}">
 
-    <link rel="stylesheet" type="text/css" href={{ asset('css/materialize.css')}} />
-    <link rel="icon" type="image/x-icon" href="{{asset('img/prvstorage.ico')}}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/materialize.css')}}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('img/prvstorage.ico')}}" />
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/prvstorage.css')}}" />
 
     <script src={{ asset('js/jquery3_6.js') }}></script>
     <script src={{ asset('js/materialize.js') }}></script>
@@ -149,6 +151,9 @@
                 e.preventDefault();
                 $('#logoutform').submit();
             });
+
+            $('.collapsible').collapsible();
+
         });
     </script>
 

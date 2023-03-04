@@ -78,7 +78,7 @@ class ShareController extends Controller
     }
     public function fileMulti(Request $request)
     {
- 
+
         $share_name = $request->input("fileshare")[0] . "-multi";
         $zip_file_name = 'zpd_' . $share_name . "_" . time() . ".zip";
 
@@ -127,7 +127,7 @@ class ShareController extends Controller
 
     public function folder(Request $request)
     {
- 
+
         $sharedFolder = $request->input('folderToShareInput');
 
         $share_name = substr($sharedFolder, strripos($sharedFolder, '/') + 1);
@@ -137,7 +137,7 @@ class ShareController extends Controller
 
         $file_full_paths = Storage::allFiles($sharedFolder);
         $directory_full_paths = Storage::allDirectories($sharedFolder);
- 
+
         $zip_directory_paths = [];
         foreach ($directory_full_paths as $dir) {
             array_push($zip_directory_paths, substr($dir, strlen($sharedFolder)));
@@ -242,6 +242,22 @@ class ShareController extends Controller
         $share->delete();
 
         return redirect(route('share.index'))->with('success', 'Shared file/folder removed');
+    }
+
+    public function purge()
+    {
+
+        $shares = Share::where('user_id', auth()->user()->id)->get();
+
+        if (count($shares) > 0) {
+            foreach ($shares as $share) {
+                Storage::delete($share->path);
+
+                $share->delete();
+            }
+        }
+
+        return redirect(route('share.index'))->with('success', 'All shares have been purged');
     }
 
     //PRIVATE FUNCTIONS

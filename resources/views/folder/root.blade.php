@@ -70,7 +70,10 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        {!!$folderTreeView!!}
+        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <ul id="treeView" class="browser-default left-align">
+            {!!$folderTreeView!!}
+        </ul>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
@@ -86,7 +89,7 @@
         <div class="progress">
             <div class="indeterminate"></div>
         </div>
-    </div>    
+    </div>
 </div>
 
 <script>
@@ -99,10 +102,24 @@
         $('#modalfileshare').modal({
             dismissible: false,
         });
+        $('#modal1').modal({
+            onOpenEnd: function() {
+                $('#newfolder').focus();
+            },
+        });
         $('select').formSelect();
         $('#folder-tree-view').sidenav({
             edge: 'left'
         });
+        /** Folder tree expanding */
+        var toggler = document.getElementsByClassName("folder-tree");
+        var i;
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function() {
+                this.parentElement.querySelector(".nested").classList.toggle("active-tree");
+                this.classList.toggle("folder-tree-down");
+            });
+        }
     });
 
     function jsUpload(form, input, display) {
@@ -152,7 +169,7 @@
 
                 var fileDisplayName = document.createElement("div"); // create div for file info
                 fileDisplayName.setAttribute("class", "col s9 right-align");
-                fileDisplayName.innerHTML = file.name.length > 38 ? file.name.substr(0,35) + "~..." : file.name;
+                fileDisplayName.innerHTML = file.name.length > 38 ? file.name.substr(0, 35) + "~..." : file.name;
                 fileDisplayNameNProgress.appendChild(fileDisplayName);
 
                 var fileDisplayProgress = document.createElement("div"); // create div for progress percentage
@@ -197,7 +214,7 @@
                     progressPercent.innerHTML = progresspc + "%";
                     if (progresspc == 100) {
                         console.log("Saved one file!");
-                        progressPercent.innerHTML ="Processing";
+                        progressPercent.innerHTML = "Processing";
                     }
                 }
             }, false);
