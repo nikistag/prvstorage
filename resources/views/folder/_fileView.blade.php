@@ -90,7 +90,7 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
         <ul id="treeViewFile" class="browser-default left-align">
             {!!$treeMoveFile!!}
         </ul>
@@ -156,7 +156,7 @@
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        <p>Click / tap folder icon to expand<br /> Click / tap folder name to select</p>
+        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
         <ul id="treeViewMulti" class="browser-default left-align">
             {!!$treeMoveMulti!!}
         </ul>

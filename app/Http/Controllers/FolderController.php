@@ -87,13 +87,9 @@ class FolderController extends Controller
         });
         $userRoot = $this->convertPathsToTree($treeCollection)->first();
 
-       // dd($userRoot['children']);
-
-        //$html = '<ul id="treeView" class="browser-default left-align">';
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
         $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
         $folderTreeView .= $this->generateView($userRoot['children']);
-        //$html .='</ul>';
 
         $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
         $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
@@ -618,18 +614,27 @@ class FolderController extends Controller
                 'filesize' => $this->getFileSize($file)
             ]);
         }
-        //Data to compute free space
-        $disk_free_space = round(disk_free_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $disk_total_space = round(disk_total_space(config('filesystems.disks.local.root')) / 1073741824, 2);
-        $quota = round(($disk_total_space - $disk_free_space) * 100 / $disk_total_space, 0);
-        //Generate folder tree view
-        $folderTreeView = '<div class="collection left-align">' . $this->generateFolderTree($full_private_directory_paths, $path, '') . '</div>'; //modal variant - OPTIMIZED
-        //Remove ZTemp folder from specific folder tree view        
-        $stringToRemove = '<a class="collection-item blue-grey-text text-darken-3" href="' . route('folder.root', ["current_folder" => "/ZTemp"]) . '" data-folder="ZTemp"><span class="black-text">-</span><i class="material-icons orange-text">folder</i>ZTemp</a>';
-        $folderTreeViewTemp = str_replace($stringToRemove, "", $folderTreeView);
-        $treeMoveFolder = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeViewTemp);
-        $treeMoveFile = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeViewTemp);
-        $treeMoveMulti = str_replace("collection-item blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeViewTemp);
+
+//Generate folder tree view - collection
+        $collection = collect($full_private_directory_paths);
+
+        $treeDirectories = $collection->reject(function ($value, $key) {
+            return $value == auth()->user()->name."/ZTemp";
+        });
+
+        $treeCollection = $treeDirectories->map(function ($item) {
+            $dir = substr($item, strlen(auth()->user()->name));
+            return explode('/', $dir);
+        });
+        $userRoot = $this->convertPathsToTree($treeCollection)->first();
+
+        $folderTreeView = '<li><span class="folder-tree-root"></span>';
+        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
+        $folderTreeView .= $this->generateView($userRoot['children']);
+
+        $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
+        $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
+        $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
 
         return view('folder.searchForm', compact(
             'directories',
