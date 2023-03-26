@@ -42,7 +42,10 @@
         </div>
         <div class="modal-content">
             <h5>Folder tree</h5>
-            {!!$folderTreeView!!}
+            <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
+            <ul id="treeView" class="browser-default left-align">
+                {!!$folderTreeView!!}
+            </ul>
         </div>
         <div class="modal-footer">
             <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
@@ -82,6 +85,15 @@
             $('#folder-tree-view').sidenav({
                 edge: 'left'
             });
+            /** Folder tree expanding */
+            var toggler = document.getElementsByClassName("folder-tree");
+            var i;
+            for (i = 0; i < toggler.length; i++) {
+                toggler[i].addEventListener("click", function() {
+                    this.parentElement.querySelector(".nested").classList.toggle("active-tree");
+                    this.classList.toggle("folder-tree-down");
+                });
+            }
             //Ajax search for files and folders
             $('#searchstring').on("keyup", (function(e) {
                 e.preventDefault();
@@ -103,7 +115,7 @@
             //Prevent search form from submitting input
             $('#searchform').on("submit", (function(e) {
                 e.preventDefault();
-                
+
             }));
         });
 
