@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/folder/searchForm', [FolderController::class, 'searchForm'])->name('folder.searchForm');
         Route::post('/folder/search', [FolderController::class, 'search'])->name('folder.search'); // ajax request - not yet
         Route::get('/folder/filestream', [FolderController::class, 'filestream'])->name('folder.filestream');
+        Route::get('/folder/mediapreview', [FolderController::class, 'mediapreview'])->name('folder.mediapreview'); // ajax request
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');
