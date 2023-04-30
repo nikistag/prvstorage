@@ -42,13 +42,13 @@ Route::middleware(['auth'])->group(function () {
 
         //Folder routes
         Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
-        Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
-        Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
-        Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
+        Route::post('/folder/folderNew', [FolderController::class, 'folderNew'])->name('folder.folderNew');
+        Route::post('/folder/folderEdit', [FolderController::class, 'folderEdit'])->name('folder.folderEdit');
+        Route::post('/folder/folderMove', [FolderController::class, 'folderMove'])->name('folder.folderMove');
         Route::post('/folder/folderupload', [FolderController::class, 'folderupload'])->name('folder.folderupload');
         Route::post('/folder/emptytemp', [FolderController::class, 'emptytrash'])->name('folder.emptytrash');
         Route::post('/folder/emptytrash', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
-        Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
+        Route::delete('/folder/folderRemove', [FolderController::class, 'folderRemove'])->name('folder.folderRemove');
         Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
         Route::post('/folder/moveFileBig', [FolderController::class, 'moveFileBig'])->name('folder.moveFileBig'); 

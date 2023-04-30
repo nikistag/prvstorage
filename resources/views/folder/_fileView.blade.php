@@ -8,7 +8,7 @@
     <div class="col s4 left-align" style="position: relative;">
         @if($file['filevideourl'] === null)
         <!-- Image preview -->
-        <img src="{{asset($file['fileimageurl'])}}" alt="file image" class="media-preview-trigger" data-data="{{$file['fullfilename']}}">
+        <img src="{{asset($file['fileimageurl']['thumb'])}}" alt="file image" class="{{$file['fileimageurl']['original'] == true ? 'media-preview-trigger' : ''}}" data-data="{{$file['fullfilename']}}">
         @else
         <!-- Video preview -->
         <video width="100" height="100" autoplay muted loop class="media-preview-trigger" data-data="{{$file['fullfilename']}}">
@@ -420,22 +420,22 @@
 </div>
 <!-- Media preview modal-->
 <div id="mediaModal" class="modal">
-    <div class="modal-content" id="mediaPreview">
+    <div class="modal-content center-align" id="mediaPreview" style="padding:10px;">
         <h5 id="mediaFileName">Loading...</h5>
         <div class="progress">
             <div class="indeterminate"></div>
         </div>
     </div>
     <div class="modal-footer">
-        <div class="row center-align">
-            <div class="col s2">
-                <a href="#!" id="leftChevron" class="preview-links"><i class="material-icons medium">chevron_left</i></a>
+        <div class="row">
+            <div class="col s3 right-align">
+                <a href="#!" id="leftChevron" class="preview-links hide"><i class="material-icons medium">chevron_left</i></a>
             </div>
-            <div class="col s8">
+            <div class="col s6 center-align">
                 <a href="#!" class="modal-close btn-small red">Close</a>
             </div>
-            <div class="col s2">
-                <a href="#!" id="rightChevron" class="preview-links"><i class="material-icons medium">chevron_right</i></a>
+            <div class="col s3 left-align">
+                <a href="#!" id="rightChevron" class="preview-links hide"><i class="material-icons medium">chevron_right</i></a>
             </div>
         </div>
     </div>
@@ -471,16 +471,24 @@
                     if (typeof data.html !== "undefined") {
                         previewDiv.innerHTML = data.html;
                         if (data.leftChevron == 'active') {
-                            leftChevron.removeAttribute("class");
+                            if(leftChevron.classList.contains("hide")){
+                                leftChevron.classList.remove("hide");
+                            }                            
                             leftChevron.setAttribute("data-data", data.leftLink);
                         }else{
-                            leftChevron.setAttribute("class", "inactive");
+                            if(!leftChevron.classList.contains("hide")){
+                                leftChevron.classList.add("hide");
+                            }   
                         }
                         if (data.rightChevron == 'active') {
-                            rightChevron.removeAttribute("class");
+                            if(rightChevron.classList.contains("hide")){
+                                rightChevron.classList.remove("hide");
+                            } 
                             rightChevron.setAttribute("data-data", data.rightLink);
                         }else{
-                            rightChevron.setAttribute("class", "inactive");
+                            if(!rightChevron.classList.contains("hide")){
+                                rightChevron.classList.add("hide");
+                            }  
                         }
                     }
                 }
@@ -493,6 +501,7 @@
             var previewDiv = document.getElementById('mediaPreview');
             var leftChevron = document.getElementById("leftChevron");
             var rightChevron = document.getElementById("rightChevron");
+            previewDiv.innerHTML = '<h5 id="mediaFileName">Loading...</h5><div class="progress"><div class="indeterminate"></div></div>';
             $.ajax({
                 url: "{{route('folder.mediapreview')}}",
                 type: "GET",
@@ -505,16 +514,24 @@
                     if (typeof data.html !== "undefined") {
                         previewDiv.innerHTML = data.html;
                         if (data.leftChevron == 'active') {
-                            leftChevron.removeAttribute("class");
+                            if(leftChevron.classList.contains("hide")){
+                                leftChevron.classList.remove("hide");
+                            }                            
                             leftChevron.setAttribute("data-data", data.leftLink);
                         }else{
-                            leftChevron.setAttribute("class", "inactive");
+                            if(!leftChevron.classList.contains("hide")){
+                                leftChevron.classList.add("hide");
+                            }   
                         }
                         if (data.rightChevron == 'active') {
-                            rightChevron.removeAttribute("class");
+                            if(rightChevron.classList.contains("hide")){
+                                rightChevron.classList.remove("hide");
+                            } 
                             rightChevron.setAttribute("data-data", data.rightLink);
                         }else{
-                            rightChevron.setAttribute("class", "inactive");
+                            if(!rightChevron.classList.contains("hide")){
+                                rightChevron.classList.add("hide");
+                            }  
                         }
                     }
                 }

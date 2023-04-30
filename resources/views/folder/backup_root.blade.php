@@ -197,7 +197,7 @@
 
 <!-- New folder modal -->
 <div id="modal1" class="modal">
-    <form method="POST" action="{{ route('folder.newfolder') }}">
+    <form method="POST" action="{{ route('folder.folderNew') }}">
         <div class="modal-content">
             <h5>New folder</h5>
             @csrf
@@ -222,7 +222,7 @@
 
 <!-- Edit folder modal -->
 <div id="modaledit" class="modal">
-    <form method="POST" action="{{ route('folder.editfolder') }}">
+    <form method="POST" action="{{ route('folder.folderEdit') }}">
         <div class="modal-content">
             <h5>Edit folder</h5>
             @csrf
@@ -248,7 +248,7 @@
 
 <!-- Move folder modal -->
 <div id="modalmove" class="modal">
-    <form id="moveFolderForm" method="POST" action="{{ route('folder.moveFolder') }}">
+    <form id="moveFolderForm" method="POST" action="{{ route('folder.folderMove') }}">
         <div class="modal-content">
             <h5>Move folder</h5>
             @csrf
@@ -302,7 +302,7 @@
 
 <!-- Remove folder modal -->
 <div id="modalremove" class="modal">
-    <form method="POST" action="{{ route('folder.remove') }}">
+    <form method="POST" action="{{ route('folder.folderRemove') }}">
         <div class="modal-content">
             <h5 class="red-text">Are you sure to delete this folder?</h5>
             @method('DELETE')
