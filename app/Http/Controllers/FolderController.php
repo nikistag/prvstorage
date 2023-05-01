@@ -10,6 +10,10 @@ use ZipArchive;
 use App\Models\Share;
 use Illuminate\Support\Facades\Cache;
 
+use DirectoryIterator;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+
 class FolderController extends Controller
 {
     public function index()
@@ -27,17 +31,9 @@ class FolderController extends Controller
 
         //Directory paths for options to move files and folders
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
-        $directory_paths = [];
-        foreach ($full_private_directory_paths as $dir) {
-            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
-                array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
-            }
-        }
-
         $share_directory_paths = Storage::allDirectories('NShare');
-        array_push($directory_paths, "NShare");
-        foreach ($share_directory_paths as $dir) {
-            array_push($directory_paths, $dir);
+        if (count($share_directory_paths) == 0) {
+            $share_directory_paths = ["NShare"];
         }
 
         //Get folders an files of current directory
@@ -68,25 +64,28 @@ class FolderController extends Controller
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
-                'fileimageurl' => $this->getPreviewImage($extensionWithDot, $path, $fullfilename, $filename),
-                'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
+                'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
+                'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
         }
 
         //Generate folder tree view - collection
-        $collection = collect($full_private_directory_paths);
-
+        $collection = collect(array_merge($full_private_directory_paths, $share_directory_paths));
         $treeDirectories = $collection->reject(function ($value, $key) {
-            return $value == auth()->user()->name."/ZTemp";
+            return $value == auth()->user()->name . "/ZTemp";
         });
-
         $treeCollection = $treeDirectories->map(function ($item) {
-            $dir = substr($item, strlen(auth()->user()->name));
-            return explode('/', $dir);
+            if (substr($item, 0, strlen(auth()->user()->name)) == auth()->user()->name) {
+                $dir = substr($item, strlen(auth()->user()->name));
+                return explode('/', $dir);
+            } else {
+                return explode('/', '/' . $item);
+            }
         });
-        $userRoot = $this->convertPathsToTree($treeCollection)->first();
+        //dd($full_private_directory_paths);
 
+        $userRoot = $this->convertPathsToTree($treeCollection)->first();
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
         $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
         $folderTreeView .= $this->generateView($userRoot['children']);
@@ -98,7 +97,6 @@ class FolderController extends Controller
             'directories',
             'files',
             'current_folder',
-            'directory_paths',
             'NShare',
             'ztemp',
             'path',
@@ -110,7 +108,7 @@ class FolderController extends Controller
         ));
     }
 
-    public function newfolder(Request $request)
+    public function folderNew(Request $request)
     {
         $current_folder = $request->current_folder;
 
@@ -133,7 +131,7 @@ class FolderController extends Controller
             }
         }
     }
-    public function editfolder(Request $request)
+    public function folderEdit(Request $request)
     {
         $current_folder = $request->current_folder;
 
@@ -153,10 +151,10 @@ class FolderController extends Controller
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'Folder renamed!');
         }
     }
-    public function moveFolder(Request $request)
+    public function folderMove(Request $request)
     {
 
-        $current_folder = $request->input('target') == "" ? "" : "/" . $request->input('target');
+        $current_folder = $request->input('target') == "" ? "" : $request->input('target');
 
         $new_path = $this->getPath($current_folder) . "/" . $request->input('whichfolder');
         $old_path = $this->getPath($request->current_folder) . "/" . $request->input('whichfolder');
@@ -188,7 +186,7 @@ class FolderController extends Controller
         }
     }
 
-    public function remove(Request $request)
+    public function folderRemove(Request $request)
     {
         $current_folder = $request->current_folder;
 
@@ -313,8 +311,7 @@ class FolderController extends Controller
 
     public function moveFileBig(Request $request)
     {
-
-        $current_folder = $request->input('whereToFolder') == "" ? "" : "/" . $request->input('whereToFolder');
+        $current_folder = $request->input('whereToFolder') == "" ? "" : $request->input('whereToFolder');
         $path = $this->getPath($request->current_folder_big);
 
         $old_path = $path . "/" . $request->input('file_big');
@@ -342,7 +339,7 @@ class FolderController extends Controller
     public function moveFileMulti(Request $request)
     {
 
-        $current_folder = "/" . $request->input('targetfoldermulti');
+        $current_folder = $request->input('targetfoldermulti');
         $path = $this->getPath($request->current_folder_multi);
 
         foreach ($request->filesMove as $file) {
@@ -570,17 +567,7 @@ class FolderController extends Controller
 
         //Directory paths for options to move files and folders
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
-        $directory_paths = [];
-        foreach ($full_private_directory_paths as $dir) {
-            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
-                array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
-            }
-        }
         $share_directory_paths = Storage::allDirectories('NShare');
-        array_push($directory_paths, "NShare");
-        foreach ($share_directory_paths as $dir) {
-            array_push($directory_paths, $dir);
-        }
 
         //Get folders an fils of current directory
         $dirs = Storage::directories($path);
@@ -609,22 +596,24 @@ class FolderController extends Controller
                 'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
-                'fileimageurl' => $this->getPreviewImage($extensionWithDot, $path, $fullfilename, $filename),
+                'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
                 'filesize' => $this->getFileSize($file)
             ]);
         }
 
-//Generate folder tree view - collection
-        $collection = collect($full_private_directory_paths);
-
+        //Generate folder tree view - collection
+        $collection = collect(array_merge($full_private_directory_paths, $share_directory_paths));
         $treeDirectories = $collection->reject(function ($value, $key) {
-            return $value == auth()->user()->name."/ZTemp";
+            return $value == auth()->user()->name . "/ZTemp";
         });
-
         $treeCollection = $treeDirectories->map(function ($item) {
-            $dir = substr($item, strlen(auth()->user()->name));
-            return explode('/', $dir);
+            if (substr($item, 0, strlen(auth()->user()->name)) == auth()->user()->name) {
+                $dir = substr($item, strlen(auth()->user()->name));
+                return explode('/', $dir);
+            } else {
+                return explode('/', '/' . $item);
+            }
         });
         $userRoot = $this->convertPathsToTree($treeCollection)->first();
 
@@ -641,7 +630,6 @@ class FolderController extends Controller
             'files',
             'current_folder',
             'parent_folder',
-            'directory_paths',
             'NShare',
             'ztemp',
             'path',
@@ -661,12 +649,6 @@ class FolderController extends Controller
 
         //Directory paths for options to move files and folders
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
-        $directory_paths = [];
-        foreach ($full_private_directory_paths as $dir) {
-            if (($dir !==  auth()->user()->name . "/ZTemp") && ($dir !==  auth()->user()->name . "/Trash")) {
-                array_push($directory_paths, substr($dir, strlen('/' . auth()->user()->name)));
-            }
-        }
 
         //Get folders an files of current directory
         $dirs = Storage::allDirectories($path);
@@ -733,6 +715,125 @@ class FolderController extends Controller
             'html' => $results->render(),
         ]);
     }
+
+    public function mediapreview(Request $request)
+    {
+        $currentFolder = $request->current_folder;
+        $fullfilename = $request->file_name;
+        $fileNameNoExt = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, ".")));
+        $path = substr($this->getPath($currentFolder), 1);
+        //Delete old sessions->previews
+        $nowUnixInt = (int)now()->format("U");
+        $oldFiles = [];
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(Storage::disk('public')->path('preview'))) as $filename) {
+            array_push($oldFiles, $filename);
+        }
+        //Delete old files
+        foreach (array_reverse($oldFiles) as $oldFile) {
+            if (($oldFile->isFile()) || ($oldFile->isLink()))
+                if (((int)$oldFile->getATime() + 7210) < $nowUnixInt) { // It's old - needs to be deleted
+                    unlink($oldFile->getPathname());
+                }
+        }
+        //Delete old files
+        foreach (array_reverse($oldFiles) as $oldFile) {
+            if ($oldFile->isDir()) {
+                if (!(new \FilesystemIterator($oldFile))->valid()) {
+                    rmdir($oldFile->getPath());
+                }
+            }
+        }
+
+        //Get array of previewable files
+        $previewableFiles = Storage::disk('public')->files('thumb/' . $path);
+
+        $isImage = array_search('thumb/' . $path . "/" . $fileNameNoExt . ".jpg", $previewableFiles);
+        $isVideo = array_search('thumb/' . $path . "/" . $fileNameNoExt . ".mp4", $previewableFiles);
+        //Get array of original files
+        $allOriginalFiles = Storage::files($path);
+        //Trim $previewableFiles array   
+        $trimmedPreviewable = [];
+        foreach ($previewableFiles as $previewable) {
+            $noThumb = substr($previewable, 6, strlen($previewable));
+            $noExtension = substr($noThumb, 0, strripos($noThumb, strrchr($noThumb, ".")));
+            array_push($trimmedPreviewable, $noExtension);
+        }
+        //Trim $previewableFiles array
+        $trimmedOriginal = [];
+        $originalPosition = "nik";
+        foreach ($allOriginalFiles as $key => $value) {
+            if (strpos($value, $fullfilename) != false) {
+                $originalPosition = $key;
+            }
+            $noExtension = substr($value, 0, strripos($value, strrchr($value, ".")));
+            array_push($trimmedOriginal, $noExtension);
+        }
+        //Previewable keys of original files array
+        $previewableKeys = array_keys(array_intersect($trimmedOriginal, $trimmedPreviewable));
+
+        $thumbnailPosition = array_search($originalPosition, $previewableKeys);
+        $pathToFolder = $this->getPath($currentFolder);
+        //Generate next - previous links        
+        $lastIndex = count($previewableFiles) - 1;
+        if ($thumbnailPosition == 0) {
+            if ($lastIndex == 0) {
+                $leftChevron = $rightChevron = "inactive";
+                $leftLink =  $rightLink = null;
+            } else {
+                $leftChevron = "inactive";
+                $rightChevron = "active";
+                $leftLink = null;
+                $rightLink = substr($allOriginalFiles[$previewableKeys[1]], strlen($pathToFolder));
+            }
+        } else {
+            $leftChevron = "active";
+            $leftLink = substr($allOriginalFiles[$previewableKeys[$thumbnailPosition - 1]], strlen($pathToFolder));
+            if (($thumbnailPosition + 1) > $lastIndex) {
+                $rightLink = null;
+                $rightChevron = "inactive";
+            } else {
+                $rightLink = substr($allOriginalFiles[$previewableKeys[$thumbnailPosition + 1]], strlen($pathToFolder));
+                $rightChevron = "active";
+            }
+        }
+        //Create folder for preview
+        if (Storage::disk('public')->exists('preview/' . session()->getId() . $pathToFolder)) {
+        } else {
+            Storage::disk('public')->makeDirectory('preview/' . session()->getId() . $pathToFolder);
+        }
+        //IF $filePosition = FALSE - No preview possible
+        if ($isImage !== false) {
+            $fileimageurl = $this->generateImagePreview($pathToFolder, $fullfilename, $fileNameNoExt);
+            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition'));
+            return response()->json([
+                'html' => $preview->render(),
+                'leftChevron' => $leftChevron,
+                'rightChevron' => $rightChevron,
+                'leftLink' => $leftLink,
+                'rightLink' => $rightLink
+            ]);
+        } else {
+
+            //create symbolic link in public folder
+            $target = Storage::path($path . "/" . $fullfilename);
+            $link = Storage::disk('public')->path('preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename);
+            if (!file_exists($link)) {
+                $success = symlink($target, $link);
+            }else{
+                $success = true;
+            }
+            $filevideourl = 'storage/preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename;
+            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition'));
+            return response()->json([
+                'html' => $preview->render(),
+                'leftChevron' => $leftChevron,
+                'rightChevron' => $rightChevron,
+                'leftLink' => $leftLink,
+                'rightLink' => $rightLink
+            ]);
+        }
+    }
+
     //PRIVATE FUNCTIONS
     private function getPath($current_folder)
     {
@@ -826,9 +927,73 @@ class FolderController extends Controller
         }
         return $folderSize;
     }
+    private function getThumbnailImage($extension, $path, $fullfilename, $filename)
+    {
+        /* Cache file extensions */
+        $fileExtensions = Cache::remember('extensions', 3600, function () {
+            $extensionArray = [];
+
+            if (($open = fopen(public_path() . "/extension.csv", "r")) !== FALSE) {
+
+                while (($data = fgetcsv($open)) !== FALSE) {
+                    array_push($extensionArray, $data);
+                }
+                fclose($open);
+            }
+            return $extensionArray;
+        });
+
+        /* SET FILE IMAGE*/
+        $fileimage = ['thumb' => 'storage/img/file_100px.png', 'original' => false];
+        //supported extensions
+        $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
+        //Check if thumbnail already set
+        $thumbfile = 'thumb' . $path . "/" . $filename . '.jpg';
+        if (Storage::disk('public')->has($thumbfile)) {
+            return ['thumb' => 'storage/' . $thumbfile, 'original' => true];
+        }
+        foreach ($fileExtensions as $fext) {
+            if (array_search(strtolower($extension), $supportedExt) !== false) {
+                //Managing files with image extenssion but not images
+                $thumbnaill = $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
+                if ($thumbnaill == null) {
+                    return ['thumb' => ('storage/img/' . $fext[2] . '_100px.png'), 'original' => false]; //Choosing thumbnail from predefined
+                } else {
+                    return ['thumb' => $thumbnaill, 'original' => true];
+                }
+            }
+            if (strtolower($extension) == strtolower($fext[0])) {
+                return ['thumb' => ('storage/img/' . $fext[2] . '_100px.png'), 'original' => false]; //Choosing thumbnail from predefined
+            }
+        }
+
+        return $fileimage;
+    }
+    private function getThumbnailVideo($extension, $path, $fullfilename, $filename)
+    {
+        //supported extensions
+        $supportedExt = ['.3g2', '.3gp', '.3gp2', '.asf', '.avi', '.dvr-ms', '.flv', '.h261', '.h263', '.h264', '.m2t', '.m2ts', '.m4v', '.mkv', '.mod', '.mp4', '.mpg', '.mxf', '.tod', '.vob', '.webm', '.wmv', '.xmv'];
+
+        if (array_search(strtolower($extension), $supportedExt) !== false) {
+            //Check if video preview file already set
+            $thumbfile = 'thumb' . $path . "/" . $filename . '.mp4';
+            if (Storage::disk('public')->has($thumbfile)) {
+                return 'storage/' . $thumbfile;
+            } else {
+                return $this->generateVideoThumbnail($extension, $path, $fullfilename, $filename);
+            }
+        }
+
+        return null; //No video preview generated
+    }
     private function generateImageThumbnail($extension, $path, $fullfilename, $filename)
     {
-        if (getimagesize(Storage::path($path . "/" . $fullfilename)) == 0) {
+        $originalFile = Storage::path($path . "/" . $fullfilename);
+
+        shell_exec("exiftran -a -i '$originalFile'");
+        // Get image original size, 0->width, 1->height
+        $imgsize_arr = getimagesize($originalFile);
+        if ($imgsize_arr == 0) {
             return null;
         }
         $fileimage = null;
@@ -842,8 +1007,6 @@ class FolderController extends Controller
                 return 'storage/' . $thumbfile;
             } else {
 
-                // Get image original size, 0->width, 1->height
-                $imgsize_arr = getimagesize(Storage::path($path . "/" . $fullfilename));
                 // Analize image to set crop 
                 if ($imgsize_arr[0] > $imgsize_arr[1]) {
                     $cropSize = $imgsize_arr[1];
@@ -855,7 +1018,7 @@ class FolderController extends Controller
                     $cropY = ($imgsize_arr[1] - $imgsize_arr[0]) / 2;
                 }
 
-                $img = imagecreatefromstring(file_get_contents(Storage::path($path . "/" . $fullfilename)));
+                $img = imagecreatefromstring(file_get_contents($originalFile));
                 $area = ["x" => $cropX, "y" => $cropY, "width" => $cropSize, "height" => $cropSize];
                 $crop = imagecrop($img, $area);
 
@@ -881,7 +1044,6 @@ class FolderController extends Controller
     }
     private function generateVideoThumbnail($extension, $path, $fullfilename, $filename)
     {
-
         //supported extensions
         $supportedExt = ['.3g2', '.3gp', '.3gp2', '.asf', '.avi', '.dvr-ms', '.flv', '.h261', '.h263', '.h264', '.m2t', '.m2ts', '.m4v', '.mkv', '.mod', '.mp4', '.mpg', '.mxf', '.tod', '.vob', '.webm', '.wmv', '.xmv'];
 
@@ -894,13 +1056,10 @@ class FolderController extends Controller
             } else {
                 //Create temporary thumbnail manipulation directory
                 $thumbtempExists = Storage::disk('public')->exists('thumbtemp') == false ? Storage::disk('public')->makeDirectory('thumbtemp') : null;
-
-                $pathToOriginal = Storage::path($path . "/" . $fullfilename);
-
+                $pathToOriginal = Storage::path(substr($path, 1) . "/" . $fullfilename);
                 $dur = shell_exec("ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '$pathToOriginal'");
-                $seconds = round($dur);
 
-                //dd($dur);
+                $seconds = round($dur);
 
                 $thumb_0 = gmdate('H:i:s', $seconds / 8);
                 $thumb_1 = gmdate('H:i:s', $seconds / 4);
@@ -908,10 +1067,11 @@ class FolderController extends Controller
                 $thumb_3 = gmdate('H:i:s', $seconds / 2 + $seconds / 4);
 
                 $path_clip = Storage::disk('public')->path('thumb' . $path . "/");
+                //Create thumb directory if needed
+                $thumbPathExists = Storage::disk('public')->exists('thumb' . $path) == false ? Storage::disk('public')->makeDirectory('thumb' . $path) : null;
                 $path_clip2 = Storage::disk('public')->path('thumbtemp/');
                 $filenameSha1 = sha1($filename);
                 $preview_list_name = $path_clip2 . $filenameSha1 .  'list.txt';
-
 
                 $preview_list = fopen($preview_list_name, "w");
                 $preview_array = [];
@@ -919,21 +1079,18 @@ class FolderController extends Controller
                 for ($i = 0; $i <= 3; $i++) {
                     $thumb = ${'thumb_' . $i};
                     $output_clip = $path_clip2 . $filenameSha1 . $i . ".p.mp4";
-                    //dd($output_clip);
-                    shell_exec("ffmpeg -i '$pathToOriginal' -an -ss $thumb -t 2 -vf 'scale=100:100:force_original_aspect_ratio=decrease,pad=100:100:(ow-iw)/2:(oh-ih)/2,setsar=1' -y  $output_clip");
 
-                    //$output = $path_clip2.  . $i . '.p.mp4';
+                    shell_exec("ffmpeg -i '$pathToOriginal' -an -ss $thumb -t 2 -vf 'scale=100:100:force_original_aspect_ratio=decrease,pad=100:100:(ow-iw)/2:(oh-ih)/2,setsar=1' -y  $output_clip");
 
                     if (file_exists($output_clip)) {
                         fwrite($preview_list, "file '" . $output_clip . "'\n");
                         array_push($preview_array, $output_clip);
                     }
                 }
-                //dd($preview_array);
-
                 fclose($preview_list);
 
-                shell_exec("ffmpeg -f concat -safe 0 -i $preview_list_name -y '$path_clip/$fullfilename'");
+                $thumbClip = $path_clip . $fullfilename;
+                shell_exec("ffmpeg -f concat -safe 0 -i $preview_list_name -y '$thumbClip'");
 
                 if (!empty($preview_array)) {
                     foreach ($preview_array as $v) {
@@ -949,65 +1106,40 @@ class FolderController extends Controller
 
         return null; //No video preview generated
     }
-
-    private function getPreviewImage($extension, $path, $fullfilename, $filename)
+    private function generateImagePreview($pathToFolder, $fullfilename, $filename)
     {
-        /* Cache file extensions */
-        $fileExtensions = Cache::remember('extensions', 3600, function () {
-            $extensionArray = [];
-
-            if (($open = fopen(public_path() . "/extension.csv", "r")) !== FALSE) {
-
-                while (($data = fgetcsv($open)) !== FALSE) {
-                    array_push($extensionArray, $data);
-                }
-                fclose($open);
-            }
-            return $extensionArray;
-        });
-
-        /* SET FILE IMAGE*/
-        $fileimage = 'storage/img/file_100px.png';
-        //supported extensions
-        $supportedExt = ['.jpg', '.jpeg', '.png', '.gif', '.xbm', '.wbmp', '.webp', '.bmp'];
-        //Check if thumbnail already set
-        $thumbfile = 'thumb' . $path . "/" . $filename . '.jpg';
-        if (Storage::disk('public')->has($thumbfile)) {
-            return 'storage/' . $thumbfile;
-        }
-        foreach ($fileExtensions as $fext) {
-            if (array_search(strtolower($extension), $supportedExt) !== false) {
-                //Managing files with image extenssion but not images
-                if ($this->generateImageThumbnail($extension, $path, $fullfilename, $filename) == null) {
-                    return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
-                } else {
-                    return $this->generateImageThumbnail($extension, $path, $fullfilename, $filename);
-                }
-            }
-            if (strtolower($extension) == strtolower($fext[0])) {
-                return ('storage/img/' . $fext[2] . '_100px.png'); //Choosing thumbnail from predefined
-            }
+        $previewFile = 'preview/' . session()->getId() . $pathToFolder . "/" . $filename . '.jpg';
+        $previewImagePath =  Storage::disk('public')->path($previewFile);
+        if(file_exists($previewFile)){
+            return 'storage/' . $previewFile;
         }
 
-        return $fileimage;
+        // Get image original size, 0->width, 1->height
+        $originalPath = Storage::path($pathToFolder . "/" . $fullfilename);
+        shell_exec("exiftran -a -i '$originalPath'");
+        $img = imagecreatefromstring(file_get_contents(Storage::path($pathToFolder . "/" . $fullfilename)));
+        $imgsize_arr = getimagesize(Storage::path($pathToFolder . "/" . $fullfilename));
+        $width = $imgsize_arr[0];
+        $height = $imgsize_arr[1];
+        if ($width > 600) {
+            $scale = 600 / $width;
+            $new_width = floor($width * $scale);
+            $new_height = floor($height * $scale);
+            $save_image = imagecreatetruecolor($new_width, $new_height);
+            imagecopyresized($save_image, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+            
+            imagejpeg($save_image, $previewImagePath, 50);
+            imagedestroy($img);
+            imagedestroy($save_image);
+            return 'storage/' . $previewFile;
+        } else {
+            Storage::disk('public')->put($previewFile, Storage::get($originalPath));
+            return 'storage/' . $previewFile;
+        }
     }
-    private function getPreviewVideo($extension, $path, $fullfilename, $filename)
-    {
-        //supported extensions
-        $supportedExt = ['.3g2', '.3gp', '.3gp2', '.asf', '.avi', '.dvr-ms', '.flv', '.h261', '.h263', '.h264', '.m2t', '.m2ts', '.m4v', '.mkv', '.mod', '.mp4', '.mpg', '.mxf', '.tod', '.vob', '.webm', '.wmv', '.xmv'];
 
-        if (array_search(strtolower($extension), $supportedExt) !== false) {
-            //Check if video preview file already set
-            $thumbfile = 'thumb' . $path . "/" . $filename . '.mp4';
-            if (Storage::disk('public')->has($thumbfile)) {
-                return 'storage/' . $thumbfile;
-            } else {
-                return $this->generateVideoThumbnail($extension, $path, $fullfilename, $filename);
-            }
-        }
 
-        return null; //No video preview generated
-    }
+
     private function getStreamHeaders($path)
     {
         $fileToStream = Storage::path($path);
@@ -1023,26 +1155,24 @@ class FolderController extends Controller
     }
     private function generateView($directories)
     {
-       // dd($directories);
-        $view = '';   
+        // dd($directories);
+        $view = '';
         foreach ($directories as $directory) {
             $withChildren = count($directory['children']) > 0 ? true : false;
             $view .= '<li>';
-            if($withChildren){
+            if ($withChildren) {
                 $view .= '<span class="folder-tree"></span>';
-                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path']. '" data-folder-view ="' . $directory['label'] . '">';
+                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= $directory['label'] . '</a>';
                 $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
                 $view .= $this->generateView($directory['children']);
                 $view .= '</ul>';
-
-            }else{
+            } else {
                 $view .= '<span class="folder-tree-empty"></span>';
-                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path']. '" data-folder-view ="' . $directory['label'] . '">';
+                $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= $directory['label'] . '</a>';
             }
             $view .= '</li>';
-            
         }
 
         return $view;

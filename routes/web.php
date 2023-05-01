@@ -42,13 +42,13 @@ Route::middleware(['auth'])->group(function () {
 
         //Folder routes
         Route::get('/folder/root', [FolderController::class, 'root'])->name('folder.root');
-        Route::post('/folder/newfolder', [FolderController::class, 'newfolder'])->name('folder.newfolder');
-        Route::post('/folder/editfolder', [FolderController::class, 'editfolder'])->name('folder.editfolder');
-        Route::post('/folder/moveFolder', [FolderController::class, 'moveFolder'])->name('folder.moveFolder');
+        Route::post('/folder/folderNew', [FolderController::class, 'folderNew'])->name('folder.folderNew');
+        Route::post('/folder/folderEdit', [FolderController::class, 'folderEdit'])->name('folder.folderEdit');
+        Route::post('/folder/folderMove', [FolderController::class, 'folderMove'])->name('folder.folderMove');
         Route::post('/folder/folderupload', [FolderController::class, 'folderupload'])->name('folder.folderupload');
         Route::post('/folder/emptytemp', [FolderController::class, 'emptytrash'])->name('folder.emptytrash');
         Route::post('/folder/emptytrash', [FolderController::class, 'emptytemp'])->name('folder.emptytemp');
-        Route::delete('/folder/remove', [FolderController::class, 'remove'])->name('folder.remove');
+        Route::delete('/folder/folderRemove', [FolderController::class, 'folderRemove'])->name('folder.folderRemove');
         Route::post('/folder/fileupload', [FolderController::class, 'fileupload'])->name('folder.fileupload');
         Route::post('/folder/renameFile', [FolderController::class, 'renameFile'])->name('folder.renameFile');
         Route::post('/folder/moveFileBig', [FolderController::class, 'moveFileBig'])->name('folder.moveFileBig'); 
@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/folder/searchForm', [FolderController::class, 'searchForm'])->name('folder.searchForm');
         Route::post('/folder/search', [FolderController::class, 'search'])->name('folder.search'); // ajax request - not yet
         Route::get('/folder/filestream', [FolderController::class, 'filestream'])->name('folder.filestream');
+        Route::get('/folder/mediapreview', [FolderController::class, 'mediapreview'])->name('folder.mediapreview'); // ajax request
 
         //Share routes    
         Route::get('/share/index', [ShareController::class, 'index'])->name('share.index');

@@ -8,10 +8,10 @@
     <div class="col s4 left-align" style="position: relative;">
         @if($file['filevideourl'] === null)
         <!-- Image preview -->
-        <img src="{{asset($file['fileimageurl'])}}" alt="file image">
+        <img src="{{asset($file['fileimageurl']['thumb'])}}" alt="file image" class="{{$file['fileimageurl']['original'] == true ? 'media-preview-trigger' : ''}}" data-data="{{$file['fullfilename']}}">
         @else
         <!-- Video preview -->
-        <video width="100" height="100" autoplay muted loop>
+        <video width="100" height="100" autoplay muted loop class="media-preview-trigger" data-data="{{$file['fullfilename']}}">
             <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -418,6 +418,28 @@
         <input type="hidden" name="current_folder_multifileshare" id="current_folder_multifileshare" value="{{$current_folder}}" />
     </form>
 </div>
+<!-- Media preview modal-->
+<div id="mediaModal" class="modal">
+    <div class="modal-content center-align" id="mediaPreview" style="padding:10px;">
+        <h5 id="mediaFileName">Loading...</h5>
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="row">
+            <div class="col s3 right-align">
+                <a href="#!" id="leftChevron" class="preview-links hide"><i class="material-icons medium">chevron_left</i></a>
+            </div>
+            <div class="col s6 center-align">
+                <a href="#!" class="modal-close btn-small red">Close</a>
+            </div>
+            <div class="col s3 left-align">
+                <a href="#!" id="rightChevron" class="preview-links hide"><i class="material-icons medium">chevron_right</i></a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- SCRRIPTS FOR FILE MANIPULATION -->
 <script>
@@ -425,6 +447,96 @@
         $('.datepicker').datepicker({
             container: $('#pickerContainer'),
         });
+        /*MEDIA PREVIEW*/
+        /** Open media preview modal*/
+        $('.media-preview-trigger').on("click", (function(e) {
+            e.preventDefault();
+            var elem = document.getElementById('mediaModal');
+            var instance = M.Modal.getInstance(elem);
+            instance.open();
+            /* var currentFolder = document.getElementById('current_folder'); */
+            var fileName = $(this).attr('data-data');
+            var previewDiv = document.getElementById('mediaPreview');
+            var leftChevron = document.getElementById("leftChevron");
+            var rightChevron = document.getElementById("rightChevron");
+            $.ajax({
+                url: "{{route('folder.mediapreview')}}",
+                type: "GET",
+                data: {
+                    '_token': $('input[name=_token]').val(),
+                    'current_folder': $('input[name=current_folder]').val(),
+                    'file_name': fileName
+                },
+                success: function(data) {
+                    if (typeof data.html !== "undefined") {
+                        previewDiv.innerHTML = data.html;
+                        if (data.leftChevron == 'active') {
+                            if(leftChevron.classList.contains("hide")){
+                                leftChevron.classList.remove("hide");
+                            }                            
+                            leftChevron.setAttribute("data-data", data.leftLink);
+                        }else{
+                            if(!leftChevron.classList.contains("hide")){
+                                leftChevron.classList.add("hide");
+                            }   
+                        }
+                        if (data.rightChevron == 'active') {
+                            if(rightChevron.classList.contains("hide")){
+                                rightChevron.classList.remove("hide");
+                            } 
+                            rightChevron.setAttribute("data-data", data.rightLink);
+                        }else{
+                            if(!rightChevron.classList.contains("hide")){
+                                rightChevron.classList.add("hide");
+                            }  
+                        }
+                    }
+                }
+            });
+        }));
+        $('.preview-links').on("click", (function(e) {
+            e.preventDefault();
+            /* var currentFolder = document.getElementById('current_folder'); */
+            var fileName = $(this).attr('data-data');
+            var previewDiv = document.getElementById('mediaPreview');
+            var leftChevron = document.getElementById("leftChevron");
+            var rightChevron = document.getElementById("rightChevron");
+            previewDiv.innerHTML = '<h5 id="mediaFileName">Loading...</h5><div class="progress"><div class="indeterminate"></div></div>';
+            $.ajax({
+                url: "{{route('folder.mediapreview')}}",
+                type: "GET",
+                data: {
+                    '_token': $('input[name=_token]').val(),
+                    'current_folder': $('input[name=current_folder]').val(),
+                    'file_name': fileName
+                },
+                success: function(data) {
+                    if (typeof data.html !== "undefined") {
+                        previewDiv.innerHTML = data.html;
+                        if (data.leftChevron == 'active') {
+                            if(leftChevron.classList.contains("hide")){
+                                leftChevron.classList.remove("hide");
+                            }                            
+                            leftChevron.setAttribute("data-data", data.leftLink);
+                        }else{
+                            if(!leftChevron.classList.contains("hide")){
+                                leftChevron.classList.add("hide");
+                            }   
+                        }
+                        if (data.rightChevron == 'active') {
+                            if(rightChevron.classList.contains("hide")){
+                                rightChevron.classList.remove("hide");
+                            } 
+                            rightChevron.setAttribute("data-data", data.rightLink);
+                        }else{
+                            if(!rightChevron.classList.contains("hide")){
+                                rightChevron.classList.add("hide");
+                            }  
+                        }
+                    }
+                }
+            });
+        }));
         /* SHARE FILE MECHANICS */
         /* Clear share file modal form */
         $('#close-share-file-modal').on("click", (function(e) {
@@ -572,7 +684,7 @@
                 M.toast({
                     html: 'Nothing to do! No files selected'
                 });
-            } else {                
+            } else {
                 var elem = document.getElementById('modalmovefiles');
                 var instance = M.Modal.getInstance(elem);
                 instance.open();
@@ -581,9 +693,9 @@
                     filename = filename + this.value + ', ';
                 });
                 $('input[name=fileDisplayMulti]').val(filename);
-                var viewFolder = document.getElementById('viewWhereToFolderMulti');  
+                var viewFolder = document.getElementById('viewWhereToFolderMulti');
                 viewFolder.value = '';
-       
+
             }
         }));
 

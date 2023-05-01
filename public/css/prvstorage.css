@@ -130,5 +130,12 @@
   .active-tree {
     display: block;
   }
+ /*  Inactive links */
+  .inactive {
+    color: #292a2b;
+    cursor: none;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   
   
