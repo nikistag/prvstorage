@@ -725,6 +725,11 @@ class FolderController extends Controller
         //Delete old sessions->previews
         $nowUnixInt = (int)now()->format("U");
         $oldFiles = [];
+        //Check for preview folder
+        if (Storage::disk('public')->exists('preview')) {
+        } else {
+            Storage::disk('public')->makeDirectory('preview');
+        }
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(Storage::disk('public')->path('preview'))) as $filename) {
             array_push($oldFiles, $filename);
         }
