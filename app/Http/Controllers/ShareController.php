@@ -172,7 +172,7 @@ class ShareController extends Controller
         $share->path = $db_zip_path;
         $share->code = hash('ripemd160', time());
         $share->type = "folder";
-        $share->storage = File::size(Storage::path($sharedFolder));
+        $share->storage = File::size($zip_path);
         if (strlen($share_name) >= 200) {
             $share->composition = substr($share_name, 0, 196) . "...";
         } else {
