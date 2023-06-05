@@ -23,6 +23,16 @@ class UserController extends Controller
         return view('user.edit', compact('user'));
     }
 
+    public function view(User $user)
+    {
+        if(auth()->user()->id == $user->id){ //Own account
+            return view('user.view', compact('user'));
+        }else{
+            return redirect(route('home'))->with('error', 'This account does not belong to you!!!');
+        }
+        
+    }
+
     public function update(Request $request, User $user)
     {
         $initialStatus = $user->active;

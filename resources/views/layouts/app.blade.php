@@ -29,12 +29,8 @@
             <a href="/index.php" class="brand-logo left"><span class="orange-text text-lighten-4"><strong>{{ auth()->user()->name }}'s</strong></span> <span style="font-size:medium;">private storage</span></a>
             <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li>Welcome</li>
-                <li>&nbsp;</li>
                 <li>
-                    <span class="orange-text text-lighten-4">
-                        <strong>{{auth()->user()->name}}</strong>
-                    </span>
+                    <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
                 </li>
                 <li>&nbsp;</li>
                 <li>
@@ -156,7 +152,6 @@
 
         });
     </script>
-
 </body>
 
 </html>

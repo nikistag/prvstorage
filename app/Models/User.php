@@ -47,6 +47,10 @@ class User extends Authenticatable
     ];
 
     //Getters
+    public function getSuperadminRoleAttribute()
+    {
+        return $this->suadmin === 1 ? 'Yes' : 'No';
+    }
     public function getAdminRoleAttribute()
     {
         return $this->admin === 1 ? 'Yes' : 'No';
