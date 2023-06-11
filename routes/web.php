@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/share/purge', [ShareController::class, 'purge'])->name('share.purge');
         
         Route::get('/user/{user}/view', [UserController::class, 'view'])->name('user.view');
+        Route::post('/user/purge', [UserController::class, 'purge'])->name('user.purge');
 
         //User administration routes
         Route::middleware(['isadmin'])->group(function () {
