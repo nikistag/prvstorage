@@ -29,20 +29,10 @@
             <a href="/index.php" class="brand-logo left"><span class="orange-text text-lighten-4"><strong>{{ auth()->user()->name }}'s</strong></span> <span style="font-size:medium;">private storage</span></a>
             <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li>Welcome</li>
-                <li>&nbsp;</li>
                 <li>
-                    <span class="orange-text text-lighten-4">
-                        <strong>{{auth()->user()->name}}</strong>
-                    </span>
+                    <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
                 </li>
-                <li>&nbsp;</li>
-                <li>
-                    <form method="POST" action="{{route('logout')}}">
-                        @csrf
-                        <button class="btn-small" type="submit">Logout</button>
-                    </form>
-                </li>
+
                 <li>
                     <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
                 </li>
@@ -60,6 +50,9 @@
                     <a href="{{route('user.emailTest')}}"><span class="white-text">Email test</span></a>
                 </li>
                 @endif
+                <li>
+                    <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+                </li>
                 <li>
                     &nbsp;
                 </li>
@@ -81,12 +74,6 @@
     @auth
     <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
         <li>
-            <a id="logouttrigger" href="!#"><span class="white-text">Logout</span></a>
-            <form id="logoutform" method="POST" action="{{route('logout')}}">
-                @csrf
-            </form>
-        </li>
-        <li>
             <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
         </li>
         @if(auth()->user()->admin === 1)
@@ -98,7 +85,13 @@
             <a href="{{route('user.admins')}}"><span class="white-text">Admins</span></a>
         </li>
         @endif
+        <li>
+        <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+        </li>
     </ul>
+    <form id="logoutform" method="POST" action="{{route('logout')}}">
+        @csrf
+    </form>
     @endauth
     @guest
     <ul class="sidenav blue-grey darken-2" id="mobile-nav-menu">
@@ -156,7 +149,6 @@
 
         });
     </script>
-
 </body>
 
 </html>

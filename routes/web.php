@@ -79,10 +79,13 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/share/{share}/update', [ShareController::class, 'update'])->name('share.update');
         Route::get('/share/purge', [ShareController::class, 'purge'])->name('share.purge');
         
+        Route::get('/user/{user}/view', [UserController::class, 'view'])->name('user.view');
+        Route::post('/user/purge', [UserController::class, 'purge'])->name('user.purge');
+
         //User administration routes
         Route::middleware(['isadmin'])->group(function () {
-            Route::get('/user/index', [UserController::class, 'index'])->name('user.index');
-            Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
+            Route::get('/user/index', [UserController::class, 'index'])->name('user.index');  
+            Route::get('/user/{user}/edit', [UserController::class, 'edit'])->name('user.edit');          
             Route::put('/user/{user}/update', [UserController::class, 'update'])->name('user.update');
             
         });

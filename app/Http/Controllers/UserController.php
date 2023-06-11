@@ -23,6 +23,15 @@ class UserController extends Controller
         return view('user.edit', compact('user'));
     }
 
+    public function view(User $user)
+    {
+        if (auth()->user()->id == $user->id) { //Own account
+            return view('user.view', compact('user'));
+        } else {
+            return redirect(route('home'))->with('error', 'This account does not belong to you!!!');
+        }
+    }
+
     public function update(Request $request, User $user)
     {
         $initialStatus = $user->active;
@@ -63,7 +72,7 @@ class UserController extends Controller
                 try {
                     Mail::to($user->email)->send(new \App\Mail\AccountStatusNotification($details));
                 } catch (Exception $ex) {
-                   dd($ex->getMessage());
+                    dd($ex->getMessage());
                 }
             }
         }
@@ -133,6 +142,8 @@ class UserController extends Controller
             //Delete user directory
             $user_folder = "/" . $user->name;
             Storage::deleteDirectory($user_folder);
+            //Delete user thumb directory
+            Storage::disk('public')->deleteDirectory("/thumb".$user_folder);
             //Delete user shares from DB
             $deleted = DB::table('shares')->where('user_id', $user->id)->delete();
             //Delete user from user table
@@ -146,6 +157,31 @@ class UserController extends Controller
 
         $users = User::orderBy('email', 'asc')->get();
         return view('user.index', compact('users'));
+    }
+
+    public function purge(Request $request)
+    {
+        $user = User::where('id', $request->userid)->first();
+        if (auth()->user()->id == $request->userid) { //Check for user tries to purge own account
+            //Delete user directory
+            $user_folder = "/" . $user->name;
+            Storage::deleteDirectory($user_folder);
+
+            //Delete user thumb directory
+            Storage::disk('public')->deleteDirectory("/thumb".$user_folder);
+            //Delete user shares from DB
+            $deleted = DB::table('shares')->where('user_id', $user->id)->delete();
+            //Delete user from user table
+            $user->delete();
+            //Logout user
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect(route('home'))->with('success', 'Account for user ' . $user->name . ' with email ' . $user->email . ' has been purged');
+        } else {
+            return redirect(route('user.index'))->with('error', 'You don\'t have permission to purge this user account!!!');
+        }
     }
 
     public function admins()
