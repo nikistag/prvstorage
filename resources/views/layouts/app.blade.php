@@ -32,7 +32,6 @@
                 <li>
                     <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
                 </li>
-
                 <li>
                     <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
                 </li>
@@ -51,7 +50,7 @@
                 </li>
                 @endif
                 <li>
-                    <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+                    <a id="logoutwide" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
                 </li>
                 <li>
                     &nbsp;
@@ -74,6 +73,9 @@
     @auth
     <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
         <li>
+            <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
+        </li>
+        <li>
             <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
         </li>
         @if(auth()->user()->admin === 1)
@@ -86,7 +88,7 @@
         </li>
         @endif
         <li>
-        <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+            <a id="logoutmobile" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
         </li>
     </ul>
     <form id="logoutform" method="POST" action="{{route('logout')}}">
@@ -140,7 +142,7 @@
             $('#mobile-nav-menu').sidenav({
                 edge: 'right'
             });
-            $('#logouttrigger').on('click', function(e) {
+            $('.logouttrigger').on('click', function(e) {
                 e.preventDefault();
                 $('#logoutform').submit();
             });
