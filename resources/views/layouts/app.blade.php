@@ -51,7 +51,7 @@
                 </li>
                 @endif
                 <li>
-                    <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+                    <a id="logouttrigger" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
                 </li>
                 <li>
                     &nbsp;
@@ -86,7 +86,7 @@
         </li>
         @endif
         <li>
-        <a id="logouttrigger" href="!#"><span class="teal-text text-lighten-4">Logout</span></a>
+        <a id="logouttrigger" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
         </li>
     </ul>
     <form id="logoutform" method="POST" action="{{route('logout')}}">
@@ -140,7 +140,7 @@
             $('#mobile-nav-menu').sidenav({
                 edge: 'right'
             });
-            $('#logouttrigger').on('click', function(e) {
+            $('.logouttrigger').on('click', function(e) {
                 e.preventDefault();
                 $('#logoutform').submit();
             });
