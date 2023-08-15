@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 use App\Models\Share;
+use App\Models\Ushare;
 use Illuminate\Support\Facades\Cache;
 
 use DirectoryIterator;
@@ -22,7 +23,6 @@ class FolderController extends Controller
     }
     public function root(Request $request)
     {
-
         $current_folder = $request->current_folder;
 
         $path = $this->getPath($current_folder);
@@ -35,6 +35,32 @@ class FolderController extends Controller
         if (count($share_directory_paths) == 0) {
             $share_directory_paths = ["NShare"];
         }
+        //Delete expired local shares
+        $expiredShares = Ushare::where("expiration", "<", time())->get();
+        if (count($expiredShares) >= 1) {
+            foreach ($expiredShares as $expired) {
+                $expired->delete();
+            }
+        }
+
+        //Get info about local shares
+        $usershares = null;
+        //if ($current_folder == null) {
+        $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
+        $usershares = count($ushares->unique("user_id")) . " shares";
+        //}
+        if (count($ushares) > 0) {
+            $usershares_directories = [];
+            foreach ($ushares as $ush) {
+                array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
+                array_push($usershares_directories, Storage::allDirectories($ush->path));
+            }
+            //dd($usershares_directories);
+            $usershares_directory_merged = array_merge(...$usershares_directories);
+            $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
+        }
+
+        //dd($usershares_directory_paths);
 
         //Get folders an files of current directory
         $dirs = Storage::directories($path);
@@ -83,16 +109,28 @@ class FolderController extends Controller
                 return explode('/', '/' . $item);
             }
         });
-        //dd($full_private_directory_paths);
 
         $userRoot = $this->convertPathsToTree($treeCollection)->first();
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
-        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
-        $folderTreeView .= $this->generateView($userRoot['children']);
+        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root"><b><i>Root</i></b></a></li>';
+        $folderTreeView .= $this->generateViewTree($userRoot['children']);
 
         $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
         $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
         $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
+
+        //Add UShare folder to folder tree view
+        //Generate folder tree view - collection for UShare
+        if (count($ushares) > 0) {
+            $ushareCollection = collect($usershares_directory_paths);
+            $treeCollection_ushare = $ushareCollection->map(function ($item) {
+                return explode('/', '/' . $item);
+            });
+            $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
+            $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares);
+        }
+
+
         return view('folder.root', compact(
             'directories',
             'files',
@@ -105,6 +143,7 @@ class FolderController extends Controller
             'treeMoveFolder',
             'treeMoveFile',
             'treeMoveMulti',
+            'usershares'
         ));
     }
 
@@ -113,8 +152,8 @@ class FolderController extends Controller
         $current_folder = $request->current_folder;
 
         //Forbid creation of Restricted folder name 'NShare'
-        if (($request->input('newfolder') == 'NShare') || ($request->input('newfolder') == 'ZTemp')) {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare and @ZTemp are restricted!!!');
+        if (($request->input('newfolder') == 'NShare') || ($request->input('newfolder') == 'ZTemp') || ($request->input('newfolder') == 'UShare')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare, @UShare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $new_folder = $request->input('newfolder');
@@ -136,8 +175,8 @@ class FolderController extends Controller
         $current_folder = $request->current_folder;
 
         //Forbid creation of Restricted folder name 'NShare'
-        if (($request->input('editfolder') == 'NShare') || ($request->input('editfolder') == 'ZTemp')) {
-            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare and @ZTemp are restricted!!!');
+        if (($request->input('editfolder') == 'NShare') || ($request->input('editfolder') == 'ZTemp') || ($request->input('editfolder') == 'UShare')) {
+            return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('error', 'Folder names @NShare, @UShare and @ZTemp are restricted!!!');
         } else {
             $path = $this->getPath($current_folder);
             $old_path = $path . "/" . $request->input('oldfolder');
@@ -619,7 +658,7 @@ class FolderController extends Controller
 
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
         $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
-        $folderTreeView .= $this->generateView($userRoot['children']);
+        $folderTreeView .= $this->generateViewTree($userRoot['children']);
 
         $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
         $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
@@ -824,7 +863,7 @@ class FolderController extends Controller
             $link = Storage::disk('public')->path('preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename);
             if (!file_exists($link)) {
                 $success = symlink($target, $link);
-            }else{
+            } else {
                 $success = true;
             }
             $filevideourl = 'storage/preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename;
@@ -1115,7 +1154,7 @@ class FolderController extends Controller
     {
         $previewFile = 'preview/' . session()->getId() . $pathToFolder . "/" . $filename . '.jpg';
         $previewImagePath =  Storage::disk('public')->path($previewFile);
-        if(file_exists($previewFile)){
+        if (file_exists($previewFile)) {
             return 'storage/' . $previewFile;
         }
 
@@ -1132,7 +1171,7 @@ class FolderController extends Controller
             $new_height = floor($height * $scale);
             $save_image = imagecreatetruecolor($new_width, $new_height);
             imagecopyresized($save_image, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-            
+
             imagejpeg($save_image, $previewImagePath, 50);
             imagedestroy($img);
             imagedestroy($save_image);
@@ -1158,7 +1197,7 @@ class FolderController extends Controller
         array_push($headers, ['Content-Disposition' => 'attachment; filename=' . $this->getFileName($path)]);
         return $headers;
     }
-    private function generateView($directories)
+    private function generateViewTree($directories)
     {
         // dd($directories);
         $view = '';
@@ -1168,14 +1207,59 @@ class FolderController extends Controller
             if ($withChildren) {
                 $view .= '<span class="folder-tree"></span>';
                 $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                $view .= $directory['label'] . '</a>';
+                $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
                 $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
-                $view .= $this->generateView($directory['children']);
+                $view .= $this->generateViewTree($directory['children']);
                 $view .= '</ul>';
             } else {
                 $view .= '<span class="folder-tree-empty"></span>';
                 $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                $view .= $directory['label'] . '</a>';
+                $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+            }
+            $view .= '</li>';
+        }
+
+        return $view;
+    }
+
+    private function generateShareViewTree($directories, $ushares)
+    {
+        $view = '';
+        foreach ($directories as $directory) {
+            if (count($ushares) >= 1) {
+                $activeLink = false;
+                foreach ($ushares as $likeShare) {
+                    if (strpos($directory["path"], "/UShare" . $likeShare->path) !== false) {
+                        $activeLink = true;
+                        break;
+                    }
+                }
+            }
+            $withChildren = count($directory['children']) > 0 ? true : false;
+
+            $view .= '<li>';
+            if ($withChildren) {
+                $view .= '<span class="folder-tree-ushare"></span>';
+                if ($activeLink) {
+                    $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                    $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                } else {
+                    $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                    $view .= $directory['label'] . '</a>';
+                }
+
+                $view .= '<ul class="nested-ushare browser-default" style="padding-left: 20px;">';
+                $view .= $this->generateShareViewTree($directory['children'], $ushares);
+                $view .= '</ul>';
+            } else {
+                $view .= '<span class="folder-tree-ushare-empty"></span>';
+                if ($activeLink) {
+                    $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                    $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                } else {
+                    $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                    $view .= $directory['label'] . '</a>';
+                }
             }
             $view .= '</li>';
         }
@@ -1218,5 +1302,15 @@ class FolderController extends Controller
         if (Storage::disk('public')->has('/thumb' . $videoThumbnail)) {   // Delete video thumbnails
             Storage::disk('public')->delete('/thumb' . $videoThumbnail);
         }
+    }
+
+    private function prependStringToArrayElements($array, $string)
+    {
+
+        $newArray = [];
+        foreach ($array as $element) {
+            array_push($newArray, $string . $element);
+        }
+        return $newArray;
     }
 }

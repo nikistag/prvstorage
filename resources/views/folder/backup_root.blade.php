@@ -5,7 +5,7 @@
 <div class="row">
     <div><span><?= $quota ?></span> % of disk space in use. <?= $disk_free_space ?> Gb free space</div>
     <div class="progress">
-        <div class="determinate" style="width: {{$quota}}%"></div>
+        <div class="determinate" style="width:<?= $quota ?>%;"></div>
     </div>
 </div>
 <div class="row">
@@ -914,7 +914,7 @@
             }
 
         }));
-       /*  fixed bottom menu bar */
+        /*  fixed bottom menu bar */
         window.onscroll = function() {
             if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
                 if ($("#selectedaction").hasClass("selectedaction")) {

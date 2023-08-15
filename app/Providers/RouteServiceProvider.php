@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Models\Share;
+use App\Models\Ushare;
+
 class RouteServiceProvider extends ServiceProvider
 {
     /**
@@ -53,6 +55,7 @@ class RouteServiceProvider extends ServiceProvider
         //Model binding
         Route::model('user', User::class);
         Route::model('share', Share::class);
+        Route::model('ushare', Ushare::class);
     }
 
     /**

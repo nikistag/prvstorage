@@ -5,7 +5,7 @@
 <div class="row">
     <div><span><?= $quota ?></span>% of disk space in use. <?= $disk_free_space ?> Gb free space</div>
     <div class="progress">
-        <div class="determinate" style="width: <?= $quota ?>%;"></div>
+        <div class="determinate" style="width:<?= $quota ?>%"></div>
     </div>
 </div>
 <div class="row">
@@ -13,54 +13,44 @@
         <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
     </div>
     <div class="col s6 right-align">
-        <a href="{{route('share.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i class="material-icons right">delete_forever</i>Purge all</a>
+        <a href="{{route('ushare.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i class="material-icons right">delete_forever</i>Purge all</a>
     </div>
 </div>
 
-<h4>Shares</h4>
+<h4>Folders you shared with local users</h4>
 <table class="responsive-table">
     <thead>
         <tr>
             <th>Row</th>
-            <th>Type</th>
-            <th>Composition</th>
-            <th>Storage</th>
+            <th>User</th>
+            <th>Path</th>
             <th>Expiration</th>
-            <th>Downloads</th>
-            <th>Status</th>
-            <th>Copy link</th>
             <th>Edit</th>
             <th>Remove</th>
         </tr>
     </thead>
     <tbody>
-        @if(count($shares) == 0)
+        @if(count($localShares) == 0)
         <tr>
-            <td colspan="5">There are no shares defined.!!!</td>
+            <td colspan="6">There are no shares defined.!!!</td>
         </tr>
         @else
-        @foreach($shares as $share)
+        @foreach($localShares as $ushare)
         <tr>
             <td>{{$loop->iteration}}</td>
-            <td>{{$share->type}}</td>
-            <td>{{$share->composition}}</td>
-            <td>{{$share->readableStorage['size']}} {{$share->readableStorage['type']}}</td>
-            <td>{{$share->expirationDate}}</td>
-            <td>{{$share->downloadType}}</td>
-            <td>{{$share->status}}</td>
+            <td>{{$ushare->wuser->name}} / {{$ushare->wuser->email}} </td>
+            <td><a href="{{route('folder.root', ['current_folder' => $ushare->shortPath])}}">{{$ushare->path}}</a></td>
+            <td>{{$ushare->expirationDate}}</td>
             <td>
-                <input type="hidden" id="link_{{$share->id}}" value="{{$share->link}}" />
-                <a href="" data-custom="{{$share->id}}" class="tooltipped clipboard-copy" data-tooltip="Copy hyperlink"><i class="material-icons blue-text">content_copy</i></a>
+                <input type="hidden" id="user_{{$ushare->id}}" value="{{$ushare->wuser->id}}" />
+                <input type="hidden" id="username_{{$ushare->id}}" value="{{$ushare->wuser->name}}{{' / '.$ushare->wuser->email}}" />
+                <input type="hidden" id="expiration_{{$ushare->id}}" value="{{$ushare->expirationDate}}" />
+                <input type="hidden" id="whichfolder_{{$ushare->id}}" value="{{$ushare->path}}" />
+                <input type="hidden" id="route_{{$ushare->id}}" value="{{route('ushare.update', ['ushare' => $ushare->id])}}" />
+                <a href="" id="{{$ushare->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
             </td>
             <td>
-                <input type="hidden" id="composition_{{$share->id}}" value="{{$share->composition}}" />
-                <input type="hidden" id="expiration_{{$share->id}}" value="{{$share->expirationDate}}" />
-                <input type="hidden" id="unlimited_{{$share->id}}" value="{{$share->unlimited}}" />
-                <input type="hidden" id="route_{{$share->id}}" value="{{route('share.update', ['share' => $share->id])}}" />
-                <a href="" id="{{$share->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-            </td>
-            <td>
-                <a href="{{$share->path}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+                <a href="{{$ushare->id}}" class="modal-trigger remove-share tooltipped" data-target="modalremoveshare" data-tooltip="Delete" data-data="{{$ushare->path}}"><i class="material-icons red-text">remove_circle</i></a>
             </td>
         </tr>
         @endforeach
@@ -69,29 +59,22 @@
 </table>
 <!-- Edit share modal -->
 <div id="pickerContainer"></div>
-<div id="modalfileshare" class="modal">
-    <form id="fileshareform" method="POST" action="">
+<div id="modaleditshare" class="modal">
+    <form id="editshareform" method="POST" action="">
         <div class="modal-content">
-            <h5>Share file with "the wild"</h5>
+            <h5>Update share with user</h5>
             @csrf
             @method('PUT')
             <div class="row">
                 <div class="col s12">
-                    <i>File to share:</i>
-                    <strong><i><span id="showFileToShare"></span></i></strong>
+                    <i>Folder to share:</i>
+                    <strong><i><span id="showFolderToShare"></span></i></strong>
                 </div>
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="input-field inline">
-                        <div class="switch">
-                            <label>
-                                With unlimited downloads
-                                <input type="checkbox" name="unlimited" id="unlimited">
-                                <span class="lever"></span>
-                            </label>
-                        </div>
-                    </div>
+                    <i>User to share with:</i>
+                    <strong><i><span id="showUserToShare"></span></i></strong>
                 </div>
             </div>
             <div class="row">
@@ -109,18 +92,18 @@
         </div>
     </form>
 </div>
-<!-- Remove file modal -->
-<div id="modalremovefile" class="modal">
-    <form method="POST" action="{{ route('share.delete') }}">
+<!-- Remove share modal -->
+<div id="modalremoveshare" class="modal">
+    <form method="POST" action="{{ route('ushare.delete') }}">
         <div class="modal-content">
-            <h5 class="red-text">Are you sure to delete this file?</h5>
+            <h5 class="red-text">Are you sure to stop sharing this?</h5>
             @csrf
             <div class="row">
                 <div class="col s12">
                     <div class="input-field inline">
-                        <span class="filetoremove"></span>
-                        <input id="filename" name="filename" type="hidden" class="valid" value="" size="40" />
-                        <label for="file"></label>
+                        <span class="sharetoremove"></span>
+                        <input id="shareidtodelete" name="shareidtodelete" type="hidden" class="valid" value="" size="40" />
+                        <label for="shareidtodelete"></label>
                     </div>
                 </div>
             </div>
@@ -137,7 +120,7 @@
 <script>
     $(document).ready(function() {
         $('.modal').modal();
-        $('#modalfileshare').modal({
+        $('#modaleditshare').modal({
             dismissible: false,
         });
         $('.datepicker').datepicker({
@@ -147,52 +130,51 @@
         $('.edit-share').on("click", (function(e) {
             e.preventDefault();
             //Getting data for share
+            var updateForm = document.getElementById('editshareform');
             var shareId = $(this).attr('id');
-            var composition = document.getElementById('composition_' + shareId);
+            var user = document.getElementById('username_' + shareId);
             var expiration = document.getElementById('expiration_' + shareId);
-            var unlimited = document.getElementById('unlimited_' + shareId);
+            var folder = document.getElementById('whichfolder_' + shareId);
             var route = document.getElementById('route_' + shareId);
             //Update form elements
-            var updateForm = document.getElementById('fileshareform');
-            var showFileForm = document.getElementById('showFileToShare');
-            var unlimitedForm = document.getElementById('unlimited');
-            var expirationForm = document.getElementById('expiration');
-            //Set default valuaes for modal/form
+            var showUserToShare = document.getElementById('showUserToShare');
+            var showFolder = document.getElementById('showFolderToShare');
+            var showExpiration = document.getElementById('expiration');
+            //Set default values for modal/form
+            showUserToShare.appendChild(document.createTextNode(user.value));
+            showFolder.appendChild(document.createTextNode(folder.value));
+            showExpiration.value = expiration.value;
             updateForm.action = route.value;
-            showFileForm.appendChild(document.createTextNode(composition.value));
-            if (unlimited.value == 1) {
-                unlimitedForm.checked = true;
-            } else {
-                unlimitedForm.checked = false;
-            }
-            expirationForm.value = expiration.value;
             M.updateTextFields();
             //Open modal            
-            var editmodal = document.getElementById('modalfileshare');
+            var editmodal = document.getElementById('modaleditshare');
             var instance = M.Modal.getInstance(editmodal);
             instance.open();
 
         }));
         //Reset update form
         $('#close-share-file-modal').on("click", (function(e) {
-            var updateForm = document.getElementById('fileshareform');
-            var showFileForm = document.getElementById('showFileToShare');
-            var unlimitedForm = document.getElementById('unlimited');
+            var updateForm = document.getElementById('editshareform');
+            var showUserToShareForm = document.getElementById('showUserToShare');
+            var showFolderForm = document.getElementById('showFolderToShare');
             var expirationForm = document.getElementById('expiration');
             updateForm.action = "";
-            if (showFileForm.hasChildNodes()) {
-                showFileForm.removeChild(showFileForm.firstChild);
+            if (showFolderForm.hasChildNodes()) {
+                showFolderForm.removeChild(showFolderForm.firstChild);
             }
-            unlimitedForm.checked = false;
+            if (showUserToShareForm.hasChildNodes()) {
+                showUserToShareForm.removeChild(showUserToShareForm.firstChild);
+            }
             expirationForm.value = "";
 
         }));
         //Remove 
-        $('.remove-file').on("click", (function(e) {
+        $('.remove-share').on("click", (function(e) {
             e.preventDefault();
-            var filename = $(this).attr('href');
-            $('input[name=filename]').val(filename);
-            $('.filetoremove').html(filename);
+            var shareid = $(this).attr('href');
+            var sharepath = $(this).attr('data-data');
+            $('input[name=shareidtodelete]').val(shareid);
+            $('.sharetoremove').html(sharepath);
         }));
 
         $('.clipboard-copy').on('click', (function(e) {

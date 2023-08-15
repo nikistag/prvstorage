@@ -378,7 +378,7 @@
                 <button id="submit-user-share-folder" class="btn-small waves-effect waves-light" type="submit" name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-user-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Close</a>
+                <a href="#!" id="close-user-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
     </form>
@@ -495,6 +495,13 @@
                 });
             }
 
+            /* 
+                        var elem = document.getElementById('modalbgworking');
+                        var instance = M.Modal.getInstance(elem);
+                        instance.open();
+                        var forWhat = document.getElementById('preparing');
+                        forWhat.innerHTML = "Preparing share";
+                        document.getElementById('foldershareform').submit(); */
         }));
         /* END OF SHARE FOLDER MECHANICS */
 

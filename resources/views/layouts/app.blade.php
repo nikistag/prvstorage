@@ -33,7 +33,10 @@
                     <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
                 </li>
                 <li>
-                    <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
+                    <a href="{{route('share.index')}}"><span class="white-text">Outside shares</span></a>
+                </li>
+                <li>
+                    <a href="{{route('ushare.index')}}"><span class="white-text">Local shares</span></a>
                 </li>
                 @if(auth()->user()->admin === 1)
                 <li>
@@ -76,7 +79,10 @@
             <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
         </li>
         <li>
-            <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
+            <a href="{{route('share.index')}}"><span class="white-text">Outside shares</span></a>
+        </li>
+        <li>
+            <a href="{{route('ushare.index')}}"><span class="white-text">Local shares</span></a>
         </li>
         @if(auth()->user()->admin === 1)
         <li>

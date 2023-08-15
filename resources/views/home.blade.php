@@ -11,9 +11,9 @@
     <p>Free disk space: {{ $disk_free_space }} Gb</p>
     <div><span>{{$quota}}%</span></div>
     <div class="progress">
-        <div class="determinate" style="width: {{$quota}}%"></div>
+        <div class="determinate" style="width:<?= $quota ?>%;"></div>
     </div>
-    
+
     <a href="{{route('folder.root', ['current_folder' => ''])}}" class="btn-small waves-effect waves-light">My private files & folders<i class="material-icons right">cloud</i></a>
 
     @endauth
