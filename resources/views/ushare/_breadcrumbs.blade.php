@@ -9,23 +9,11 @@
         @if ($loop->last)
         <span class="lime-text"><strong>{{$piece['folder']}}</strong></span>
         @else
-        @if($piece['active'])
-        @if($piece['controller'] == 'folder')
-        <a href="{{route('folder.root', ['current_folder' => $piece['path']])}}">
+        <a href="{{ $piece['href'] }}">
             <span class="orange-text text-lighten-4"><u>{{$piece['folder']}}</u></span>
         </a>
-        @else
-        <a href="{{route('ushare.root', ['current_folder' => $piece['path']])}}">
-            <span class="orange-text text-lighten-4"><u>{{$piece['folder']}}</u></span>
-        </a>
-        @endif
-        @else
-        <a href="">
-            <span class="orange-text text-lighten-4"><u>{{$piece['folder']}}</u></span>
-        </a>
-        @endif
-        &nbsp;<strong>></strong>&nbsp;
-        @endif
+        @endif       
+        &nbsp;<strong>></strong>&nbsp;      
         @endforeach
     </div>
 </div>

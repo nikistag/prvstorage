@@ -78,7 +78,7 @@
         for (i = 0; i < toggler.length; i++) {
             toggler[i].addEventListener("click", function() {
                 this.parentElement.querySelector(".nested-ushare").classList.toggle("active-tree-ushare");
-                this.classList.toggle("folder-tree-down");
+                this.classList.toggle("folder-tree-ushare-down");
             });
         }
     });

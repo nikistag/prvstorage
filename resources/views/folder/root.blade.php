@@ -36,7 +36,7 @@
 <!-- Preparing data modal -->
 <div id="modalbgworking" class="modal">
     <div class="modal-content">
-        <h5 class="red-text" id="preparing"></h5>
+        <h5 class="indigo-text" id="preparing"></h5>
     </div>
     <div class="modal-footer">
         <div class="progress">
@@ -79,7 +79,7 @@
         for (i = 0; i < toggler.length; i++) {
             toggler[i].addEventListener("click", function() {
                 this.parentElement.querySelector(".nested-ushare").classList.toggle("active-tree-ushare");
-                this.classList.toggle("folder-tree-down");
+                this.classList.toggle("folder-tree-ushare-down");
             });
         }
     });

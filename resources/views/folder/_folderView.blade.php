@@ -14,7 +14,7 @@
     </div>
     <div class="col s4 right-align">
         <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <br />
         <a href="{{$directory['foldername']}}" class="modal-trigger share-folder tooltipped" data-target="modalfoldershare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
         <a href="{{$directory['foldername']}}" class="modal-trigger user-share-folder tooltipped" data-target="modalusershare" data-tooltip="Share with user"><i class="material-icons purple-text">share</i></a>
@@ -53,7 +53,7 @@
         <a href="{{route('folder.root', ['current_folder' => $current_folder . '/NShare'])}}" class="valign-wrapper">NShare</a>
     </div>
 </div>
-
+@if(isset($usershares))
 <!-- 'UShare' folder actions -->
 <div class="row tooltipped" data-tooltip="Folders shared by other users" data-position="left">
     <div class="col s4 left-align" style="position: relative;">
@@ -72,6 +72,7 @@
         <a href="{{route('ushare.start')}}" class="valign-wrapper">UShare</a>
     </div>
 </div>
+@endif
 
 <!-- 'ZTemp' folder actions -->
 <div class="row tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files">
@@ -407,11 +408,11 @@
         /** Submit folder share with the wild form */
         $('#submit-share-folder').on("click", (function(e) {
             e.preventDefault();
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            instance.open();
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing share";
+            var elemBgShareFolder = document.getElementById('modalbgworking');
+            var instanceBgShareFolder = M.Modal.getInstance(elemBgShareFolder);
+            instanceBgShareFolder.open();
+            var forWhatBgShareFolder = document.getElementById('preparing');
+            forWhatBgShareFolder.innerHTML = "Preparing zip for sharing. Please wait!";
             document.getElementById('foldershareform').submit();
         }));
         /* END OF SHARE FOLDER MECHANICS */
@@ -503,7 +504,6 @@
             var foldername = $(this).attr('href');
             $('input[name=editfolder]').val(foldername);
             $('input[name=oldfolder]').val(foldername);
-
         }));
 
         $('.remove-folder').on("click", (function(e) {
@@ -551,35 +551,41 @@
         $('#moveFolderSubmit').on("click", (function(e) {
             e.preventDefault();
             $('#moveFolderForm').submit();
-            setInterval(function() {
-                $.ajax({
-                    url: $('#folderCopyProgressForm').attr("action"),
-                    type: "POST",
-                    data: {
-                        '_token': $('input[name=_token]').val(),
-                        'current_folder': $('input[name=current_folder]').val(),
-                        'whichfolder': $('input[name=whichfolder]').val(),
-                        'target': $('input[name=target]').val()
-                    },
-                    success: function(data) {
-                        if (typeof data.progress !== "undefined") {
-                            var progressBar = document.getElementById('copyFolderProgress');
-                            progressBar.style.width = data.progress + "%";
-                        }
-                    }
-                });
-            }, 2000);
-
+            var elemBgMoveFolder = document.getElementById('modalbgworking');
+            var instanceBgMoveFolder = M.Modal.getInstance(elemBgMoveFolder);
+            instanceBgMoveFolder.open();
+            var forWhatBgMoveFolder = document.getElementById('preparing');
+            forWhatBgMoveFolder.innerHTML = "Folder copying in progress. Please wait!";
+            /*          Piece of code to monitor copy progress - no viable - server too busy to respond in time   
+                        setInterval(function() {
+                            $.ajax({
+                                url: $('#folderCopyProgressForm').attr("action"),
+                                type: "POST",
+                                data: {
+                                    '_token': $('input[name=_token]').val(),
+                                    'current_folder': $('input[name=current_folder]').val(),
+                                    'whichfolder': $('input[name=whichfolder]').val(),
+                                    'target': $('input[name=target]').val()
+                                },
+                                success: function(data) {
+                                    if (typeof data.progress !== "undefined") {
+                                        var progressBar = document.getElementById('copyFolderProgress');
+                                        progressBar.style.width = data.progress + "%";
+                                    }
+                                }
+                            });
+                        }, 2000);
+             */
         }));
 
         $('.zipNdownload').on("click", (function(e) {
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing Zip and Download folder";
-            instance.open();
+            var elemBgZipDownload = document.getElementById('modalbgworking');
+            var instanceBgZipDownload = M.Modal.getInstance(elemBgZipDownload);
+            var forWhatBgZipDownload = document.getElementById('preparing');
+            forWhatBgZipDownload.innerHTML = "Preparing Zip for folder download. Please wait!";
+            instanceBgZipDownload.open();
             setInterval(function() {
-                instance.close();
+                instanceBgZipDownload.close();
             }, 3000);
 
         }));
