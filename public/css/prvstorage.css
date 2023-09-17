@@ -1,141 +1,194 @@
 /* NIKISTAG'S ADDINGS*/
 /* local font */
 @font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: url(iconfont/MaterialIcons-Regular.eot);
-    /* For IE6-8 */
-    src: local('Material Icons'),
-      local('MaterialIcons-Regular'),
-      url(iconfont/MaterialIcons-Regular.woff2) format('woff2'),
-      url(iconfont/MaterialIcons-Regular.woff) format('woff'),
-      url(iconfont/MaterialIcons-Regular.ttf) format('truetype');
-  }
-  
-  .material-icons {
-    font-family: 'Material Icons';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    /* Preferred icon size */
-    display: inline-block;
-    line-height: 1;
-    text-transform: none;
-    letter-spacing: normal;
-    word-wrap: normal;
-    white-space: nowrap;
-    direction: ltr;
-  
-    /* Support for all WebKit browsers. */
-    -webkit-font-smoothing: antialiased;
-    /* Support for Safari and Chrome. */
-    text-rendering: optimizeLegibility;
-  
-    /* Support for Firefox. */
-    -moz-osx-font-smoothing: grayscale;
-  
-    /* Support for IE. */
-    font-feature-settings: 'liga';
-  }
-  
-  /* Fixed meniu bar */
-  .selectedaction {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-  }
-  
-  /* Extension position over image */
-  .extension-text {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-  
-  }
-  
-  mark {
-    background-color: #424242;
-    color: #fafafa;
-  }
-  
-  /* Folder tree manipulation*/
-  /* Remove default bullets */
-  ul, #treeView {
-    list-style-type: none;
-  }
-  
-  /* Remove margins and padding from the parent ul */
-  #treeView {
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Style the caret/arrow */
-  .folder-tree {
-    cursor: pointer;
-    user-select: none; /* Prevent text selection */
-  }
-  
-  /* Create the caret/arrow with a unicode, and style it */
-  .folder-tree::before {
-    font-family: "Material Icons";
-    font-size: 25px;
-    content: "create_new_folder";
-    color: orange;
-    display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-  /* Create the caret/arrow with a unicode, and style it */
-  .folder-tree-root::before {
-    font-family: "Material Icons";
-    font-size: 30px;
-    content: "folder";
-    color:darkcyan;
-    display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-  /* Rotate the caret/arrow icon when clicked on (using JavaScript) */
-  .folder-tree-down::before {
-    font-family: "Material Icons";
-    font-size: 25px;
-    content: "folder_open";
-    color: orange;
-    display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(iconfont/MaterialIcons-Regular.eot);
+  /* For IE6-8 */
+  src: local('Material Icons'),
+    local('MaterialIcons-Regular'),
+    url(iconfont/MaterialIcons-Regular.woff2) format('woff2'),
+    url(iconfont/MaterialIcons-Regular.woff) format('woff'),
+    url(iconfont/MaterialIcons-Regular.ttf) format('truetype');
+}
 
-  .folder-tree-empty::before {
-    font-family: "Material Icons";
-    font-size: 25px;
-    content: "folder";
-    color:orange;;
-    display: inline-block;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
 
-    
-  /* Hide the nested list */
-  .nested {
-    display: none;
-  }
-  
-  /* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
-  .active-tree {
-    display: block;
-  }
- /*  Inactive links */
-  .inactive {
-    color: #292a2b;
-    cursor: none;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+/* Fixed meniu bar */
+.selectedaction {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+/* Extension position over image */
+.extension-text {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+
+}
+
+mark {
+  background-color: #424242;
+  color: #fafafa;
+}
+
+/* Folder tree manipulation*/
+/* Remove default bullets */
+ul,
+#treeView {
+  list-style-type: none;
+}
+
+/* Remove margins and padding from the parent ul */
+#treeView {
+  margin: 0;
+  padding: 0;
+}
+
+/* Style the caret/arrow */
+.folder-tree {
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection */
+}
+
+/* Create the caret/arrow with a unicode, and style it */
+.folder-tree::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "create_new_folder";
+  color: orange;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-down::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: orange;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-empty::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: orange;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-root::before {
+  font-family: "Material Icons";
+  font-size: 30px;
+  content: "folder";
+  color: darkcyan;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-ushare {
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection */
+}
+
+.folder-tree-ushare::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "create_new_folder";
+  color: purple;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-ushare-down::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: purple;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-ushare-empty::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: purple;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+
+
+/* Hide the nested list */
+.nested {
+  display: none;
+}
+
+.nested-ushare {
+  display: none;
+}
+
+/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */
+.active-tree {
+  display: block;
+}
+
+.active-tree-ushare {
+  display: block;
+}
+
+/*  Inactive links */
+.inactive {
+  color: #292a2b;
+  cursor: none;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inactive-ushare {
+  color: #292a2b;
+  cursor: none;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}

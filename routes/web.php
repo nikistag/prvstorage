@@ -6,6 +6,7 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\ShareController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UshareController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,26 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/share/{share}/edit', [ShareController::class, 'edit'])->name('share.edit');
         Route::put('/share/{share}/update', [ShareController::class, 'update'])->name('share.update');
         Route::get('/share/purge', [ShareController::class, 'purge'])->name('share.purge');
+
+        Route::get('/ushare/index', [UshareController::class, 'index'])->name('ushare.index');
+        Route::post('/ushare/store', [UshareController::class, 'store'])->name('ushare.store');
+        Route::put('/ushare/{ushare}/update', [UshareController::class, 'update'])->name('ushare.update');
+        Route::post('/ushare/delete', [UshareController::class, 'delete'])->name('ushare.delete');
+        Route::get('/ushare/purge', [UshareController::class, 'purge'])->name('ushare.purge');
+        Route::get('/ushare/start', [UshareController::class, 'start'])->name('ushare.start');
+        Route::get('/ushare/root', [UshareController::class, 'root'])->name('ushare.root');
+        Route::get('/ushare/folderdownload', [UshareController::class, 'folderdownload'])->name('ushare.folderdownload');
+        Route::post('/ushare/folderMove', [UshareController::class, 'folderMove'])->name('ushare.folderMove');
+        Route::post('/ushare/moveFileBig', [UshareController::class, 'moveFileBig'])->name('ushare.moveFileBig');
+        Route::post('/ushare/moveFileMulti', [UshareController::class, 'moveFileMulti'])->name('ushare.moveFileMulti');
+        Route::get('/ushare/filedownload', [UshareController::class, 'filedownload'])->name('ushare.filedownload');
+        Route::get('/ushare/filestream', [UshareController::class, 'filestream'])->name('ushare.filestream');
+        Route::post('/ushare/targetFolderSize', [UshareController::class, 'targetFolderSize'])->name('ushare.targetFolderSize'); // ajax request
+        Route::get('/ushare/multifiledownload', [UshareController::class, 'multifiledownload'])->name('ushare.multifiledownload');
+        Route::post('/ushare/fileReadiness', [UshareController::class, 'fileReadiness'])->name('ushare.fileReadiness'); // ajax request
+        Route::post('/ushare/multiFilesCopyProgress', [UshareController::class, 'multiFilesCopyProgress'])->name('ushare.multiFilesCopyProgress'); // ajax request
+        Route::get('/ushare/mediapreview', [UshareController::class, 'mediapreview'])->name('ushare.mediapreview'); // ajax request
+        Route::post('/ushare/fileCopyProgress', [UshareController::class, 'fileCopyProgress'])->name('ushare.fileCopyProgress'); // ajax request
         
         Route::get('/user/{user}/view', [UserController::class, 'view'])->name('user.view');
         Route::post('/user/purge', [UserController::class, 'purge'])->name('user.purge');

@@ -9,6 +9,7 @@ use ZipArchive;
 use Illuminate\Support\Facades\File;
 use DateTime;
 
+
 class ShareController extends Controller
 {
     public function index()
@@ -23,8 +24,6 @@ class ShareController extends Controller
         }
         $shares = Share::where('user_id', auth()->user()->id)->orderBy('expiration', 'desc')->get();
 
-        $path = '/' . auth()->user()->name;
-        $directories = Storage::allDirectories(storage_path($path));
         return view('share.index', compact('shares'));
     }
 
@@ -260,16 +259,4 @@ class ShareController extends Controller
         return redirect(route('share.index'))->with('success', 'All shares have been purged');
     }
 
-    //PRIVATE FUNCTIONS
-    private function getPath($current_folder)
-    {
-        $parent_search = explode("/", $current_folder);
-
-        if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
-            $path = $current_folder;                                               //Path to local network share           
-        } else {
-            $path = "/" . auth()->user()->name . $current_folder;                   //Path to folder of specific user               
-        }
-        return $path;
-    }
 }

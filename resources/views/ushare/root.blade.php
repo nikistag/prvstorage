@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Root folder'])
+@extends('layouts.app', ['title' => 'UShare folder'])
 
 @section('content')
 
@@ -8,13 +8,12 @@
         <div class="determinate" style="width:<?= $quota ?>%;"></div>
     </div>
 </div>
-@include('folder._topActionBar')
 
-@include('folder._breadcrumbs')
+@include('ushare._breadcrumbs')
 
-@include('folder._folderView')
+@include('ushare._folderView')
 
-@include('folder._fileView')
+@include('ushare._fileView')
 
 <!-- Directory tree modal -->
 <div id="directoryTreeModal" class="modal">
@@ -36,7 +35,7 @@
 <!-- Preparing data modal -->
 <div id="modalbgworking" class="modal">
     <div class="modal-content">
-        <h5 class="indigo-text" id="preparing"></h5>
+        <h5 class="red-text" id="preparing"></h5>
     </div>
     <div class="modal-footer">
         <div class="progress">

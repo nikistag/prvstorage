@@ -14,17 +14,13 @@
     </div>
     <div class="col s4 right-align">
         <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
+        <br />
         <a href="{{$directory['foldername']}}" class="modal-trigger share-folder tooltipped" data-target="modalfoldershare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger user-share-folder tooltipped" data-target="modalusershare" data-tooltip="Share with user"><i class="material-icons purple-text">share</i></a>
         <br />
-        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons orange-text">content_copy</i></a>
         <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
-        <br />
         <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
-        <!-- Hidden form for sharing files and folders -->
-        <form method="POST" id="shareform{{$directory['foldername']}}" action="{{route('share.folder')}}">
-            @csrf
-            <input type="hidden" name="share-folder" value="{{$path . '/' . $directory['foldername']}}">
-        </form>
     </div>
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
@@ -57,6 +53,26 @@
         <a href="{{route('folder.root', ['current_folder' => $current_folder . '/NShare'])}}" class="valign-wrapper">NShare</a>
     </div>
 </div>
+@if(isset($usershares))
+<!-- 'UShare' folder actions -->
+<div class="row tooltipped" data-tooltip="Folders shared by other users" data-position="left">
+    <div class="col s4 left-align" style="position: relative;">
+        <a href="{{route('ushare.start')}}" class="valign-wrapper">
+            <i class="material-icons purple-text large">folder</i>
+        </a>
+    </div>
+    <div class="col s4">
+        <span class="new badge" data-badge-caption="{{$usershares}}"></span>
+    </div>
+    <div class="col s4 right-align">
+    </div>
+</div>
+<div class="row" style="border-bottom: 1px solid gray;">
+    <div class="col s12 left-align">
+        <a href="{{route('ushare.start')}}" class="valign-wrapper">UShare</a>
+    </div>
+</div>
+@endif
 
 <!-- 'ZTemp' folder actions -->
 <div class="row tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files">
@@ -325,6 +341,49 @@
         </div>
     </form>
 </div>
+<form id="shitForm" method="POST" action="{{ route('ushare.store') }}">
+</form>
+<!-- User share folder modal -->
+<div id="modalusershare" class="modal">
+    <form>
+        <div class="modal-content">
+            <h5>Share folder with user</h5>
+            @csrf
+            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+            <div class="row">
+                <div class="col s12">
+                    <i>Folder to share:</i>
+                    <strong><i><span id="showUserFolderToShare"></span></i></strong>
+                    <input type="hidden" name="userFolderToShareInput" id="userFolderToShareInput" value="" />
+                </div>
+            </div>
+            <div class="card-panel pink accent-2 hide" id="flashCardError">
+                <strong><span id="errorMessage"></span></strong>
+            </div>
+            <div class="card-panel  green accent-2 hide" id="flashCardSuccess">
+                <strong><span id="successMessage"></span></strong>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="userShareName" name="userShareName" type="text" />
+                    <label for="userShareName">Username or user Email:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="userShareExpiration" name="userShareExpiration" type="text" class="datepicker" />
+                    <label for="userShareExpiration">Available till:</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="submit-user-share-folder" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                    <i class="material-icons right">share</i>
+                </button>
+                <a href="#!" id="close-user-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Close</a>
+            </div>
+        </div>
+    </form>
+</div>
 <!-- SCRIPTS FOR FOLDER MANIPULATION -->
 <script>
     $(document).ready(function() {
@@ -349,12 +408,94 @@
         /** Submit folder share with the wild form */
         $('#submit-share-folder').on("click", (function(e) {
             e.preventDefault();
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            instance.open();
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing share";
+            var elemBgShareFolder = document.getElementById('modalbgworking');
+            var instanceBgShareFolder = M.Modal.getInstance(elemBgShareFolder);
+            instanceBgShareFolder.open();
+            var forWhatBgShareFolder = document.getElementById('preparing');
+            forWhatBgShareFolder.innerHTML = "Preparing zip for sharing. Please wait!";
             document.getElementById('foldershareform').submit();
+        }));
+        /* END OF SHARE FOLDER MECHANICS */
+
+        /* USER SHARE FOLDER MECHANICS */
+        /* Clear share folder modal form */
+        $('#close-user-share-folder-modal').on("click", (function(e) {
+            $('#showUserFolderToShare').html("");
+            $('#userFolderToShareInput').val("");
+            $('#userShareExpiration').val("");
+            $('#userShareName').val("");
+        }));
+        /* Open modal to share folder with the wild */
+        $('.user-share-folder').on("click", (function(e) {
+            e.preventDefault();
+            var folderToShare = $(this).attr('href');
+            $('#showUserFolderToShare').html(folderToShare);
+            $('#userFolderToShareInput').val('{{$path}}' + '/' + folderToShare);
+        }));
+        /** Submit folder share with the wild form */
+        $('#submit-user-share-folder').on("click", (function(e) {
+            e.preventDefault();
+            var userFolderToShare = $('#userFolderToShareInput').val();
+            var userShareExpiration = $('#userShareExpiration').val();
+            var userShareName = $('#userShareName').val();
+            if (userShareExpiration == "") {
+                $('#errorMessage').html("Choose a date/ availability!");
+                $('#flashCardError').removeClass("hide");
+                setTimeout(function() {
+                    $('#flashCardError').fadeOut(6000);
+                });
+                setTimeout(function() {
+                    $('#flashCardError').fadeIn(10);
+                    $('#flashCardError').addClass("hide");
+                    $('#errorMessage').html("");
+                }, 6000);
+            } else {
+                var x = document.getElementById("shitForm").action;
+                $.ajax({
+                    url: x,
+                    type: "POST",
+                    data: {
+                        '_token': $('input[name=_token]').val(),
+                        'current_folder': $('input[name=current_folder]').val(),
+                        'whichfolder': userFolderToShare,
+                        'expiration': userShareExpiration,
+                        'user': userShareName,
+                    },
+                    success: function(data) {
+                        if (data.errorMessage === null) {
+                            $('#successMessage').html(data.successMessage);
+                            $('#flashCardSuccess').removeClass("hide");
+                            setTimeout(function() {
+                                $('#flashCardSuccess').fadeOut(5000);
+                            });
+                            setTimeout(function() {
+                                $('#flashCardSuccess').fadeIn(10);
+                                $('#flashCardSuccess').addClass("hide");
+                                $('#successMessage').html("");
+                            }, 5000);
+                            setTimeout(function() {
+                                $('#close-user-share-folder-modal').click();
+                                var shareUserModal = document.getElementById('modalusershare');
+                                var instance = M.Modal.getInstance(shareUserModal);
+                                instance.close();
+                            }, 5200);
+
+                        } else {
+                            $('#errorMessage').html(data.errorMessage);
+                            $('#flashCardError').removeClass("hide");
+                            setTimeout(function() {
+                                $('#flashCardError').fadeOut(5000);
+                            });
+                            setTimeout(function() {
+                                $('#flashCardError').fadeIn(10);
+                                $('#flashCardError').addClass("hide");
+                                $('#errorMessage').html("");
+                            }, 5000);
+                        }
+                    }
+                });
+            }
+
         }));
         /* END OF SHARE FOLDER MECHANICS */
 
@@ -363,7 +504,6 @@
             var foldername = $(this).attr('href');
             $('input[name=editfolder]').val(foldername);
             $('input[name=oldfolder]').val(foldername);
-
         }));
 
         $('.remove-folder').on("click", (function(e) {
@@ -411,35 +551,41 @@
         $('#moveFolderSubmit').on("click", (function(e) {
             e.preventDefault();
             $('#moveFolderForm').submit();
-            setInterval(function() {
-                $.ajax({
-                    url: $('#folderCopyProgressForm').attr("action"),
-                    type: "POST",
-                    data: {
-                        '_token': $('input[name=_token]').val(),
-                        'current_folder': $('input[name=current_folder]').val(),
-                        'whichfolder': $('input[name=whichfolder]').val(),
-                        'target': $('input[name=target]').val()
-                    },
-                    success: function(data) {
-                        if (typeof data.progress !== "undefined") {
-                            var progressBar = document.getElementById('copyFolderProgress');
-                            progressBar.style.width = data.progress + "%";
-                        }
-                    }
-                });
-            }, 2000);
-
+            var elemBgMoveFolder = document.getElementById('modalbgworking');
+            var instanceBgMoveFolder = M.Modal.getInstance(elemBgMoveFolder);
+            instanceBgMoveFolder.open();
+            var forWhatBgMoveFolder = document.getElementById('preparing');
+            forWhatBgMoveFolder.innerHTML = "Folder copying in progress. Please wait!";
+            /*          Piece of code to monitor copy progress - no viable - server too busy to respond in time   
+                        setInterval(function() {
+                            $.ajax({
+                                url: $('#folderCopyProgressForm').attr("action"),
+                                type: "POST",
+                                data: {
+                                    '_token': $('input[name=_token]').val(),
+                                    'current_folder': $('input[name=current_folder]').val(),
+                                    'whichfolder': $('input[name=whichfolder]').val(),
+                                    'target': $('input[name=target]').val()
+                                },
+                                success: function(data) {
+                                    if (typeof data.progress !== "undefined") {
+                                        var progressBar = document.getElementById('copyFolderProgress');
+                                        progressBar.style.width = data.progress + "%";
+                                    }
+                                }
+                            });
+                        }, 2000);
+             */
         }));
 
         $('.zipNdownload').on("click", (function(e) {
-            var elem = document.getElementById('modalbgworking');
-            var instance = M.Modal.getInstance(elem);
-            var forWhat = document.getElementById('preparing');
-            forWhat.innerHTML = "Preparing Zip and Download folder";
-            instance.open();
+            var elemBgZipDownload = document.getElementById('modalbgworking');
+            var instanceBgZipDownload = M.Modal.getInstance(elemBgZipDownload);
+            var forWhatBgZipDownload = document.getElementById('preparing');
+            forWhatBgZipDownload.innerHTML = "Preparing Zip for folder download. Please wait!";
+            instanceBgZipDownload.open();
             setInterval(function() {
-                instance.close();
+                instanceBgZipDownload.close();
             }, 3000);
 
         }));

@@ -33,7 +33,10 @@
                     <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
                 </li>
                 <li>
-                    <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
+                    <a href="{{route('share.index')}}"><span class="white-text">Outside shares</span></a>
+                </li>
+                <li>
+                    <a href="{{route('ushare.index')}}"><span class="white-text">Local shares</span></a>
                 </li>
                 @if(auth()->user()->admin === 1)
                 <li>
@@ -76,7 +79,10 @@
             <a href="{{route('user.view', ['user' => auth()->user()->id])}}"><span class="white-text">Account</span></a>
         </li>
         <li>
-            <a href="{{route('share.index')}}"><span class="white-text">Shares</span></a>
+            <a href="{{route('share.index')}}"><span class="white-text">Outside shares</span></a>
+        </li>
+        <li>
+            <a href="{{route('ushare.index')}}"><span class="white-text">Local shares</span></a>
         </li>
         @if(auth()->user()->admin === 1)
         <li>
@@ -129,7 +135,8 @@
         <div class="footer-copyright blue-grey darken-4">
             <div class="container">
                 Copyright &copy; 2021 - {{date('Y')}} Nichita Sandu / <a href="https://nikistag.com" target="_blank">nikistag.com</a> - All Rights Reserved
-                <span class="grey-text text-lighten-4 right">V. <b>{{config('app.version')}}</b></span>
+                <div id="newVersion" class="right"></div>
+                <div class="grey-text text-lighten-4 right">V. <b>{{config('app.version')}}</b></div>
             </div>
         </div>
     </footer>
@@ -146,9 +153,25 @@
                 e.preventDefault();
                 $('#logoutform').submit();
             });
-
             $('.collapsible').collapsible();
 
+            /*  Check for new version/ update  */
+            $.ajax({
+                 url: "https://www.nikistag.com/api/prvstorage/getVersion",
+                /* url: "http://192.168.1.35/index.php/api/prvstorage/getversion", */ //Testing URL
+                type: "GET",
+                data: {
+                    'currentVersion': "{{config('app.version')}}",
+                },
+                success: function(data) {
+                    if (typeof data.newRelease !== "undefined") {
+                        if (data.newRelease === true) {
+                            document.getElementById('newVersion').innerHTML = data.newVersionHtml;
+                            $('.tooltipped').tooltip();
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>
