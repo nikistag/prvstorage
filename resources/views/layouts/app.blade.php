@@ -157,7 +157,7 @@
 
             /*  Check for new version/ update  */
             $.ajax({
-                 url: "https://www.nikistag.com/api/prvstorage/getVersion",
+                url: "https://nikistag.com/api/prvstorage/getversion",
                 /* url: "http://192.168.1.35/index.php/api/prvstorage/getversion", */ //Testing URL
                 type: "GET",
                 data: {
