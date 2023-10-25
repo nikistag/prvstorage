@@ -168,6 +168,16 @@ ul,
   vertical-align: middle;
 }
 
+.folder-tree-ushare-down-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .folder-tree-ushare-empty::before {
   font-family: "Material Icons";
   font-size: 25px;
@@ -178,7 +188,15 @@ ul,
   vertical-align: middle;
 }
 
-
+.folder-tree-ushare-empty-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
 
 /* Hide the nested list */
 .nested {

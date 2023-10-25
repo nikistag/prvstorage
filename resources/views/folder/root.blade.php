@@ -19,28 +19,6 @@
     @include('folder._fileView')
 
 
-
-
-    <!-- Directory tree modal -->
-    <div id="directoryTreeModal" class="modal">
-        <div class="modal-footer">
-            <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
-                    class="material-icons white-text">close</i></a>
-        </div>
-        <div class="modal-content">
-            <h5>Folder tree</h5>
-            <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to
-                        select</u></b></p>
-            <ul id="treeView" class="browser-default left-align">
-                {!! $folderTreeView !!}
-            </ul>
-        </div>
-        <div class="modal-footer">
-            <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
-                    class="material-icons white-text">close</i></a>
-        </div>
-    </div>
-
     <!-- Preparing data modal -->
     <div id="modalbgworking" class="modal">
         <div class="modal-content">

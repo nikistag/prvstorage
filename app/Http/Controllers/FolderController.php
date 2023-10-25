@@ -659,11 +659,17 @@ class FolderController extends Controller
                 return explode('/', '/' . $item);
             }
         });
-        $userRoot = $this->convertPathsToTree($treeCollection)->first();
+        //Prepare active tree branch
+        $activeBranch = [];
+        foreach ($breadcrumbs as $crumb) {
+            array_push($activeBranch, $crumb["folder"]);
+        }
+        $garbage = array_shift($activeBranch);
 
+        $userRoot = $this->convertPathsToTree($treeCollection)->first();
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
         $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
-        $folderTreeView .= $this->generateViewTree($userRoot['children'], $current_folder);
+        $folderTreeView .= $this->generateViewTree($userRoot['children'], $current_folder, $activeBranch);
 
         $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
         $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
@@ -1231,6 +1237,7 @@ class FolderController extends Controller
                     $view .= '</ul>';
                 }
             } else {
+
                 if ((count($activeBranch) > 0) && ($activeBranch[0] == $directory["label"])) {
                     $view .= '<span class="folder-tree-empty-active"></span><a class="pink-text text-darken-3" href="';
                 } else {
