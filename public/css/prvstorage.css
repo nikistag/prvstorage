@@ -102,11 +102,31 @@ ul,
   vertical-align: middle;
 }
 
+.folder-tree-down-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .folder-tree-empty::before {
   font-family: "Material Icons";
   font-size: 25px;
   content: "folder";
   color: orange;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-empty-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: #ad1457;
   display: inline-block;
   margin-right: 6px;
   vertical-align: middle;
@@ -148,6 +168,16 @@ ul,
   vertical-align: middle;
 }
 
+.folder-tree-ushare-down-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 .folder-tree-ushare-empty::before {
   font-family: "Material Icons";
   font-size: 25px;
@@ -158,7 +188,15 @@ ul,
   vertical-align: middle;
 }
 
-
+.folder-tree-ushare-empty-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
 
 /* Hide the nested list */
 .nested {
@@ -191,4 +229,302 @@ ul,
   cursor: none;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* SIDE NAVIGATION FOR FOLDER TREE */
+
+.sidenav-tree {
+  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+.sidenav-tree span.badge {
+  margin-top: calc(24px - 11px);
+}
+
+nav .sidenav-trigger {
+  float: left;
+  position: relative;
+  z-index: 1;
+  height: 56px;
+  margin: 0 18px;
+}
+
+nav .sidenav-trigger i {
+  height: 56px;
+  line-height: 56px;
+}
+
+.sidenav-tree .collapsible,
+.sidenav-tree.fixed .collapsible {
+  border: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.sidenav-tree .collapsible li,
+.sidenav-tree.fixed .collapsible li {
+  padding: 0;
+}
+
+.sidenav-tree .collapsible-header,
+.sidenav-tree.fixed .collapsible-header {
+  background-color: transparent;
+  border: none;
+  line-height: inherit;
+  height: inherit;
+  padding: 0 16px;
+}
+
+.sidenav-tree .collapsible-header:hover,
+.sidenav-tree.fixed .collapsible-header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sidenav-tree .collapsible-header i,
+.sidenav-tree.fixed .collapsible-header i {
+  line-height: inherit;
+}
+
+.sidenav-tree .collapsible-body,
+.sidenav-tree.fixed .collapsible-body {
+  border: 0;
+  background-color: #fff;
+}
+
+.sidenav-tree .collapsible-body li a,
+.sidenav-tree.fixed .collapsible-body li a {
+  padding: 0 23.5px 0 31px;
+}
+
+.sidenav-tree {
+  position: fixed;
+  width: 320px;
+  left: 0;
+  top: 0px;
+  margin: 0;
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
+  height: 100%;
+  height: calc(100% + 60px);
+  height: -moz-calc(100%);
+  padding-bottom: 60px;
+  background-color: #fff;
+  z-index: 999;
+  overflow-y: auto;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateX(-105%);
+  transform: translateX(-105%);
+}
+
+.sidenav-tree.right-aligned {
+  right: 0;
+  -webkit-transform: translateX(105%);
+  transform: translateX(105%);
+  left: auto;
+  -webkit-transform: translateX(100%);
+  transform: translateX(100%);
+}
+
+.sidenav-tree .collapsible {
+  margin: 0;
+}
+
+/*
+.sidenav-tree li {
+  float: none;
+  line-height: 48px;
+}
+*/
+.sidenav-tree li.active-branch {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/*
+.sidenav-tree li>a {
+  color: rgba(0, 0, 0, 0.87);
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  height: 48px;
+  line-height: 48px;
+  padding: 0 32px;
+}
+*/
+.sidenav-tree li>a:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/*
+.sidenav-tree li>a.btn,
+.sidenav-tree li>a.btn-large,
+.sidenav-tree li>a.btn-small,
+.sidenav-tree li>a.btn-large,
+.sidenav-tree li>a.btn-flat,
+.sidenav-tree li>a.btn-floating {
+  margin: 10px 15px;
+}
+
+.sidenav-tree li>a.btn,
+.sidenav-tree li>a.btn-large,
+.sidenav-tree li>a.btn-small,
+.sidenav-tree li>a.btn-large,
+.sidenav-tree li>a.btn-floating {
+  color: #fff;
+}
+
+.sidenav-tree li>a.btn-flat {
+  color: #343434;
+}
+
+.sidenav-tree li>a.btn:hover,
+.sidenav-tree li>a.btn-large:hover,
+.sidenav-tree li>a.btn-small:hover,
+.sidenav-tree li>a.btn-large:hover {
+  background-color: #2bbbad;
+}
+
+.sidenav-tree li>a.btn-floating:hover {
+  background-color: #26a69a;
+}
+
+.sidenav-tree li>a>i,
+.sidenav-tree li>a>[class^="mdi-"],
+.sidenav-tree li>a li>a>[class*="mdi-"],
+.sidenav-tree li>a>i.material-icons {
+  float: left;
+  height: 48px;
+  line-height: 48px;
+  margin: 0 32px 0 0;
+  width: 24px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.sidenav-tree .divider {
+  margin: 8px 0 0 0;
+}
+
+.sidenav-tree .subheader {
+  cursor: initial;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 48px;
+}
+
+.sidenav-tree .subheader:hover {
+  background-color: transparent;
+}
+
+.sidenav-tree .user-view {
+  position: relative;
+  padding: 32px 32px 0;
+  margin-bottom: 8px;
+}
+
+.sidenav-tree .user-view>a {
+  height: auto;
+  padding: 0;
+}
+
+.sidenav-tree .user-view>a:hover {
+  background-color: transparent;
+}
+
+.sidenav-tree .user-view .background {
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.sidenav-tree .user-view .circle,
+.sidenav-tree .user-view .name,
+.sidenav-tree .user-view .email {
+  display: block;
+}
+
+.sidenav-tree .user-view .circle {
+  height: 64px;
+  width: 64px;
+}
+
+.sidenav-tree .user-view .name,
+.sidenav-tree .user-view .email {
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.sidenav-tree .user-view .name {
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.sidenav-tree .user-view .email {
+  padding-bottom: 16px;
+  font-weight: 400;
+}
+*/
+.sidenav-tree.sidenav-tree-fixed {
+  left: 0;
+  -webkit-transform: translateX(0);
+  transform: translateX(0);
+  position: fixed;
+}
+
+.sidenav-tree.sidenav-tree-fixed.right-aligned {
+  right: 0;
+  left: auto;
+}
+
+@media only screen and (max-width: 992px) {
+  .sidenav-tree.sidenav-tree-fixed {
+    -webkit-transform: translateX(-105%);
+    transform: translateX(-105%);
+  }
+
+  .sidenav-tree.sidenav-tree-fixed.right-aligned {
+    -webkit-transform: translateX(105%);
+    transform: translateX(105%);
+  }
+
+  .sidenav-tree>a {
+    padding: 0 16px;
+  }
+
+  .sidenav-tree .user-view {
+    padding: 16px 16px 0;
+  }
+}
+
+.sidenav-tree .collapsible-body>ul:not(.collapsible)>li.active,
+.sidenav-tree.sidenav-tree-fixed .collapsible-body>ul:not(.collapsible)>li.active {
+  background-color: #ee6e73;
+}
+
+.sidenav-tree .collapsible-body>ul:not(.collapsible)>li.active a,
+.sidenav-tree.sidenav-tree-fixed .collapsible-body>ul:not(.collapsible)>li.active a {
+  color: #fff;
+}
+
+.sidenav-tree .collapsible-body {
+  padding: 0;
+}
+
+.sidenav-tree-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  height: 120vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 997;
+  display: none;
 }

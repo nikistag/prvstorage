@@ -172,7 +172,7 @@ class UshareController extends Controller
                 return explode('/', '/' . $item);
             });
             $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
-            $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares);
+            $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares, array());
         }
         $breadcrumbs[0] = ['folder' => 'ROOT', 'path' => '', 'active' => true, 'href' => route('folder.root', ['current_folder' => ''])];
         $breadcrumbs[1] = ['folder' => 'UShare', 'path' => '', 'active' => false, 'href' => route('ushare.start')];
@@ -182,7 +182,7 @@ class UshareController extends Controller
 
     public function root(Request $request)
     {
-        //dd($request->current_folder);
+
         $current_folder = $request->current_folder;
 
         //Delete expired local shares
@@ -251,10 +251,18 @@ class UshareController extends Controller
         $treeCollection_ushare = $ushareCollection->map(function ($item) {
             return explode('/', '/' . $item);
         });
-        $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
-        $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares);
 
         $breadcrumbs = $this->getBreadcrumbs($current_folder, $ushares);
+
+        //Prepare active tree branch
+        $activeBranch = [];
+        foreach ($breadcrumbs as $crumb) {
+            array_push($activeBranch, $crumb["folder"]);
+        }
+        $garbage = array_shift($activeBranch);
+        //Generate ushare tree
+        $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
+        $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares, $activeBranch);
 
         if ($path["access"] === false) {
             //Get folder content - only links to actual share, no access
@@ -448,7 +456,7 @@ class UshareController extends Controller
         if ($this->isShared($sharedDir, $ushares)) {
             $current_folder = $request->input('targetfoldermulti');
             foreach ($request->filesMove as $file) {
-                $old_path = "/". $sharedDir . "/" . $file;
+                $old_path = "/" . $sharedDir . "/" . $file;
                 $new_path = $this->getPath($current_folder . "/" . $file);
 
                 //Check for duplicate file
@@ -461,7 +469,7 @@ class UshareController extends Controller
                 }
             }
             return redirect()->route('folder.root', ['current_folder' => $current_folder])->with('success', 'File successfuly copied!');
-        }else{
+        } else {
             return back()->with('error', 'You fucked up big time');
         }
     }
@@ -561,7 +569,7 @@ class UshareController extends Controller
         //dd($request->input());
         $fullfilename = $request->file_name;
         $fileNameNoExt = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, ".")));
-        $path = $this->getSharedDir("/".$request->current_folder);
+        $path = $this->getSharedDir("/" . $request->current_folder);
         //Delete old sessions->previews
         $nowUnixInt = (int)now()->format("U");
         $oldFiles = [];
@@ -617,7 +625,7 @@ class UshareController extends Controller
         $previewableKeys = array_keys(array_intersect($trimmedOriginal, $trimmedPreviewable));
 
         $thumbnailPosition = array_search($originalPosition, $previewableKeys);
-        $pathToFolder = "/".$path;
+        $pathToFolder = "/" . $path;
         //Generate next - previous links        
         $lastIndex = count($previewableFiles) - 1;
         if ($thumbnailPosition == 0) {
@@ -1033,7 +1041,7 @@ class UshareController extends Controller
         return $view;
     }
 
-    private function generateShareViewTree($directories, $ushares)
+    private function generateShareViewTree($directories, $ushares, $activeBranch)
     {
         $view = '';
         foreach ($directories as $directory) {
@@ -1049,26 +1057,57 @@ class UshareController extends Controller
             $withChildren = count($directory['children']) > 0 ? true : false;
             $view .= '<li>';
             if ($withChildren) {
-                $view .= '<span class="folder-tree-ushare"></span>';
-                if ($activeLink) {
-                    $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                    $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                //dd($directories);
+                if ((count($activeBranch) > 0) && ($activeBranch[0] == $directory["label"])) {
+                    $garbage = array_shift($activeBranch);
+                    count($activeBranch) == 0 ?
+                        $view .= '<span class="folder-tree-ushare-down-active"></span>'
+                        :
+                        $view .= '<span class="folder-tree-ushare-down"></span>';
+                    if ($activeLink) {
+                        count($activeBranch) == 0 ?
+                            $view .= '<a class="pink-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">'
+                            :
+                            $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                    } else {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= $directory['label'] . '</a>';
+                    }
+                    $view .= '<ul class="active-tree-ushare browser-default" style="padding-left: 20px;">';
+                    $view .= $this->generateShareViewTree($directory['children'], $ushares, $activeBranch);
+                    $view .= '</ul>';
                 } else {
-                    $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                    $view .= $directory['label'] . '</a>';
+                    if ($activeLink) {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                    } else {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= $directory['label'] . '</a>';
+                    }
+                    $view .= '<ul class="nested-ushare browser-default" style="padding-left: 20px;">';
+                    $view .= $this->generateShareViewTree($directory['children'], $ushares, $activeBranch);
+                    $view .= '</ul>';
                 }
-
-                $view .= '<ul class="nested-ushare browser-default" style="padding-left: 20px;">';
-                $view .= $this->generateShareViewTree($directory['children'], $ushares);
-                $view .= '</ul>';
             } else {
-                $view .= '<span class="folder-tree-ushare-empty"></span>';
-                if ($activeLink) {
-                    $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                    $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                if ((count($activeBranch) > 0) && ($activeBranch[0] == $directory["label"])) {
+                    $view .= '<span class="folder-tree-ushare-empty-active"></span>';
+                    if ($activeLink) {
+                        $view .= '<a class="pink-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                    } else {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= $directory['label'] . '</a>';
+                    }
                 } else {
-                    $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
-                    $view .= $directory['label'] . '</a>';
+                    $view .= '<span class="folder-tree-ushare-empty"></span>';
+                    if ($activeLink) {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
+                    } else {
+                        $view .= '<a class="blue-grey-text text-darken-3" href="#" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
+                        $view .= $directory['label'] . '</a>';
+                    }
                 }
             }
             $view .= '</li>';
