@@ -25,96 +25,95 @@
     <nav class="blue-grey darken-2">
         <div class="nav-wrapper ">
             @auth
-                &nbsp;
-                <a href="/index.php" class="brand-logo left"><span
-                        class="orange-text text-lighten-4"><strong>{{ auth()->user()->name }}'s</strong></span> <span
-                        style="font-size:medium;">private storage</span></a>
-                <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
-                        class="material-icons">menu</i></a>
-                <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    <li>
-                        <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
-                                class="white-text">Account</span></a>
-                    </li>
-                    <li>
-                        <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
-                    </li>
-                    <li>
-                        <a href="{{ route('ushare.index') }}"><span class="white-text">Local shares</span></a>
-                    </li>
-                    @if (auth()->user()->admin === 1)
-                        <li>
-                            <a href="{{ route('user.index') }}"><span class="white-text">Users</span></a>
-                        </li>
-                    @else
-                        <li>
-                            <a href="{{ route('user.admins') }}"><span class="white-text">Admins</span></a>
-                        </li>
-                    @endif
-                    @if (auth()->user()->suadmin === 1)
-                        <li>
-                            <a href="{{ route('user.emailTest') }}"><span class="white-text">Email test</span></a>
-                        </li>
-                    @endif
-                    <li>
-                        <a id="logoutwide" href="!#"><span
-                                class="logouttrigger teal-text text-lighten-4">Logout</span></a>
-                    </li>
-                    <li>
-                        &nbsp;
-                    </li>
-
-                </ul>
-            @endauth
-            @guest
-                &nbsp;
-                <a href="/index.php" class="brand-logo left "><img src="{{ asset('img/prvstorage_logo2_40_40.png') }}"
-                        alt="Prvstorage logo">
-                    <span class="hide-on-med-and-down">Private storage</span><span
-                        class="hide-on-large-only">Prvstorage</span>
-                </a>
-                <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
-                        class="material-icons">menu</i></a>
-                <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    <li><a href="{{ route('login') }}"><span class="white-text">Login</span></a></li>
-                    <li><a href="{{ route('register') }}"><span class="white-text">Register</span></a></li>
-                </ul>
-            @endguest
-    </nav>
-    @auth
-        <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
-            <li>
-                <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
-                        class="white-text">Account</span></a>
-            </li>
-            <li>
-                <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
-            </li>
-            <li>
-                <a href="{{ route('ushare.index') }}"><span class="white-text">Local shares</span></a>
-            </li>
-            @if (auth()->user()->admin === 1)
+            &nbsp;
+            <a href="/index.php" class="brand-logo left"><span class="orange-text text-lighten-4"><strong>{{
+                        auth()->user()->name }}'s</strong></span> <span style="font-size:medium;">private
+                    storage</span></a>
+            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
+                    class="material-icons">menu</i></a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li>
+                    <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
+                            class="white-text">Account</span></a>
+                </li>
+                <li>
+                    <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
+                </li>
+                <li>
+                    <a href="{{ route('ushare.index') }}"><span class="white-text">Local shares</span></a>
+                </li>
+                @if (auth()->user()->admin === 1)
                 <li>
                     <a href="{{ route('user.index') }}"><span class="white-text">Users</span></a>
                 </li>
-            @else
+                @else
                 <li>
                     <a href="{{ route('user.admins') }}"><span class="white-text">Admins</span></a>
                 </li>
-            @endif
-            <li>
-                <a id="logoutmobile" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
-            </li>
-        </ul>
-        <form id="logoutform" method="POST" action="{{ route('logout') }}">
-            @csrf
-        </form>
+                @endif
+                @if (auth()->user()->suadmin === 1)
+                <li>
+                    <a href="{{ route('user.emailTest') }}"><span class="white-text">Email test</span></a>
+                </li>
+                @endif
+                <li>
+                    <a id="logoutwide" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
+                </li>
+                <li>
+                    &nbsp;
+                </li>
+
+            </ul>
+            @endauth
+            @guest
+            &nbsp;
+            <a href="/index.php" class="brand-logo left "><img src="{{ asset('img/prvstorage_logo2_40_40.png') }}"
+                    alt="Prvstorage logo">
+                <span class="hide-on-med-and-down">Private storage</span><span
+                    class="hide-on-large-only">Prvstorage</span>
+            </a>
+            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
+                    class="material-icons">menu</i></a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="{{ route('login') }}"><span class="white-text">Login</span></a></li>
+                <li><a href="{{ route('register') }}"><span class="white-text">Register</span></a></li>
+            </ul>
+            @endguest
+    </nav>
+    @auth
+    <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
+        <li>
+            <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
+                    class="white-text">Account</span></a>
+        </li>
+        <li>
+            <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
+        </li>
+        <li>
+            <a href="{{ route('ushare.index') }}"><span class="white-text">Local shares</span></a>
+        </li>
+        @if (auth()->user()->admin === 1)
+        <li>
+            <a href="{{ route('user.index') }}"><span class="white-text">Users</span></a>
+        </li>
+        @else
+        <li>
+            <a href="{{ route('user.admins') }}"><span class="white-text">Admins</span></a>
+        </li>
+        @endif
+        <li>
+            <a id="logoutmobile" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
+        </li>
+    </ul>
+    <form id="logoutform" method="POST" action="{{ route('logout') }}">
+        @csrf
+    </form>
     @endauth
     @guest
-        <ul class="sidenav blue-grey darken-2" id="mobile-nav-menu">
-            <li><a href="{{ route('login') }}"><span class="white-text">Login</span></a></li>
-            <li><a href="{{ route('register') }}"><span class="white-text">Register</span></a></li>
-        </ul>
+    <ul class="sidenav blue-grey darken-2" id="mobile-nav-menu">
+        <li><a href="{{ route('login') }}"><span class="white-text">Login</span></a></li>
+        <li><a href="{{ route('register') }}"><span class="white-text">Register</span></a></li>
+    </ul>
     @endguest
     <div class="container">
         <div class="row blue-grey lighten-5" style="min-height:400px;">
@@ -155,12 +154,16 @@
 
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             //M.AutoInit();
             $('#mobile-nav-menu').sidenav({
                 edge: 'right'
             });
-            $('.logouttrigger').on('click', function(e) {
+            $('#logoutmobile').on('click', function (e) {
+                e.preventDefault();
+                $('#logoutform').submit();
+            });
+            $('#logoutwide').on('click', function (e) {
                 e.preventDefault();
                 $('#logoutform').submit();
             });
@@ -174,7 +177,7 @@
                 data: {
                     'currentVersion': "{{ config('app.version') }}",
                 },
-                success: function(data) {
+                success: function (data) {
                     if (typeof data.newRelease !== "undefined") {
                         if (data.newRelease === true) {
                             document.getElementById('newVersion').innerHTML = data.newVersionHtml;

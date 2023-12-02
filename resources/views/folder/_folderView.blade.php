@@ -3,31 +3,46 @@
 @else
 @foreach($directories as $directory)
 <!-- New version -->
-<div class="row tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files" data-position="left">
+<div class="row tooltipped"
+    data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/'.$directory['foldername']))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/'.$directory['foldername']))}} files"
+    data-position="left">
     <div class="col s4 left-align" style="position: relative;">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}"
+            class="valign-wrapper">
             <i class="material-icons large orange-text">folder</i>
         </a>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{ $directory['foldersize']['type']}}">{{ $directory['foldersize']['size']}}</span>
+        <span class="new badge" data-badge-caption="{{ $directory['foldersize']['type']}}">{{
+            $directory['foldersize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
-        <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger edit-folder tooltipped" data-target="modaledit"
+            data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger move-folder tooltipped" data-target="modalmove"
+            data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
         <br />
-        <a href="{{$directory['foldername']}}" class="modal-trigger share-folder tooltipped" data-target="modalfoldershare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
-        <a href="{{$directory['foldername']}}" class="modal-trigger user-share-folder tooltipped" data-target="modalusershare" data-tooltip="Share with user"><i class="material-icons purple-text">share</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger share-folder tooltipped"
+            data-target="modalfoldershare" data-tooltip="Share outside app"><i
+                class="material-icons blue-text">share</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger user-share-folder tooltipped"
+            data-target="modalusershare" data-tooltip="Share with user"><i
+                class="material-icons purple-text">share</i></a>
         <br />
-        <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}" id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i class="material-icons blue-text">cloud_download</i></a>
-        <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+        <a href="{{route('folder.folderdownload', ['path' => $current_folder == null ? '/'.$directory['foldername'] : $current_folder.'/'.$directory['foldername'], 'directory' => $directory['foldername']])}}"
+            id="zipNdownload" class="tooltipped zipNdownload" data-tooltip="Zip & Download"><i
+                class="material-icons blue-text">cloud_download</i></a>
+        <a href="{{$directory['foldername']}}" class="modal-trigger remove-folder tooltipped" data-target="modalremove"
+            data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
     </div>
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
     <div class="col s12 left-align">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}" class="valign-wrapper">
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/'. $directory['foldername']])}}"
+            class="valign-wrapper">
             <span class="hide-on-small-only">{{$directory['foldername']}}</span>
-            <span class="hide-on-med-and-up tooltipped" data-tooltip="{{$directory['foldersize']['size']}}">{{$directory['shortfoldername']}}</span><br>
+            <span class="hide-on-med-and-up tooltipped"
+                data-tooltip="{{$directory['foldersize']['size']}}">{{$directory['shortfoldername']}}</span><br>
         </a>
     </div>
 </div>
@@ -36,21 +51,25 @@
 
 <!-- 'NShare' folder actions -->
 @if($current_folder == "")
-<div class="row tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories('NShare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('NShare'))}} files" data-position="left">
+<div class="row tooltipped"
+    data-tooltip="{{count(Storage::disk('local')->allDirectories('NShare'))}} Dirs/ {{count(Storage::disk('local')->allFiles('NShare'))}} files"
+    data-position="left">
     <div class="col s4 left-align" style="position: relative;">
         <a href="{{route('folder.root', ['current_folder' => '/NShare'])}}" class="valign-wrapper">
             <i class="material-icons indigo-text large">folder</i>
         </a>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{$NShare['foldersize']['type']}}">{{$NShare['foldersize']['size']}}</span>
+        <span class="new badge"
+            data-badge-caption="{{$NShare['foldersize']['type']}}">{{$NShare['foldersize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
     </div>
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
     <div class="col s12 left-align">
-        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/NShare'])}}" class="valign-wrapper">NShare</a>
+        <a href="{{route('folder.root', ['current_folder' => $current_folder . '/NShare'])}}"
+            class="valign-wrapper">NShare</a>
     </div>
 </div>
 @if(isset($usershares))
@@ -75,20 +94,24 @@
 @endif
 
 <!-- 'ZTemp' folder actions -->
-<div class="row tooltipped" data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files">
+<div class="row tooltipped"
+    data-tooltip="{{count(Storage::disk('local')->allDirectories($path.'/ZTemp'))}} Dirs/ {{count(Storage::disk('local')->allFiles($path.'/ZTemp'))}} files">
     <div class="col s4 left-align" style="position: relative;">
         <a href="{{route('folder.root', ['current_folder' => '/ZTemp'])}}" class="valign-wrapper">
             <i class="material-icons lime-text large">folder</i>
         </a>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{ $ztemp['foldersize']['type']}}">{{ $ztemp['foldersize']['size']}}</span>
+        <span class="new badge" data-badge-caption="{{ $ztemp['foldersize']['type']}}">{{
+            $ztemp['foldersize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
     </div>
 
     <div class="col s4 right-align">
-        <a href="{{'app/prv/' . auth()->user()->name.'/ZTemp'}}" class="modal-trigger empty-temp tooltipped" data-target="modalemptytemp" data-tooltip="Empty temporary folder"><i class="material-icons red-text">delete_sweep</i></a>
+        <a href="{{'app/prv/' . auth()->user()->name.'/ZTemp'}}" class="modal-trigger empty-temp tooltipped"
+            data-target="modalemptytemp" data-tooltip="Empty temporary folder"><i
+                class="material-icons red-text">delete_sweep</i></a>
     </div>
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
@@ -103,17 +126,20 @@
 <!-- Directory tree move folder modal -->
 <div id="treeMoveFolderModal" class="modal">
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
+        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to
+                    select</u></b></p>
         <ul id="treeViewFolder" class="browser-default left-align">
             {!!$treeMoveFolder!!}
         </ul>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
 </div>
 
@@ -188,7 +214,8 @@
                 <div class="col s12 centered">
                     Move folder:
                     <div class="input-field inline">
-                        <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30" disabled />
+                        <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30"
+                            disabled />
                     </div>
                 </div>
             </div>
@@ -196,7 +223,8 @@
                 <div class="col s12 centered">
                     To folder:
                     <div class="input-field inline">
-                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" size="30" readonly />
+                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" size="30"
+                            readonly />
                     </div>
                 </div>
             </div>
@@ -250,32 +278,43 @@
 
 <!-- Upload folder modal -->
 <div id="modalfolderupload" class="modal">
-    <form id="folderuploadform" method="POST" action="{{ route('folder.folderupload') }}" enctype="multipart/form-data">
-        <div class="modal-content">
-            <h4>Pick folder to upload</h4>
-            @csrf
-            <div class="row">
-                <div class="col s12">
-                    <div class="file-field input-field">
-                        <div class="btn">
-                            <span>Folder</span>
-                            <input id="folderupload" name="folderupload[]" type="file" class="valid" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" />
-                        </div>
-                        <div class="file-path-wrapper">
-                            <input class="file-path validate" type="text" placeholder="Upload folder">
+    <div id="folderdroparea">
+        <form id="folderuploadform" method="POST" action="{{ route('folder.folderupload') }}"
+            enctype="multipart/form-data">
+            <div class="modal-content">
+                <div class="row">
+                    <div class="col s12 left-align">
+                        <span class="green-text hide" style="font-size: x-small;">Drag & drop here</span>
+                    </div>
+                </div>
+                <h4>Pick folder to upload</h4>
+                @csrf
+                <div class="row">
+                    <div class="col s12">
+                        <div class="file-field input-field">
+                            <div class="btn">
+                                <span>Folder</span>
+                                <input id="folderupload" name="folderupload[]" type="file" class="valid" webkitdirectory
+                                    mozdirectory msdirectory odirectory directory multiple="multiple" />
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input class="file-path validate" type="text" placeholder="Upload folder">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action">Upload
-                <i class="material-icons right">cloud_upload</i>
-            </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
-        </div>
-    </form>
+            <div class="modal-footer">
+                <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+                <button class="btn-small waves-effect waves-light" type="submit" name="action">Upload
+                    <i class="material-icons right">cloud_upload</i>
+                </button>
+                <a href="#!" id="close-folder-upload-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
+        </form>
+    </div>
+
     <!-- Upload and saving progress -->
     <div class="collection" id='folder-list-display'>
 
@@ -333,10 +372,12 @@
                 </div>
             </div>
             <div class="modal-footer" id="folderfooter">
-                <button id="submit-share-folder" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                <button id="submit-share-folder" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-folder-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
     </form>
@@ -376,37 +417,39 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="submit-user-share-folder" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                <button id="submit-user-share-folder" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-user-share-folder-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Close</a>
+                <a href="#!" id="close-user-share-folder-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Close</a>
             </div>
         </div>
     </form>
 </div>
 <!-- SCRIPTS FOR FOLDER MANIPULATION -->
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.datepicker').datepicker({
             container: $('#pickerContainer'),
         });
         /* SHARE FOLDER MECHANICS */
         /* Clear share folder modal form */
-        $('#close-share-folder-modal').on("click", (function(e) {
+        $('#close-share-folder-modal').on("click", (function (e) {
             $('#showFolderToShare').html("");
             $('#folderToShareInput').val("");
             $('#expiration_folder').val("");
             $('#unlimited_folder').prop('checked', false);
         }));
         /* Open modal to share folder with the wild */
-        $('.share-folder').on("click", (function(e) {
+        $('.share-folder').on("click", (function (e) {
             e.preventDefault();
             var folderToShare = $(this).attr('href');
             $('#showFolderToShare').html(folderToShare);
             $('#folderToShareInput').val('{{$path}}' + '/' + folderToShare);
         }));
         /** Submit folder share with the wild form */
-        $('#submit-share-folder').on("click", (function(e) {
+        $('#submit-share-folder').on("click", (function (e) {
             e.preventDefault();
             var elemBgShareFolder = document.getElementById('modalbgworking');
             var instanceBgShareFolder = M.Modal.getInstance(elemBgShareFolder);
@@ -419,21 +462,21 @@
 
         /* USER SHARE FOLDER MECHANICS */
         /* Clear share folder modal form */
-        $('#close-user-share-folder-modal').on("click", (function(e) {
+        $('#close-user-share-folder-modal').on("click", (function (e) {
             $('#showUserFolderToShare').html("");
             $('#userFolderToShareInput').val("");
             $('#userShareExpiration').val("");
             $('#userShareName').val("");
         }));
         /* Open modal to share folder with the wild */
-        $('.user-share-folder').on("click", (function(e) {
+        $('.user-share-folder').on("click", (function (e) {
             e.preventDefault();
             var folderToShare = $(this).attr('href');
             $('#showUserFolderToShare').html(folderToShare);
             $('#userFolderToShareInput').val('{{$path}}' + '/' + folderToShare);
         }));
         /** Submit folder share with the wild form */
-        $('#submit-user-share-folder').on("click", (function(e) {
+        $('#submit-user-share-folder').on("click", (function (e) {
             e.preventDefault();
             var userFolderToShare = $('#userFolderToShareInput').val();
             var userShareExpiration = $('#userShareExpiration').val();
@@ -441,10 +484,10 @@
             if (userShareExpiration == "") {
                 $('#errorMessage').html("Choose a date/ availability!");
                 $('#flashCardError').removeClass("hide");
-                setTimeout(function() {
+                setTimeout(function () {
                     $('#flashCardError').fadeOut(6000);
                 });
-                setTimeout(function() {
+                setTimeout(function () {
                     $('#flashCardError').fadeIn(10);
                     $('#flashCardError').addClass("hide");
                     $('#errorMessage').html("");
@@ -461,19 +504,19 @@
                         'expiration': userShareExpiration,
                         'user': userShareName,
                     },
-                    success: function(data) {
+                    success: function (data) {
                         if (data.errorMessage === null) {
                             $('#successMessage').html(data.successMessage);
                             $('#flashCardSuccess').removeClass("hide");
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $('#flashCardSuccess').fadeOut(5000);
                             });
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $('#flashCardSuccess').fadeIn(10);
                                 $('#flashCardSuccess').addClass("hide");
                                 $('#successMessage').html("");
                             }, 5000);
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $('#close-user-share-folder-modal').click();
                                 var shareUserModal = document.getElementById('modalusershare');
                                 var instance = M.Modal.getInstance(shareUserModal);
@@ -483,10 +526,10 @@
                         } else {
                             $('#errorMessage').html(data.errorMessage);
                             $('#flashCardError').removeClass("hide");
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $('#flashCardError').fadeOut(5000);
                             });
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $('#flashCardError').fadeIn(10);
                                 $('#flashCardError').addClass("hide");
                                 $('#errorMessage').html("");
@@ -499,14 +542,14 @@
         }));
         /* END OF SHARE FOLDER MECHANICS */
 
-        $('.edit-folder').on("click", (function(e) {
+        $('.edit-folder').on("click", (function (e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
             $('input[name=editfolder]').val(foldername);
             $('input[name=oldfolder]').val(foldername);
         }));
 
-        $('.remove-folder').on("click", (function(e) {
+        $('.remove-folder').on("click", (function (e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
             $('input[name=folder]').val(foldername);
@@ -515,7 +558,7 @@
         }));
 
         /* Folder move / copy mechanics */
-        $('.move-folder').on("click", (function(e) {
+        $('.move-folder').on("click", (function (e) {
             e.preventDefault();
             var foldername = $(this).attr('href');
             $('input[name=movefolder]').val(foldername);
@@ -525,7 +568,7 @@
             jsInput.value = "";
             viewInput.value = "";
         }));
-        $('.tree-move-folder').on("click", (function(e) {
+        $('.tree-move-folder').on("click", (function (e) {
             /* Select target folder from folder tree */
             e.preventDefault();
             var target = $(this).attr('data-folder');
@@ -541,14 +584,14 @@
             }
             viewInput.value = $(this).attr('data-folder-view');
         }));
-        $('#viewtarget').on("click", (function(e) {
+        $('#viewtarget').on("click", (function (e) {
             /* Open folder tree if disabled input clicked */
             e.preventDefault();
             var moveFolderModal = document.getElementById('treeMoveFolderModal');
             var instance = M.Modal.getInstance(moveFolderModal);
             instance.open();
         }));
-        $('#moveFolderSubmit').on("click", (function(e) {
+        $('#moveFolderSubmit').on("click", (function (e) {
             e.preventDefault();
             $('#moveFolderForm').submit();
             var elemBgMoveFolder = document.getElementById('modalbgworking');
@@ -578,13 +621,13 @@
              */
         }));
 
-        $('.zipNdownload').on("click", (function(e) {
+        $('.zipNdownload').on("click", (function (e) {
             var elemBgZipDownload = document.getElementById('modalbgworking');
             var instanceBgZipDownload = M.Modal.getInstance(elemBgZipDownload);
             var forWhatBgZipDownload = document.getElementById('preparing');
             forWhatBgZipDownload.innerHTML = "Preparing Zip for folder download. Please wait!";
             instanceBgZipDownload.open();
-            setInterval(function() {
+            setInterval(function () {
                 instanceBgZipDownload.close();
             }, 3000);
 

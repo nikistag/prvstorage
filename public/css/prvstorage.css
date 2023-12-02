@@ -332,145 +332,17 @@ nav .sidenav-trigger i {
   margin: 0;
 }
 
-/*
-.sidenav-tree li {
-  float: none;
-  line-height: 48px;
-}
-*/
+
 .sidenav-tree li.active-branch {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/*
-.sidenav-tree li>a {
-  color: rgba(0, 0, 0, 0.87);
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  height: 48px;
-  line-height: 48px;
-  padding: 0 32px;
-}
-*/
+
 .sidenav-tree li>a:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/*
-.sidenav-tree li>a.btn,
-.sidenav-tree li>a.btn-large,
-.sidenav-tree li>a.btn-small,
-.sidenav-tree li>a.btn-large,
-.sidenav-tree li>a.btn-flat,
-.sidenav-tree li>a.btn-floating {
-  margin: 10px 15px;
-}
 
-.sidenav-tree li>a.btn,
-.sidenav-tree li>a.btn-large,
-.sidenav-tree li>a.btn-small,
-.sidenav-tree li>a.btn-large,
-.sidenav-tree li>a.btn-floating {
-  color: #fff;
-}
-
-.sidenav-tree li>a.btn-flat {
-  color: #343434;
-}
-
-.sidenav-tree li>a.btn:hover,
-.sidenav-tree li>a.btn-large:hover,
-.sidenav-tree li>a.btn-small:hover,
-.sidenav-tree li>a.btn-large:hover {
-  background-color: #2bbbad;
-}
-
-.sidenav-tree li>a.btn-floating:hover {
-  background-color: #26a69a;
-}
-
-.sidenav-tree li>a>i,
-.sidenav-tree li>a>[class^="mdi-"],
-.sidenav-tree li>a li>a>[class*="mdi-"],
-.sidenav-tree li>a>i.material-icons {
-  float: left;
-  height: 48px;
-  line-height: 48px;
-  margin: 0 32px 0 0;
-  width: 24px;
-  color: rgba(0, 0, 0, 0.54);
-}
-
-.sidenav-tree .divider {
-  margin: 8px 0 0 0;
-}
-
-.sidenav-tree .subheader {
-  cursor: initial;
-  pointer-events: none;
-  color: rgba(0, 0, 0, 0.54);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 48px;
-}
-
-.sidenav-tree .subheader:hover {
-  background-color: transparent;
-}
-
-.sidenav-tree .user-view {
-  position: relative;
-  padding: 32px 32px 0;
-  margin-bottom: 8px;
-}
-
-.sidenav-tree .user-view>a {
-  height: auto;
-  padding: 0;
-}
-
-.sidenav-tree .user-view>a:hover {
-  background-color: transparent;
-}
-
-.sidenav-tree .user-view .background {
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: -1;
-}
-
-.sidenav-tree .user-view .circle,
-.sidenav-tree .user-view .name,
-.sidenav-tree .user-view .email {
-  display: block;
-}
-
-.sidenav-tree .user-view .circle {
-  height: 64px;
-  width: 64px;
-}
-
-.sidenav-tree .user-view .name,
-.sidenav-tree .user-view .email {
-  font-size: 14px;
-  line-height: 24px;
-}
-
-.sidenav-tree .user-view .name {
-  margin-top: 16px;
-  font-weight: 500;
-}
-
-.sidenav-tree .user-view .email {
-  padding-bottom: 16px;
-  font-weight: 400;
-}
-*/
 .sidenav-tree.sidenav-tree-fixed {
   left: 0;
   -webkit-transform: translateX(0);
@@ -527,4 +399,23 @@ nav .sidenav-trigger i {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 997;
   display: none;
+}
+
+/* Drag and drop area */
+#filesdroparea {
+  border: 2px solid green;
+  margin: 5px;
+}
+
+#folderdroparea {
+  border: 2px solid green;
+  margin: 5px;
+}
+
+#filesdroparea.highlight {
+  border-color: purple;
+}
+
+#folderdroparea.highlight {
+  border-color: purple;
 }
