@@ -8,43 +8,57 @@
     <div class="col s4 left-align" style="position: relative;">
         @if($file['filevideourl'] === null)
         <!-- Image preview -->
-        <img src="{{asset($file['fileimageurl']['thumb'])}}" alt="file image" class="{{$file['fileimageurl']['original'] == true ? 'media-preview-trigger' : ''}}" data-data="{{$file['fullfilename']}}">
+        <img src="{{asset($file['fileimageurl']['thumb'])}}" alt="file image"
+            class="{{$file['fileimageurl']['original'] == true ? 'media-preview-trigger' : ''}}"
+            data-data="{{$file['fullfilename']}}">
         @else
         <!-- Video preview -->
-        <video width="100" height="100" autoplay muted loop class="media-preview-trigger" data-data="{{$file['fullfilename']}}">
+        <video width="100" height="100" autoplay muted loop class="media-preview-trigger"
+            data-data="{{$file['fullfilename']}}">
             <source src="{{asset($file['filevideourl'])}}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         @endif
-        <div class="extension-text"><span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span></div>
+        <div class="extension-text"><span class="new badge blue-grey"
+                data-badge-caption="{{$file['extension']}}"></span></div>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{ $file['filesize']['size']}}</span>
+        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{
+            $file['filesize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
         @if($current_folder == '/ZTemp')
         @else
-        <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
-        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped" data-target="modalmovefilebig" data-tooltip="Move/Copy"><i class="material-icons purple-text">content_copy</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger rename-file tooltipped" data-target="modalrenamefile"
+            data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger move-file-big tooltipped"
+            data-target="modalmovefilebig" data-tooltip="Move/Copy"><i
+                class="material-icons purple-text">content_copy</i></a>
         <br />
-        <a href="{{$file['fullfilename']}}" class="modal-trigger share-file tooltipped" data-target="modalfileshare" data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
-        <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger share-file tooltipped" data-target="modalfileshare"
+            data-tooltip="Share outside app"><i class="material-icons blue-text">share</i></a>
+        <a href="{{route('folder.filedownload', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}"
+            class="tooltipped" data-tooltip="Download"><i class="material-icons blue-text">cloud_download</i></a>
         <br />
         @if($file['filevideourl'] === null)
         @else
-        <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}" class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
+        <a href="{{route('folder.filestream', ['path' => $current_folder == null ? '/'.$file['fullfilename'] : $current_folder.'/'.$file['fullfilename']])}}"
+            class="tooltipped" data-tooltip="Play"><i class="material-icons blue-text">play_arrow</i></a>
         @endif
-        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+        <a href="{{$file['fullfilename']}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile"
+            data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
         @endif
     </div>
 </div>
 <div class="row" style="border-bottom: 1px solid gray;">
     <div class="col s12 left-align">
         <label>
-            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck" value="{{$file['fullfilename']}}" type="checkbox" />
+            <input name="selectedFile" id="{{$file['fullfilename']}}" class="filescheck"
+                value="{{$file['fullfilename']}}" type="checkbox" />
             <span>
                 <span class="hide-on-small-only grey-text text-darken-3">{{$file['fullfilename']}}</span>
-                <span class="hide-on-med-and-up tooltipped grey-text text-darken-3" data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
+                <span class="hide-on-med-and-up tooltipped grey-text text-darken-3"
+                    data-tooltip="{{$file['fullfilename']}}">{{$file['shortfilename'] . $file['extension']}}</span>
             </span>
         </label>
     </div>
@@ -58,13 +72,17 @@
 <div class="row center left-align blue-grey lighten-4">
     <div class="selectedaction blue-grey lighten-4" id="selectedaction">
         &nbsp;
-        <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i class="material-icons medium purple-text">content_copy</i></a>
+        <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i
+                class="material-icons medium purple-text">content_copy</i></a>
         &nbsp;
-        <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i class="material-icons medium blue-text">share</i></a>
+        <a href="#share" class="tooltipped sharelink-files" data-tooltip="Share"><i
+                class="material-icons medium blue-text">share</i></a>
         &nbsp;
-        <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i class="material-icons medium blue-text">cloud_download</i></a>
+        <a href="#download" class="tooltipped" data-tooltip="Download" id="zipNDownloadFiles"><i
+                class="material-icons medium blue-text">cloud_download</i></a>
         &nbsp;
-        <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti" data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
+        <a href="#delete" class="modal-trigger remove-files-multi tooltipped" data-target="modalremovefilesmulti"
+            data-tooltip="Delete"><i class="material-icons medium red-text">remove_circle</i></a>
         &nbsp;
     </div>
 </div>
@@ -75,7 +93,8 @@
 <!-- Form for downloading multiple files -->
 <form action="{{route('folder.multifiledownload')}}" id="multifiledownloadform">
     <input type="hidden" id="multiZipFileName" name="multiZipFileName" value="" />
-    <input type="hidden" id="currentFolderMultiDownload" name="currentFolderMultiDownload" value="{{$current_folder}}" />
+    <input type="hidden" id="currentFolderMultiDownload" name="currentFolderMultiDownload"
+        value="{{$current_folder}}" />
 </form>
 
 <!-- Form for checking file readiness -->
@@ -86,17 +105,20 @@
 <!-- Directory tree move file modal -->
 <div id="treeMoveFileModal" class="modal">
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
+        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to
+                    select</u></b></p>
         <ul id="treeViewFile" class="browser-default left-align">
             {!!$treeMoveFile!!}
         </ul>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
 </div>
 <!-- Move file BIG modal -->
@@ -119,7 +141,8 @@
                 <div class="col s12 centered">
                     Move file:
                     <div class="input-field inline">
-                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30" disabled />
+                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30"
+                            disabled />
                         <label for="fileDisplay"></label>
                     </div>
                 </div>
@@ -128,7 +151,8 @@
                 <div class="col s12 centered">
                     To folder:
                     <div class="input-field inline">
-                        <input id="viewWhereToFolder" type="text" class="valid treeMoveFileModalTrigger" value="" size="30" readonly />
+                        <input id="viewWhereToFolder" type="text" class="valid treeMoveFileModalTrigger" value=""
+                            size="30" readonly />
                     </div>
                 </div>
             </div>
@@ -152,17 +176,20 @@
 <!-- Directory tree move multi modal -->
 <div id="treeMoveMultiModal" class="modal">
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
     <div class="modal-content">
         <h5>Folder tree</h5>
-        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to select</u></b></p>
+        <p>Click / tap <b><i>folder icon</i> <u>to expand</u></b><br /> Click / tap <b><i>folder name</i> <u>to
+                    select</u></b></p>
         <ul id="treeViewMulti" class="browser-default left-align">
             {!!$treeMoveMulti!!}
         </ul>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i class="material-icons white-text">close</i></a>
+        <a href="#!" class="modal-close tooltipped btn-small red" data-tooltip="Close"><i
+                class="material-icons white-text">close</i></a>
     </div>
 </div>
 
@@ -212,7 +239,8 @@
                 <div class="col s12 centered">
                     Move files:
                     <div class="input-field inline">
-                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="30" disabled />
+                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value=""
+                            size="30" disabled />
                         <label for="fileDisplayMulti"></label>
                     </div>
                 </div>
@@ -221,7 +249,8 @@
                 <div class="col s12 centered">
                     To folder:
                     <div class="input-field inline">
-                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value="" size="30" readonly />
+                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value=""
+                            size="30" readonly />
                     </div>
                 </div>
             </div>
@@ -230,7 +259,8 @@
             <input type="hidden" id="targetFolderSize" name="targetFolderSize" value="" />
             <input type="hidden" id="current_folder_multi" name="current_folder_multi" value="{{$current_folder}}" />
             <input type="hidden" id="targetfoldermulti" name="targetfoldermulti" value="" />
-            <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyMultiFileSubmit">Submit
+            <button class="btn-small waves-effect waves-light" type="submit" name="action"
+                id="copyMultiFileSubmit">Submit
                 <i class="material-icons right">send</i>
             </button>
             <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
@@ -289,7 +319,8 @@
                 <div class="col s12">
                     <div class="input-field inline">
                         <span class="showfilestoremove"></span>
-                        <input type="hidden" id="currentFolderDeleteMulti" name="current_folder" value="{{$current_folder}}" />
+                        <input type="hidden" id="currentFolderDeleteMulti" name="current_folder"
+                            value="{{$current_folder}}" />
                     </div>
                 </div>
             </div>
@@ -305,32 +336,43 @@
 
 <!-- Upload files modal -->
 <div id="modalfilesupload" class="modal modalupload">
-    <form id="multiupload" method="POST" action="{{ route('folder.multiupload') }}" enctype="multipart/form-data">
-        <div class="modal-content">
-            <h5>Pick multiple files to upload</h5>
-            @csrf
-            <input type="hidden" name="current_folder" value="{{$current_folder}}" />
-            <div class="row">
-                <div class="col s12">
-                    <div class="file-field input-field">
-                        <div class="btn">
-                            <span>Files</span>
-                            <input id="filesupload" name="files[]" type="file" class="valid" multiple />
-                        </div>
-                        <div class="file-path-wrapper">
-                            <input class="file-path validate" type="text" placeholder="Upload one or more files">
+    <div id="filesdroparea">
+        <form id="multiupload" method="POST" action="{{ route('folder.multiupload') }}" enctype="multipart/form-data">
+            <div class="modal-content">
+                <div class="row">
+                    <div class="col s12 left-align">
+                        <span class="green-text" style="font-size: x-small;">Drag & drop here</span>
+                    </div>
+                </div>
+                <h5>Pick multiple files to upload</h5>
+                @csrf
+                <input type="hidden" name="current_folder" value="{{$current_folder}}" />
+                <div class="row">
+                    <div class="col s12">
+                        <div class="file-field input-field">
+                            <div class="btn">
+                                <span>Files</span>
+                                <input id="filesupload" name="files[]" type="file" class="valid" multiple />
+                            </div>
+                            <div class="file-path-wrapper">
+                                <input id="shownfileuploads" class="file-path validate" type="text"
+                                    placeholder="Upload one or more files">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer" id="multifilefooter">
-            <button id="submit-files-upload" class="btn-small waves-effect waves-light" type="submit" name="action">Upload
-                <i class="material-icons right">cloud_upload</i>
-            </button>
-            <a href="#!" id="close-upload-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
-        </div>
-    </form>
+            <div class="modal-footer" id="multifilefooter">
+                <button id="submit-files-upload" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Upload
+                    <i class="material-icons right">cloud_upload</i>
+                </button>
+                <a href="#!" id="close-files-upload-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            </div>
+        </form>
+    </div>
+
     <div class="collection" id='file-list-display'></div>
 </div>
 <!-- Share file modal -->
@@ -368,10 +410,12 @@
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
-                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-file-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
     </form>
@@ -404,18 +448,22 @@
             </div>
             <div class="row">
                 <div class="input-field col s12">
-                    <input id="expiration_multifileshare" name="expiration_multifileshare" type="text" class="datepicker">
+                    <input id="expiration_multifileshare" name="expiration_multifileshare" type="text"
+                        class="datepicker">
                     <label for="expiration_multifileshare">Available till:</label>
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
-                <button id="submit-share-multi-file" class="btn-small waves-effect waves-light" type="submit" name="action">Share
+                <button id="submit-share-multi-file" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Share
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-multi-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-multi-file-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
-        <input type="hidden" name="current_folder_multifileshare" id="current_folder_multifileshare" value="{{$current_folder}}" />
+        <input type="hidden" name="current_folder_multifileshare" id="current_folder_multifileshare"
+            value="{{$current_folder}}" />
     </form>
 </div>
 <!-- Media preview modal-->
@@ -429,13 +477,15 @@
     <div class="modal-footer">
         <div class="row">
             <div class="col s3 right-align">
-                <a href="#!" id="leftChevron" class="preview-links hide"><i class="material-icons medium">chevron_left</i></a>
+                <a href="#!" id="leftChevron" class="preview-links hide"><i
+                        class="material-icons medium">chevron_left</i></a>
             </div>
             <div class="col s6 center-align">
                 <a href="#!" class="modal-close btn-small red">Close</a>
             </div>
             <div class="col s3 left-align">
-                <a href="#!" id="rightChevron" class="preview-links hide"><i class="material-icons medium">chevron_right</i></a>
+                <a href="#!" id="rightChevron" class="preview-links hide"><i
+                        class="material-icons medium">chevron_right</i></a>
             </div>
         </div>
     </div>
@@ -443,13 +493,14 @@
 
 <!-- SCRRIPTS FOR FILE MANIPULATION -->
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.datepicker').datepicker({
             container: $('#pickerContainer'),
         });
+
         /*MEDIA PREVIEW*/
         /** Open media preview modal*/
-        $('.media-preview-trigger').on("click", (function(e) {
+        $('.media-preview-trigger').on("click", (function (e) {
             e.preventDefault();
             var elem = document.getElementById('mediaModal');
             var instance = M.Modal.getInstance(elem);
@@ -467,7 +518,7 @@
                     'current_folder': $('input[name=current_folder]').val(),
                     'file_name': fileName
                 },
-                success: function(data) {
+                success: function (data) {
                     if (typeof data.html !== "undefined") {
                         previewDiv.innerHTML = data.html;
                         if (data.leftChevron == 'active') {
@@ -494,7 +545,7 @@
                 }
             });
         }));
-        $('.preview-links').on("click", (function(e) {
+        $('.preview-links').on("click", (function (e) {
             e.preventDefault();
             /* var currentFolder = document.getElementById('current_folder'); */
             var fileName = $(this).attr('data-data');
@@ -510,7 +561,7 @@
                     'current_folder': $('input[name=current_folder]').val(),
                     'file_name': fileName
                 },
-                success: function(data) {
+                success: function (data) {
                     if (typeof data.html !== "undefined") {
                         previewDiv.innerHTML = data.html;
                         if (data.leftChevron == 'active') {
@@ -539,21 +590,21 @@
         }));
         /* SHARE FILE MECHANICS */
         /* Clear share file modal form */
-        $('#close-share-file-modal').on("click", (function(e) {
+        $('#close-share-file-modal').on("click", (function (e) {
             $('#showFileToShare').html("");
             $('#fileToShareInput').val("");
             $('#expiration').val("");
             $('#unlimited').prop('checked', false);
         }));
         /* Open modal to share file with the wild */
-        $('.share-file').on("click", (function(e) {
+        $('.share-file').on("click", (function (e) {
             e.preventDefault();
             var fileToShare = $(this).attr('href');
             $('#showFileToShare').html(fileToShare);
             $('#fileToShareInput').val('{{$path}}' + '/' + fileToShare);
         }));
         /** Submit file share with the wild form */
-        $('#submit-share-file').on("click", (function(e) {
+        $('#submit-share-file').on("click", (function (e) {
             e.preventDefault();
             var elemBgFileSharing = document.getElementById('modalbgworking');
             var instanceBgFileSharing = M.Modal.getInstance(elemBgFileSharing);
@@ -566,7 +617,7 @@
 
         /* SHARE MULTIPLE FILES MECHANICS */
         /* Clear share file modal form */
-        $('#close-share-multi-file-modal').on("click", (function(e) {
+        $('#close-share-multi-file-modal').on("click", (function (e) {
             $('#showFileMultiToShare').html("");
             $('#expiration_multifileshare').val("");
             $('#composition_multifileshare').val("");
@@ -576,7 +627,7 @@
                 currentFolderInput.removeChild(currentFolderInput.lastElementChild);
             }
         }));
-        $('.sharelink-files').on("click", (function(e) {
+        $('.sharelink-files').on("click", (function (e) {
             e.preventDefault();
             if ($('input[name="selectedFile"]:checked').length == 0) {
                 M.toast({
@@ -584,7 +635,7 @@
                 });
             } else {
                 var composition = "";
-                $('input[name="selectedFile"]:checked').each(function() {
+                $('input[name="selectedFile"]:checked').each(function () {
                     var newInput = document.createElement("input");
                     newInput.type = "hidden";
                     newInput.name = "fileshare[]";
@@ -603,7 +654,7 @@
             }
         }));
         /** Submit multi file share with the wild form */
-        $('#submit-share-multi-file').on("click", (function(e) {
+        $('#submit-share-multi-file').on("click", (function (e) {
             e.preventDefault();
             var elemBgMultiFileShare = document.getElementById('modalbgworking');
             var instanceBgMultiFileShare = M.Modal.getInstance(elemBgMultiFileShare);
@@ -615,7 +666,7 @@
         /* END OF SHARE MULTI FILE MECHANICS */
 
         /* Rename file */
-        $('.rename-file').on("click", (function(e) {
+        $('.rename-file').on("click", (function (e) {
             e.preventDefault();
             var filename = $(this).attr('href');
             $('input[name=renamefilename]').val(filename);
@@ -623,7 +674,7 @@
 
         }));
         /* Move/copy file mechanics */
-        $('.move-file-big').on("click", (function(e) {
+        $('.move-file-big').on("click", (function (e) {
             e.preventDefault();
             var filename = $(this).attr('href');
             $('input[name=fileDisplay]').val(filename);
@@ -633,7 +684,7 @@
             jsFolderInput.value = "";
             viewFolderInput.value = "";
         }));
-        $('.tree-move-file').on("click", (function(e) {
+        $('.tree-move-file').on("click", (function (e) {
             /* Select target folder from folder tree */
             e.preventDefault();
             var target = $(this).attr('data-folder');
@@ -645,7 +696,7 @@
             jsFolderInput.value = target;
             viewFolderInput.value = $(this).attr('data-folder-view');;
         }));
-        $('#viewWhereToFolder').on("click", (function(e) {
+        $('#viewWhereToFolder').on("click", (function (e) {
             /* Open folder tree if disabled input clicked */
             e.preventDefault();
             var moveFileModal = document.getElementById('treeMoveFileModal');
@@ -653,7 +704,7 @@
             instance.open();
         }));
 
-        $('#copyBigFileSubmit').on("click", (function(e) {
+        $('#copyBigFileSubmit').on("click", (function (e) {
             e.preventDefault();
             var elemBgFileCopy = document.getElementById('modalbgworking');
             var instanceBgFileCopy = M.Modal.getInstance(elemBgFileCopy);
@@ -664,7 +715,7 @@
         }));
 
         /* multiple files move / copy mechanics */
-        $('.move-files').on("click", (function(e) {
+        $('.move-files').on("click", (function (e) {
             e.preventDefault();
             if ($('input[name="selectedFile"]:checked').length == 0) {
                 M.toast({
@@ -675,7 +726,7 @@
                 var instance = M.Modal.getInstance(elem);
                 instance.open();
                 var filename = '';
-                $('input[name="selectedFile"]:checked').each(function() {
+                $('input[name="selectedFile"]:checked').each(function () {
                     filename = filename + this.value + ', ';
                 });
                 $('input[name=fileDisplayMulti]').val(filename);
@@ -685,7 +736,7 @@
             }
         }));
 
-        $('#viewWhereToFolderMulti').on("click", (function(e) {
+        $('#viewWhereToFolderMulti').on("click", (function (e) {
             /* Open folder tree if disabled input clicked */
             e.preventDefault();
             var moveMultiModal = document.getElementById('treeMoveMultiModal');
@@ -693,7 +744,7 @@
             instance.open();
         }));
 
-        $('.tree-move-multi').on("click", (function(e) {
+        $('.tree-move-multi').on("click", (function (e) {
             /* Select target folder from folder tree */
             e.preventDefault();
             var target = $(this).attr('data-folder');
@@ -706,10 +757,10 @@
             viewInput.value = $(this).attr('data-folder-view');
         }));
 
-        $('#copyMultiFileSubmit').on("click", (function(e) {
+        $('#copyMultiFileSubmit').on("click", (function (e) {
             e.preventDefault();
             const fileNames = [];
-            $('input[name="selectedFile"]:checked').each(function() {
+            $('input[name="selectedFile"]:checked').each(function () {
                 var newInput = document.createElement("input");
                 newInput.type = "hidden";
                 newInput.name = "filesMove[]";
@@ -730,14 +781,14 @@
         }));
 
         /*  Remove files mechanics */
-        $('.remove-file').on("click", (function(e) {
+        $('.remove-file').on("click", (function (e) {
             e.preventDefault();
             var filename = $(this).attr('href');
             $('input[name=filename]').val(filename);
             $('.filetoremove').html(filename);
 
         }));
-        $('.remove-files-multi').on("click", (function(e) {
+        $('.remove-files-multi').on("click", (function (e) {
             e.preventDefault();
             if ($('input[name="selectedFile"]:checked').length == 0) {
                 M.toast({
@@ -745,7 +796,7 @@
                 });
             } else {
                 const fileNames = [];
-                $('input[name="selectedFile"]:checked').each(function() {
+                $('input[name="selectedFile"]:checked').each(function () {
                     var newInput = document.createElement("input");
                     newInput.type = "hidden";
                     newInput.name = "filesDelete[]";
@@ -758,10 +809,10 @@
             }
         }));
 
-        $('#zipNDownloadFiles').on("click", (function(e) {
+        $('#zipNDownloadFiles').on("click", (function (e) {
             /* Multifile download mechanics */
             if ($('input[name="selectedFile"]:checked').length >= 1) {
-                $('input[name="selectedFile"]:checked').each(function() {
+                $('input[name="selectedFile"]:checked').each(function () {
                     var newInput = document.createElement("input");
                     newInput.type = "hidden";
                     newInput.name = "filesdownload[]";
@@ -777,8 +828,8 @@
                 var forWhat = document.getElementById('preparing');
                 forWhat.innerHTML = "Preparing Zip for Download! Please wait!";
                 instance.open();
-              /*   CHECKING IF ZIP FILE READY - no viable, server busy creating archive... no timly response */
-                var checkFile = setInterval(function() {
+                /*   CHECKING IF ZIP FILE READY - no viable, server busy creating archive... no timly response */
+                var checkFile = setInterval(function () {
                     $.ajax({
                         url: $('#fileReadinessForm').attr("action"),
                         type: "POST",
@@ -786,7 +837,7 @@
                             '_token': $('input[name=_token]').val(),
                             'filePath': '/ZTemp/' + document.getElementById('multiZipFileName').value,
                         },
-                        success: function(data) {
+                        success: function (data) {
                             if (typeof data.ready !== "undefined") {
                                 if (data.ready === true) {
                                     $('input[name="selectedFile"]:checked').prop("checked", false);
@@ -796,7 +847,7 @@
                             }
                         }
                     });
-                }, 2000);                
+                }, 2000);
             } else {
                 M.toast({
                     html: 'Nothing to do! No files selected'
@@ -805,13 +856,12 @@
 
         }));
         /*  fixed bottom menu bar */
-
         if (document.documentElement.scrollHeight >= window.innerHeight) {
             if ($("#selectedaction").hasClass("selectedaction")) {
                 $("#selectedaction").removeClass("selectedaction");
             }
         }
-        window.onscroll = function() {
+        window.onscroll = function () {
             if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 100) {
                 if ($("#selectedaction").hasClass("selectedaction")) {
                     $("#selectedaction").removeClass("selectedaction");
@@ -822,5 +872,12 @@
                 }
             }
         }
+        /* Reset upload file list */
+        $('#close-files-upload-modal').on("click", (function (e) {
+            $('#file-list-display').empty();
+            $('#filesupload').val("");
+            $('#shownfileuploads').val("");
+        }));
+
     });
 </script>
