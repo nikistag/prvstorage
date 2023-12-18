@@ -4,6 +4,8 @@
 
 Prvstorage is a web application for storing personal files in a private space.
 
+Shortly put: you can use it to make your own file server, accessable over the Internet or local network, with a very simple and intuitive user interface. 
+
 This appication uses <a href="https://laravel.com" target="_blank">LARAVEL</a> framework and <a href="https://materializecss.com/" target="_blank">MATERIALIZE CSS</a> framework.
 
 ## Getting started
