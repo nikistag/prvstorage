@@ -16,7 +16,7 @@ use Illuminate\Support\Arr;
 
 class FolderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return view('folder.index');
     }

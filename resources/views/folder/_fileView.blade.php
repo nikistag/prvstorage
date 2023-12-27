@@ -19,8 +19,9 @@
             Your browser does not support the video tag.
         </video>
         @endif
-        <div class="extension-text"><span class="new badge blue-grey"
-                data-badge-caption="{{$file['extension']}}"></span></div>
+        <div class="extension-text">
+            <span class="new badge blue-grey" data-badge-caption="{{$file['extension']}}"></span>
+        </div>
     </div>
     <div class="col s4">
         <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{
@@ -541,6 +542,16 @@
                                 rightChevron.classList.add("hide");
                             }
                         }
+                        /* Select file from media preview */
+                        document.getElementById("selectOnPreview").addEventListener("click", function () {
+                            if ($(this).is(":checked")) // "this" refers to the element that fired the event
+                            {
+                                document.getElementById($(this).val()).checked = true;
+
+                            } else {
+                                document.getElementById($(this).val()).checked = false;
+                            }
+                        });
                     }
                 }
             });
@@ -584,6 +595,16 @@
                                 rightChevron.classList.add("hide");
                             }
                         }
+                        /* Select file from media preview */
+                        document.getElementById("selectOnPreview").addEventListener("click", function () {
+                            if ($(this).is(":checked")) // "this" refers to the element that fired the event
+                            {
+                                document.getElementById($(this).val()).checked = true;
+
+                            } else {
+                                document.getElementById($(this).val()).checked = false;
+                            }
+                        });
                     }
                 }
             });
