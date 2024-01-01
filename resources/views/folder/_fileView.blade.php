@@ -508,6 +508,7 @@
             instance.open();
             /* var currentFolder = document.getElementById('current_folder'); */
             var fileName = $(this).attr('data-data');
+            var selected = document.getElementById(fileName).checked;
             var previewDiv = document.getElementById('mediaPreview');
             var leftChevron = document.getElementById("leftChevron");
             var rightChevron = document.getElementById("rightChevron");
@@ -517,7 +518,8 @@
                 data: {
                     '_token': $('input[name=_token]').val(),
                     'current_folder': $('input[name=current_folder]').val(),
-                    'file_name': fileName
+                    'file_name': fileName,
+                    'checked': document.getElementById(fileName).checked
                 },
                 success: function (data) {
                     if (typeof data.html !== "undefined") {
@@ -542,7 +544,6 @@
                                 rightChevron.classList.add("hide");
                             }
                         }
-                        /* Select file from media preview */
                         document.getElementById("selectOnPreview").addEventListener("click", function () {
                             if ($(this).is(":checked")) // "this" refers to the element that fired the event
                             {
@@ -570,7 +571,8 @@
                 data: {
                     '_token': $('input[name=_token]').val(),
                     'current_folder': $('input[name=current_folder]').val(),
-                    'file_name': fileName
+                    'file_name': fileName,
+                    'checked': document.getElementById(fileName).checked
                 },
                 success: function (data) {
                     if (typeof data.html !== "undefined") {

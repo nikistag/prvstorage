@@ -63,8 +63,8 @@ mark {
 /* Checkbox position over image in preview modal */
 .preview-checkbox {
   position: absolute;
-  bottom: 20px;
-  left: 150px;
+  bottom: 10px;
+  left: 30%;
   background-color: #242323;
   color: #f5e6e6;
 }
