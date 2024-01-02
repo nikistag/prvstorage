@@ -16,7 +16,7 @@ use Illuminate\Support\Arr;
 
 class FolderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return view('folder.index');
     }
@@ -770,6 +770,7 @@ class FolderController extends Controller
     {
         $currentFolder = $request->current_folder;
         $fullfilename = $request->file_name;
+        $checked = $request->checked;
         $fileNameNoExt = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, ".")));
         $path = substr($this->getPath($currentFolder), 1);
         //Delete old sessions->previews
@@ -859,7 +860,7 @@ class FolderController extends Controller
         //IF $filePosition = FALSE - No preview possible
         if ($isImage !== false) {
             $fileimageurl = $this->generateImagePreview($pathToFolder, $fullfilename, $fileNameNoExt);
-            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition'));
+            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition', 'checked'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,
@@ -878,7 +879,7 @@ class FolderController extends Controller
                 $success = true;
             }
             $filevideourl = 'storage/preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename;
-            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition'));
+            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition', 'checked'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,

@@ -53,13 +53,22 @@
   position: absolute;
   top: 0px;
   left: 0px;
-
 }
 
 mark {
   background-color: #424242;
   color: #fafafa;
 }
+
+/* Checkbox position over image in preview modal */
+.preview-checkbox {
+  position: absolute;
+  bottom: 10px;
+  left: 30%;
+  background-color: #242323;
+  color: #f5e6e6;
+}
+
 
 /* Folder tree manipulation*/
 /* Remove default bullets */
