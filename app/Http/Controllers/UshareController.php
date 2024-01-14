@@ -194,7 +194,10 @@ class UshareController extends Controller
         }
         //Get info about local shares
         $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
+
         if (count($ushares) > 0) {
+            $usershares = count($ushares->unique("user_id")) . " shares";
+            $breadcrumbs = $this->getBreadcrumbs($current_folder, $ushares);
             $usershares_directories = [];
             foreach ($ushares as $ush) {
                 array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
@@ -202,7 +205,6 @@ class UshareController extends Controller
             }
             $usershares_directory_merged = array_merge(...$usershares_directories);
             $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
-            $usershares = count($ushares->unique("user_id")) . " shares";
         } else {
             return redirect(route('folder.root', ['current_folder' => null]))->with('error', 'No user shared folders with you!'); //No shares -  redirect to FolderController
         }
@@ -236,6 +238,13 @@ class UshareController extends Controller
             }
         });
 
+        //Prepare active tree branch
+        $activeBranch = [];
+        foreach ($breadcrumbs as $crumb) {
+            array_push($activeBranch, $crumb["folder"]);
+        }
+        $garbage = array_shift($activeBranch);
+
         $userRoot = $this->convertPathsToTree($treeCollection)->first();
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
         $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root"><b><i>Root</i></b></a></li>';
@@ -252,15 +261,6 @@ class UshareController extends Controller
             return explode('/', '/' . $item);
         });
 
-        $breadcrumbs = $this->getBreadcrumbs($current_folder, $ushares);
-
-        //Prepare active tree branch
-        $activeBranch = [];
-        foreach ($breadcrumbs as $crumb) {
-            array_push($activeBranch, $crumb["folder"]);
-        }
-        $garbage = array_shift($activeBranch);
-        //Generate ushare tree
         $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
         $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares, $activeBranch);
 
@@ -1078,6 +1078,7 @@ class UshareController extends Controller
                     $view .= $this->generateShareViewTree($directory['children'], $ushares, $activeBranch);
                     $view .= '</ul>';
                 } else {
+                    $view .= '<span class="folder-tree-ushare"></span>';
                     if ($activeLink) {
                         $view .= '<a class="blue-grey-text text-darken-3" href="' . route('ushare.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                         $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
