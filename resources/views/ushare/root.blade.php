@@ -35,6 +35,7 @@
 <script>
     $(document).ready(function () {
         $('.tooltipped').tooltip();
+        $('.sidenav-tree').sidenav();
         $('.modal').modal();
         $('.modalupload').modal({
             dismissible: false,

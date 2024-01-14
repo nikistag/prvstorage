@@ -47,20 +47,17 @@ class FolderController extends Controller
         $usershares = null;
         //if ($current_folder == null) {
         $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
-        $usershares = count($ushares->unique("user_id")) . " shares";
         //}
         if (count($ushares) > 0) {
+            $usershares = count($ushares->unique("user_id")) . " shares";
             $usershares_directories = [];
             foreach ($ushares as $ush) {
                 array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
                 array_push($usershares_directories, Storage::allDirectories($ush->path));
             }
-            //dd($usershares_directories);
             $usershares_directory_merged = array_merge(...$usershares_directories);
             $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
         }
-
-        //dd($usershares_directory_paths);
 
         //Get folders an files of current directory
         $dirs = Storage::directories($path);
