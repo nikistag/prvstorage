@@ -783,12 +783,22 @@ class FolderController extends Controller
         }
         //Delete old files
         foreach (array_reverse($oldFiles) as $oldFile) {
-            if (($oldFile->isFile()) || ($oldFile->isLink()))
+            if ($oldFile->isFile()) {
                 if (((int)$oldFile->getATime() + 7210) < $nowUnixInt) { // It's old - needs to be deleted
                     unlink($oldFile->getPathname());
                 }
+            }
+            if ($oldFile->isLink()) {
+                if (file_exists($oldFile->getPathname())) {
+                    if (((int)$oldFile->getATime() + 7210) < $nowUnixInt) { // It's old - needs to be deleted
+                        unlink($oldFile->getPathname());
+                    }
+                } else {
+                    unlink($oldFile->getPathname());
+                }
+            }
         }
-        //Delete old files
+        //Delete old folders
         foreach (array_reverse($oldFiles) as $oldFile) {
             if ($oldFile->isDir()) {
                 if (!(new \FilesystemIterator($oldFile))->valid()) {
