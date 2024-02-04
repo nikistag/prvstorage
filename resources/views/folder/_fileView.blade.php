@@ -139,22 +139,17 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    Move file:
-                    <div class="input-field inline">
-                        <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30"
-                            disabled />
-                        <label for="fileDisplay"></label>
-                    </div>
+                <div class="input-field col s12 centered">
+                    <input id="fileDisplay" name="fileDisplay" type="text" class="valid" value="" size="30"
+                        style="color:black; font-weight: bold;" disabled />
+                    <label for="fileDisplay">Move/copy file</label>
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    To folder:
-                    <div class="input-field inline">
-                        <input id="viewWhereToFolder" type="text" class="valid treeMoveFileModalTrigger" value=""
-                            size="30" readonly />
-                    </div>
+                <div class="input-field col s12 centered">
+                    <input id="viewWhereToFolder" type="text" class="valid treeMoveFileModalTrigger" value="" size="30"
+                        style="color:black; font-weight: bold;" readonly />
+                    <label for="viewWhereToFolder">To folder</label>
                 </div>
             </div>
         </div>
@@ -165,7 +160,7 @@
             <button class="btn-small waves-effect waves-light" type="submit" name="action" id="copyBigFileSubmit">Submit
                 <i class="material-icons right">send</i>
             </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            <a href="#!" class="modal-close waves-effect waves-green deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
 
@@ -201,11 +196,9 @@
             <h5>Rename file</h5>
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="renamefilename" name="renamefilename" type="text" class="valid" value="" size="40" />
-                        <label for="renamefilename"></label>
-                    </div>
+                <div class="input-field col s12">
+                    <input id="renamefilename" name="renamefilename" type="text" class="valid" value="" size="40" />
+                    <label for="renamefilename">Rename</label>
                 </div>
             </div>
         </div>
@@ -215,7 +208,7 @@
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            <a class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
 </div>
@@ -237,22 +230,17 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    Move files:
-                    <div class="input-field inline">
-                        <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value=""
-                            size="30" disabled />
-                        <label for="fileDisplayMulti"></label>
-                    </div>
+                <div class="input-field col s12 centered">
+                    <input id="fileDisplayMulti" name="fileDisplayMulti" type="text" class="valid" value="" size="30"
+                        style="color:black; font-weight: bold;" disabled />
+                    <label for="fileDisplayMulti">Move/copy files</label>
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    To folder:
-                    <div class="input-field inline">
-                        <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value=""
-                            size="30" readonly />
-                    </div>
+                <div class="input-field col s12 centered">
+                    <input id="viewWhereToFolderMulti" type="text" class="valid treeMoveMultiModalTrigger" value=""
+                        size="30" style="color:black; font-weight: bold;" readonly />
+                    <label for="viewWhereToFolderMulti">To folder</label>
                 </div>
             </div>
         </div>
@@ -291,12 +279,10 @@
             @method('DELETE')
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <span class="filetoremove"></span>
-                        <input id="filename" name="filename" type="hidden" class="valid" value="" size="40" />
-                        <label for="file"></label>
-                    </div>
+                <div class="input-field col s12">
+                    <span class="filetoremove"></span>
+                    <input id="filename" name="filename" type="hidden" class="valid" value="" size="40" />
+                    <label for="filename" class="hide">File</label>
                 </div>
             </div>
         </div>
@@ -354,6 +340,7 @@
                             <div class="btn">
                                 <span>Files</span>
                                 <input id="filesupload" name="files[]" type="file" class="valid" multiple />
+                                <label for="filesupload" class="hide">Files</label>
                             </div>
                             <div class="file-path-wrapper">
                                 <input id="shownfileuploads" class="file-path validate" type="text"
@@ -694,7 +681,7 @@
             var filename = $(this).attr('href');
             $('input[name=renamefilename]').val(filename);
             $('input[name=oldrenamefilename]').val(filename);
-
+            M.updateTextFields();
         }));
         /* Move/copy file mechanics */
         $('.move-file-big').on("click", (function (e) {
@@ -706,6 +693,7 @@
             var jsFolderInput = document.getElementById('whereToFolder');
             jsFolderInput.value = "";
             viewFolderInput.value = "";
+            M.updateTextFields();
         }));
         $('.tree-move-file').on("click", (function (e) {
             /* Select target folder from folder tree */
@@ -717,7 +705,8 @@
             var instance = M.Modal.getInstance(moveFileModal);
             instance.close();
             jsFolderInput.value = target;
-            viewFolderInput.value = $(this).attr('data-folder-view');;
+            viewFolderInput.value = $(this).attr('data-folder-view');
+            M.updateTextFields();
         }));
         $('#viewWhereToFolder').on("click", (function (e) {
             /* Open folder tree if disabled input clicked */
@@ -755,7 +744,7 @@
                 $('input[name=fileDisplayMulti]').val(filename);
                 var viewFolder = document.getElementById('viewWhereToFolderMulti');
                 viewFolder.value = '';
-
+                M.updateTextFields();
             }
         }));
 
@@ -778,6 +767,7 @@
             instance.close();
             jsInput.value = target;
             viewInput.value = $(this).attr('data-folder-view');
+            M.updateTextFields();
         }));
 
         $('#copyMultiFileSubmit').on("click", (function (e) {

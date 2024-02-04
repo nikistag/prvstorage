@@ -57,7 +57,7 @@
                 </li>
                 @endif
                 <li>
-                    <a id="logoutwide" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
+                    <a id="logoutwide"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
                 </li>
                 <li>
                     &nbsp;
@@ -102,7 +102,7 @@
         </li>
         @endif
         <li>
-            <a id="logoutmobile" href="!#"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
+            <a id="logoutmobile"><span class="logouttrigger teal-text text-lighten-4">Logout</span></a>
         </li>
     </ul>
     <form id="logoutform" method="POST" action="{{ route('logout') }}">
