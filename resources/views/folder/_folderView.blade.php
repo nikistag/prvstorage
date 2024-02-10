@@ -150,11 +150,9 @@
             <h5>New folder</h5>
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="newfolder" name="newfolder" type="text" class="valid" value="" size="40" />
-                        <label for="newfolder">New folder</label>
-                    </div>
+                <div class="input-field col s12">
+                    <input id="newfolder" name="newfolder" type="text" class="valid" value="" size="40" />
+                    <label for="newfolder">New folder</label>
                 </div>
             </div>
             <div class="row">
@@ -175,11 +173,9 @@
             <h5>Edit folder</h5>
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <input id="editfolder" name="editfolder" type="text" class="valid" value="" size="40" />
-                        <label for="editfolder"></label>
-                    </div>
+                <div class="input-field col s12">
+                    <label for="editfolder">Folder name</label>
+                    <input id="editfolder" name="editfolder" type="text" class="valid" value="" size="40" />
                 </div>
             </div>
         </div>
@@ -189,7 +185,7 @@
             <button class="btn-small waves-effect waves-light" type="submit" name="action">Submit
                 <i class="material-icons right">send</i>
             </button>
-            <a href="#!" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+            <a class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
         </div>
     </form>
 </div>
@@ -211,21 +207,17 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    Move folder:
-                    <div class="input-field inline">
-                        <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30"
-                            disabled />
-                    </div>
+                <div class="input-field col s12">
+                    <input id="movefolder" name="movefolder" type="text" class="valid" value="" size="30"
+                        style="color:black; font-weight: bold;" disabled />
+                    <label for="movefolder">Selected folder</label>
                 </div>
             </div>
             <div class="row">
-                <div class="col s12 centered">
-                    To folder:
-                    <div class="input-field inline">
-                        <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" size="30"
-                            readonly />
-                    </div>
+                <div class="input-field col s12">
+                    <input id="viewtarget" type="text" class="valid treeMoveFolderModalTrigger" value="" size="30"
+                        style="color:black; font-weight: bold;" readonly />
+                    <label for="viewtarget">Destination folder</label>
                 </div>
             </div>
         </div>
@@ -257,12 +249,9 @@
             @method('DELETE')
             @csrf
             <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
-                        <span class="foldertoremove"></span>
-                        <input id="folder" name="folder" type="hidden" class="valid" value="" size="40" />
-                        <label for="folder"></label>
-                    </div>
+                <div class="input-field col s12">
+                    <b><span class="foldertoremove"></span></b>
+                    <input id="folder" name="folder" type="hidden" class="valid" value="" size="40" />
                 </div>
             </div>
         </div>
@@ -296,9 +285,11 @@
                                 <span>Folder</span>
                                 <input id="folderupload" name="folderupload[]" type="file" class="valid" webkitdirectory
                                     mozdirectory msdirectory odirectory directory multiple="multiple" />
+                                <label for="folderupload" class="hide">Folder</label>
                             </div>
                             <div class="file-path-wrapper">
-                                <input class="file-path validate" type="text" placeholder="Upload folder">
+                                <input id="shownfolderupload" class="file-path validate" type="text"
+                                    placeholder="Upload folder">
                             </div>
                         </div>
                     </div>
@@ -310,15 +301,13 @@
                     <i class="material-icons right">cloud_upload</i>
                 </button>
                 <a href="#!" id="close-folder-upload-modal"
-                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                    class="modal-close waves-effect waves-green deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </form>
     </div>
 
     <!-- Upload and saving progress -->
-    <div class="collection" id='folder-list-display'>
-
-    </div>
+    <div class="collection" id='folder-list-display'></div>
 
 </div>
 <!-- Empty temporary folder modal -->
@@ -547,6 +536,7 @@
             var foldername = $(this).attr('href');
             $('input[name=editfolder]').val(foldername);
             $('input[name=oldfolder]').val(foldername);
+            M.updateTextFields();
         }));
 
         $('.remove-folder').on("click", (function (e) {
@@ -554,7 +544,7 @@
             var foldername = $(this).attr('href');
             $('input[name=folder]').val(foldername);
             $('.foldertoremove').html(foldername);
-
+            M.updateTextFields();
         }));
 
         /* Folder move / copy mechanics */
@@ -567,6 +557,7 @@
             var jsInput = document.getElementById('target');
             jsInput.value = "";
             viewInput.value = "";
+            M.updateTextFields();
         }));
         $('.tree-move-folder').on("click", (function (e) {
             /* Select target folder from folder tree */
@@ -583,6 +574,7 @@
                 jsInput.value = target;
             }
             viewInput.value = $(this).attr('data-folder-view');
+            M.updateTextFields();
         }));
         $('#viewtarget').on("click", (function (e) {
             /* Open folder tree if disabled input clicked */
@@ -631,6 +623,12 @@
                 instanceBgZipDownload.close();
             }, 3000);
 
+        }));
+        /* Reset upload folder modal */
+        $('#close-folder-upload-modal').on("click", (function (e) {
+            $('#folder-list-display').empty();
+            $('#folderupload').val("");
+            $('#shownfolderupload').val("");
         }));
     });
 </script>

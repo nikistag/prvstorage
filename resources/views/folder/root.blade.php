@@ -43,6 +43,9 @@
         $('.modalupload').modal({
             dismissible: false,
         });
+        $('#modalfolderupload').modal({
+            dismissible: false,
+        });
         $('#modalfileshare').modal({
             dismissible: false,
         });
