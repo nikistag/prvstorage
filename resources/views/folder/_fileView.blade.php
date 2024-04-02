@@ -485,7 +485,6 @@
         $('.datepicker').datepicker({
             container: $('#pickerContainer'),
         });
-
         /*MEDIA PREVIEW*/
         /** Open media preview modal*/
         $('.media-preview-trigger').on("click", (function (e) {

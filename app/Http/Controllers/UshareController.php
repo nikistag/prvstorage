@@ -22,6 +22,161 @@ class UshareController extends Controller
         return view('ushare.index', compact('localShares'));
     }
 
+    public function root(Request $request)
+    {
+
+        $current_folder = $request->current_folder;
+
+        //Delete expired local shares
+        $expiredShares = Ushare::where("expiration", "<", time())->get();
+        if (count($expiredShares) >= 1) {
+            foreach ($expiredShares as $expired) {
+                $expired->delete();
+            }
+        }
+        //Get info about local shares
+        $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
+
+        if (count($ushares) > 0) {
+            $usershares = count($ushares->unique("user_id")) . " shares";
+            $breadcrumbs = $this->getBreadcrumbs($current_folder, $ushares);
+            $usershares_directories = [];
+            foreach ($ushares as $ush) {
+                array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
+                array_push($usershares_directories, Storage::allDirectories($ush->path));
+            }
+            $usershares_directory_merged = array_merge(...$usershares_directories);
+            $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
+        } else {
+            return redirect(route('folder.root', ['current_folder' => null]))->with('error', 'No user shared folders with you!'); //No shares -  redirect to FolderController
+        }
+
+        $path['path'] = $this->getSharePath($current_folder, $usershares_directory_paths);
+
+        if ($path['path'] === null) {
+            return redirect(route('folder.root', ['current_folder' => null]))->with('error', 'You dont have access to that folder!'); //Avoid accesing shares not for this user - redirect to FolderController
+        }
+
+        //Check if path is to a shared folder or only part of path to a shared folder
+        array_search(substr($path['path'], 1, strlen($path['path'])), $usershares_directory_merged) !== false ? $path['access'] = true : $path['access'] = false;
+
+        //Directory paths for options to move/copy files and folders
+        $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
+        $share_directory_paths = Storage::allDirectories('NShare');
+        if (count($share_directory_paths) == 0) {
+            $share_directory_paths = ["NShare"];
+        }
+        //Generate folder tree view - collection
+        $collection = collect(array_merge($full_private_directory_paths, $share_directory_paths));
+        $treeDirectories = $collection->reject(function ($value, $key) {
+            return $value == auth()->user()->name . "/ZTemp";
+        });
+        $treeCollection = $treeDirectories->map(function ($item) {
+            if (substr($item, 0, strlen(auth()->user()->name)) == auth()->user()->name) {
+                $dir = substr($item, strlen(auth()->user()->name));
+                return explode('/', $dir);
+            } else {
+                return explode('/', '/' . $item);
+            }
+        });
+
+        //Prepare active tree branch
+        $activeBranch = [];
+        foreach ($breadcrumbs as $crumb) {
+            array_push($activeBranch, $crumb["folder"]);
+        }
+        $garbage = array_shift($activeBranch);
+
+        $userRoot = $this->convertPathsToTree($treeCollection)->first();
+        $folderTreeView = '<li><span class="folder-tree-root"></span>';
+        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root"><b><i>Root</i></b></a></li>';
+        $folderTreeView .= $this->generateViewTree($userRoot['children']);
+
+        $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
+        $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
+        $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
+
+        //Add UShare folder to folder tree view
+        //Generate folder tree view - collection for UShare
+        $ushareCollection = collect($usershares_directory_paths);
+        $treeCollection_ushare = $ushareCollection->map(function ($item) {
+            return explode('/', '/' . $item);
+        });
+
+        $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
+        $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares, $activeBranch);
+
+        if ($path["access"] === false) {
+            //Get folder content - only links to actual share, no access
+            $sharedFolders = $this->getSharedFolders($usershares_directory_merged, $path);
+            $directories = [];
+            foreach ($sharedFolders as $dir) {
+                array_push($directories, [
+                    'foldername' => substr($dir, strlen($path['path'])),
+                    'shortfoldername' => strlen(substr($dir, strlen($path['path']))) > 30 ? substr(substr($dir, strlen($path['path'])), 0, 25) . "..." :  substr($dir, strlen($path['path'])),
+                    'foldersize' => $this->isShared($dir, $ushares) ? $this->getFolderSize($dir) : ['size' => 'path', 'type' => 'link', 'byteSize' => 0],
+                ]);
+            }
+
+            $files = [];
+            return view('ushare.root', compact(
+                'directories',
+                'files',
+                'current_folder',
+                'path',
+                'breadcrumbs',
+                'folderTreeView',
+                'treeMoveFolder',
+                'treeMoveFile',
+                'treeMoveMulti',
+                'usershares'
+            ));
+        }
+        //Get folders an files of current directory
+        $dirs = Storage::directories($path['path']);
+        $fls = Storage::files($path['path']);
+        $directories = [];
+        foreach ($dirs as $dir) {
+            array_push($directories, [
+                'foldername' => substr($dir, strlen($path['path'])),
+                'shortfoldername' => strlen(substr($dir, strlen($path['path']))) > 30 ? substr(substr($dir, strlen($path['path'])), 0, 25) . "..." :  substr($dir, strlen($path['path'])),
+                'foldersize' => $this->isShared($dir, $ushares) ? $this->getFolderSize($dir) : ['size' => 'path', 'type' => 'link', 'byteSize' => 0],
+            ]);
+        }
+
+        /* Process files */
+        $files = [];
+        foreach ($fls as $file) {
+            $fullfilename = substr($file, strlen($path['path']));
+            $extensionWithDot = strrchr($file, ".");
+            $extensionNoDot = substr($extensionWithDot, 1, strlen($extensionWithDot));
+            array_push($files, [
+                'fullfilename' =>  $fullfilename,
+                'fileurl' => $path['path'] . "/" . $fullfilename,
+                'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
+                'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
+                'extension' => $extensionWithDot,
+                'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path['path'], $fullfilename, $filename),
+                'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path['path'], $fullfilename, $filename),
+                'filesize' => $this->getFileSize($file)
+            ]);
+        }
+
+
+        return view('ushare.root', compact(
+            'directories',
+            'files',
+            'current_folder',
+            'path',
+            'breadcrumbs',
+            'folderTreeView',
+            'treeMoveFolder',
+            'treeMoveFile',
+            'treeMoveMulti',
+            'usershares'
+        ));
+    }
+
     public function store(Request $request)
     {
         //Check for user to share with
@@ -178,161 +333,6 @@ class UshareController extends Controller
         $breadcrumbs[1] = ['folder' => 'UShare', 'path' => '', 'active' => false, 'href' => route('ushare.start')];
 
         return view('ushare.start', compact('usershares', 'ushares', 'breadcrumbs', 'folderTreeView'));
-    }
-
-    public function root(Request $request)
-    {
-
-        $current_folder = $request->current_folder;
-
-        //Delete expired local shares
-        $expiredShares = Ushare::where("expiration", "<", time())->get();
-        if (count($expiredShares) >= 1) {
-            foreach ($expiredShares as $expired) {
-                $expired->delete();
-            }
-        }
-        //Get info about local shares
-        $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
-
-        if (count($ushares) > 0) {
-            $usershares = count($ushares->unique("user_id")) . " shares";
-            $breadcrumbs = $this->getBreadcrumbs($current_folder, $ushares);
-            $usershares_directories = [];
-            foreach ($ushares as $ush) {
-                array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
-                array_push($usershares_directories, Storage::allDirectories($ush->path));
-            }
-            $usershares_directory_merged = array_merge(...$usershares_directories);
-            $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
-        } else {
-            return redirect(route('folder.root', ['current_folder' => null]))->with('error', 'No user shared folders with you!'); //No shares -  redirect to FolderController
-        }
-
-        $path['path'] = $this->getSharePath($current_folder, $usershares_directory_paths);
-
-        if ($path['path'] === null) {
-            return redirect(route('folder.root', ['current_folder' => null]))->with('error', 'You dont have access to that folder!'); //Avoid accesing shares not for this user - redirect to FolderController
-        }
-
-        //Check if path is to a shared folder or only part of path to a shared folder
-        array_search(substr($path['path'], 1, strlen($path['path'])), $usershares_directory_merged) !== false ? $path['access'] = true : $path['access'] = false;
-
-        //Directory paths for options to move/copy files and folders
-        $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
-        $share_directory_paths = Storage::allDirectories('NShare');
-        if (count($share_directory_paths) == 0) {
-            $share_directory_paths = ["NShare"];
-        }
-        //Generate folder tree view - collection
-        $collection = collect(array_merge($full_private_directory_paths, $share_directory_paths));
-        $treeDirectories = $collection->reject(function ($value, $key) {
-            return $value == auth()->user()->name . "/ZTemp";
-        });
-        $treeCollection = $treeDirectories->map(function ($item) {
-            if (substr($item, 0, strlen(auth()->user()->name)) == auth()->user()->name) {
-                $dir = substr($item, strlen(auth()->user()->name));
-                return explode('/', $dir);
-            } else {
-                return explode('/', '/' . $item);
-            }
-        });
-
-        //Prepare active tree branch
-        $activeBranch = [];
-        foreach ($breadcrumbs as $crumb) {
-            array_push($activeBranch, $crumb["folder"]);
-        }
-        $garbage = array_shift($activeBranch);
-
-        $userRoot = $this->convertPathsToTree($treeCollection)->first();
-        $folderTreeView = '<li><span class="folder-tree-root"></span>';
-        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root"><b><i>Root</i></b></a></li>';
-        $folderTreeView .= $this->generateViewTree($userRoot['children']);
-
-        $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
-        $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
-        $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
-
-        //Add UShare folder to folder tree view
-        //Generate folder tree view - collection for UShare
-        $ushareCollection = collect($usershares_directory_paths);
-        $treeCollection_ushare = $ushareCollection->map(function ($item) {
-            return explode('/', '/' . $item);
-        });
-
-        $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
-        $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares, $activeBranch);
-
-        if ($path["access"] === false) {
-            //Get folder content - only links to actual share, no access
-            $sharedFolders = $this->getSharedFolders($usershares_directory_merged, $path);
-            $directories = [];
-            foreach ($sharedFolders as $dir) {
-                array_push($directories, [
-                    'foldername' => substr($dir, strlen($path['path'])),
-                    'shortfoldername' => strlen(substr($dir, strlen($path['path']))) > 30 ? substr(substr($dir, strlen($path['path'])), 0, 25) . "..." :  substr($dir, strlen($path['path'])),
-                    'foldersize' => $this->isShared($dir, $ushares) ? $this->getFolderSize($dir) : ['size' => 'path', 'type' => 'link', 'byteSize' => 0],
-                ]);
-            }
-
-            $files = [];
-            return view('ushare.root', compact(
-                'directories',
-                'files',
-                'current_folder',
-                'path',
-                'breadcrumbs',
-                'folderTreeView',
-                'treeMoveFolder',
-                'treeMoveFile',
-                'treeMoveMulti',
-                'usershares'
-            ));
-        }
-        //Get folders an files of current directory
-        $dirs = Storage::directories($path['path']);
-        $fls = Storage::files($path['path']);
-        $directories = [];
-        foreach ($dirs as $dir) {
-            array_push($directories, [
-                'foldername' => substr($dir, strlen($path['path'])),
-                'shortfoldername' => strlen(substr($dir, strlen($path['path']))) > 30 ? substr(substr($dir, strlen($path['path'])), 0, 25) . "..." :  substr($dir, strlen($path['path'])),
-                'foldersize' => $this->isShared($dir, $ushares) ? $this->getFolderSize($dir) : ['size' => 'path', 'type' => 'link', 'byteSize' => 0],
-            ]);
-        }
-
-        /* Process files */
-        $files = [];
-        foreach ($fls as $file) {
-            $fullfilename = substr($file, strlen($path['path']));
-            $extensionWithDot = strrchr($file, ".");
-            $extensionNoDot = substr($extensionWithDot, 1, strlen($extensionWithDot));
-            array_push($files, [
-                'fullfilename' =>  $fullfilename,
-                'fileurl' => $path['path'] . "/" . $fullfilename,
-                'filename' => $filename = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, "."))),
-                'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
-                'extension' => $extensionWithDot,
-                'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path['path'], $fullfilename, $filename),
-                'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path['path'], $fullfilename, $filename),
-                'filesize' => $this->getFileSize($file)
-            ]);
-        }
-
-
-        return view('ushare.root', compact(
-            'directories',
-            'files',
-            'current_folder',
-            'path',
-            'breadcrumbs',
-            'folderTreeView',
-            'treeMoveFolder',
-            'treeMoveFile',
-            'treeMoveMulti',
-            'usershares'
-        ));
     }
     public function folderMove(Request $request) //Only copy
     {
@@ -568,6 +568,7 @@ class UshareController extends Controller
     {
         //dd($request->input());
         $fullfilename = $request->file_name;
+        $checked = $request->checked;
         $fileNameNoExt = substr($fullfilename, 0, strripos($fullfilename, strrchr($fullfilename, ".")));
         $path = $this->getSharedDir("/" . $request->current_folder);
         //Delete old sessions->previews
@@ -583,12 +584,22 @@ class UshareController extends Controller
         }
         //Delete old files
         foreach (array_reverse($oldFiles) as $oldFile) {
-            if (($oldFile->isFile()) || ($oldFile->isLink()))
+            if ($oldFile->isFile()) {
                 if (((int)$oldFile->getATime() + 7210) < $nowUnixInt) { // It's old - needs to be deleted
                     unlink($oldFile->getPathname());
                 }
+            }
+            if ($oldFile->isLink()) {
+                if (file_exists($oldFile->getPathname())) {
+                    if (((int)$oldFile->getATime() + 7210) < $nowUnixInt) { // It's old - needs to be deleted
+                        unlink($oldFile->getPathname());
+                    }
+                } else {
+                    unlink($oldFile->getPathname());
+                }
+            }
         }
-        //Delete old files
+        //Delete old folders
         foreach (array_reverse($oldFiles) as $oldFile) {
             if ($oldFile->isDir()) {
                 if (!(new \FilesystemIterator($oldFile))->valid()) {
@@ -657,7 +668,7 @@ class UshareController extends Controller
         //IF $filePosition = FALSE - No preview possible
         if ($isImage !== false) {
             $fileimageurl = $this->generateImagePreview($pathToFolder, $fullfilename, $fileNameNoExt);
-            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition'));
+            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition', 'checked'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,
@@ -676,7 +687,7 @@ class UshareController extends Controller
                 $success = true;
             }
             $filevideourl = 'storage/preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename;
-            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition'));
+            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition', 'checked'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,
