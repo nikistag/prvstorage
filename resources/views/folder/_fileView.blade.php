@@ -455,8 +455,8 @@
     </form>
 </div>
 <!-- Media preview modal-->
-<div id="mediaModal" class="modal">
-    <div class="modal-content center-align" id="mediaPreview" style="padding:10px;">
+<div id="mediaModal" class="modal" style="max-height:80%;">
+    <div class="modal-content center-align" id="mediaPreview" style="padding:5px;">
         <h5 id="mediaFileName">Loading...</h5>
         <div class="progress">
             <div class="indeterminate"></div>
@@ -489,6 +489,11 @@
         /** Open media preview modal*/
         $('.media-preview-trigger').on("click", (function (e) {
             e.preventDefault();
+            /* user viewport information */
+            let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            /* user viewport information end*/
+
             var elem = document.getElementById('mediaModal');
             var instance = M.Modal.getInstance(elem);
             instance.open();
@@ -505,7 +510,9 @@
                     '_token': $('input[name=_token]').val(),
                     'current_folder': $('input[name=current_folder]').val(),
                     'file_name': fileName,
-                    'checked': document.getElementById(fileName).checked
+                    'checked': document.getElementById(fileName).checked,
+                    'vw': vw,
+                    'vh': vh,
                 },
                 success: function (data) {
                     if (typeof data.html !== "undefined") {
@@ -545,7 +552,10 @@
         }));
         $('.preview-links').on("click", (function (e) {
             e.preventDefault();
-            /* var currentFolder = document.getElementById('current_folder'); */
+            /* user viewport information */
+            let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            /* user viewport information end*/
             var fileName = $(this).attr('data-data');
             var previewDiv = document.getElementById('mediaPreview');
             var leftChevron = document.getElementById("leftChevron");
@@ -558,7 +568,9 @@
                     '_token': $('input[name=_token]').val(),
                     'current_folder': $('input[name=current_folder]').val(),
                     'file_name': fileName,
-                    'checked': document.getElementById(fileName).checked
+                    'checked': document.getElementById(fileName).checked,
+                    'vw': vw,
+                    'vh': vh,
                 },
                 success: function (data) {
                     if (typeof data.html !== "undefined") {
