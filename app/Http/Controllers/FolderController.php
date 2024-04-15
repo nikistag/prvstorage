@@ -864,10 +864,14 @@ class FolderController extends Controller
         } else {
             Storage::disk('public')->makeDirectory('preview/' . session()->getId() . $pathToFolder);
         }
+        //get current user viewport and adapt preview
+        $vw = round($request->vw * 65 / 100, 0);
+        $vh = round($request->vh * 55 / 100, 0);
+        $previewStyle = "max-height:" . $vh . "px;max-width:" . $vw . "px;"; //"max-height:450px;max-width:600px;"
         //IF $filePosition = FALSE - No preview possible
         if ($isImage !== false) {
             $fileimageurl = $this->generateImagePreview($pathToFolder, $fullfilename, $fileNameNoExt);
-            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition', 'checked'));
+            $preview = view('folder.image_preview', compact('fileimageurl', 'fullfilename', 'thumbnailPosition', 'checked', 'previewStyle'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,
@@ -886,7 +890,7 @@ class FolderController extends Controller
                 $success = true;
             }
             $filevideourl = 'storage/preview/' . session()->getId() . $pathToFolder . "/" . $fullfilename;
-            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition', 'checked'));
+            $preview = view('folder.video_preview', compact('filevideourl', 'fullfilename', 'success', 'thumbnailPosition', 'checked', 'previewStyle'));
             return response()->json([
                 'html' => $preview->render(),
                 'leftChevron' => $leftChevron,
