@@ -63,7 +63,12 @@ class ShareController extends Controller
         if ($request->has('unlimited')) {
             $share->unlimited = 1;
         }
-        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        //If user did not select an expiration date, make it available for 24 hours
+        if ($request->input('expiration') == '') {
+            $share->expiration = time() + (60 * 60 * 24);
+        } else {
+            $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        }
 
         if ($share->expiration <= time()) {
             $share->status = 'expired';
@@ -111,7 +116,12 @@ class ShareController extends Controller
         if ($request->has('unlimited_multifileshare')) {
             $share->unlimited = 1;
         }
-        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration_multifileshare'))->format("U");
+        //If user did not select an expiration date, make it available for 24 hours
+        if ($request->input('expiration') == '') {
+            $share->expiration = time() + (60 * 60 * 24);
+        } else {
+            $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        }
 
         if ($share->expiration <= time()) {
             $share->status = 'expired';
@@ -180,7 +190,12 @@ class ShareController extends Controller
         if ($request->has('unlimited_folder')) {
             $share->unlimited = 1;
         }
-        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration_folder'))->format("U");
+        //If user did not select an expiration date, make it available for 24 hours
+        if ($request->input('expiration') == '') {
+            $share->expiration = time() + (60 * 60 * 24);
+        } else {
+            $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        }
 
         if ($share->expiration <= time()) {
             $share->status = 'expired';
@@ -197,12 +212,22 @@ class ShareController extends Controller
     {
         if ($request->has('code')) {
             $share = Share::where('code', $request->code)->first();
-            if (($share->expiration > time()) && ($share->status !== 'used')) {
-                $share->status = 'used';
+            //Deal with expired shares
+            if ($share->expiration < time()) {
+                $share->status = "expired";
                 $share->save();
-                return Storage::download($share->path);
+                return redirect("/")->with("error", "SORRY! Download link expired!!!");
+            }
+            if ($share->unlimited == 0) {
+                if ($share->status == "used") {
+                    return redirect("/")->with("error", "One time download link already used!!!");
+                } else {
+                    $share->status = 'used';
+                    $share->save();
+                    return Storage::download($share->path);
+                }
             } else {
-                return redirect("/")->with("error", "Download link not available!!!");
+                return Storage::download($share->path);
             }
         } else {
             return redirect("/")->with("error", "Download link not available!!!");
@@ -218,7 +243,12 @@ class ShareController extends Controller
         } else {
             $share->unlimited = 0;
         }
-        $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        //If user did not select an expiration date, make it available for 24 hours
+        if ($request->input('expiration') == '') {
+            $share->expiration = time() + (60 * 60 * 24);
+        } else {
+            $share->expiration = (int)date_create_from_format("M d, Y", $request->input('expiration'))->format("U");
+        }
 
         if ($share->expiration <= time()) {
             $share->status = 'expired';
@@ -258,5 +288,4 @@ class ShareController extends Controller
 
         return redirect(route('share.index'))->with('success', 'All shares have been purged');
     }
-
 }
