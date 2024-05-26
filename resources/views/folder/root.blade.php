@@ -67,7 +67,17 @@
                 this.classList.toggle("folder-tree-down");
             });
         }
-        /** Share folder tree expanding */
+        /** NShare folder tree expanding */
+        var toggler = document.getElementsByClassName("folder-tree-nshare");
+        var i;
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function () {
+                this.parentElement.querySelector(".nested-nshare").classList.toggle(
+                    "active-tree-nshare");
+                this.classList.toggle("folder-tree-nshare-down");
+            });
+        }
+        /** UShare folder tree expanding */
         var toggler = document.getElementsByClassName("folder-tree-ushare");
         var i;
         for (i = 0; i < toggler.length; i++) {

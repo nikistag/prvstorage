@@ -1233,27 +1233,40 @@ class FolderController extends Controller
                     count($activeBranch) == 0 ?
                         $view .= '<span class="folder-tree-down-active"></span><a class="pink-text text-darken-3" href="'
                         :
-                        $view .= '<span class="folder-tree-down"></span><a class="blue-grey-text text-darken-3" href="';
+                        $view .= '<span ';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= 'class="folder-tree-nshare-down">' : $view .= 'class="folder-tree-down">'; //Check if NShare
+                    $view .= '</span><a class="blue-grey-text text-darken-3" href="';
                     $view .= route('folder.root', ['current_folder' => $directory['path']]) .
                         '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                     $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
-                    $view .= '<ul class="active-tree browser-default" style="padding-left: 20px;">';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<ul class="active-tree-nshare browser-default" style="padding-left: 20px;">' :
+                        $view .= '<ul class="active-tree browser-default" style="padding-left: 20px;">';
                     $view .= $this->generateViewTree($directory['children'], $current_folder, $activeBranch);
                     $view .= '</ul>';
                 } else {
-                    $view .= '<span class="folder-tree"></span>';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare"></span>' :
+                        $view .= '<span class="folder-tree"></span>';
                     $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                     $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
-                    $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<ul class="nested-nshare browser-default" style="padding-left: 20px;">' :
+                        $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
                     $view .= $this->generateViewTree($directory['children'], $current_folder, $activeBranch);
                     $view .= '</ul>';
                 }
             } else {
 
                 if ((count($activeBranch) > 0) && ($activeBranch[0] == $directory["label"])) {
-                    $view .= '<span class="folder-tree-empty-active"></span><a class="pink-text text-darken-3" href="';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare-empty-active"></span><a class="pink-text text-darken-3" href="' :
+                        $view .= '<span class="folder-tree-empty-active"></span><a class="blue-grey-text text-darken-3" href="';
                 } else {
-                    $view .= '<span class="folder-tree-empty"></span><a class="blue-grey-text text-darken-3" href="';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare-empty"></span><a class="blue-grey-text text-darken-3" href="' :
+                        $view .= '<span class="folder-tree-empty"></span><a class="blue-grey-text text-darken-3" href="';
                 }
                 $view .= route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
@@ -1354,5 +1367,11 @@ class FolderController extends Controller
             array_push($newArray, $string . $element);
         }
         return $newArray;
+    }
+
+
+    function startsWithNShare($path)
+    {
+        return strpos($path, "/NShare") === 0;
     }
 }
