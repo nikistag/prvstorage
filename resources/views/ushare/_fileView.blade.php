@@ -24,8 +24,7 @@
         </div>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{
-            $file['filesize']['size']}}</span>
+        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{$file['filesize']['size']}}</span>
     </div>
     <div class="col s4 right-align">
         @if($current_folder == '/ZTemp')

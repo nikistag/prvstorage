@@ -89,7 +89,8 @@ class FolderController extends Controller
                 'extension' => $extensionWithDot,
                 'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path, $fullfilename, $filename),
-                'filesize' => $this->getFileSize($file)
+                'filesize' => $this->getFileSize($file),
+                'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
             ]);
         }
 
@@ -638,8 +639,9 @@ class FolderController extends Controller
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
                 'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
-                'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
-                'filesize' => $this->getFileSize($file)
+                'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path, $fullfilename, $filename),
+                'filesize' => $this->getFileSize($file),
+                'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
             ]);
         }
 
@@ -739,7 +741,8 @@ class FolderController extends Controller
                     'filename' => $trueFileName,
                     'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                     'extension' => strrchr($file, "."),
-                    'filesize' => $this->getFileSize($file)
+                    'filesize' => $this->getFileSize($file),
+                    'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
                 ]);
             } else {
                 if (strstr(strtolower($trueFileName), $searchstring) !== false) {
@@ -750,7 +753,8 @@ class FolderController extends Controller
                         'filename' => $trueFileName,
                         'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                         'extension' => strrchr($file, "."),
-                        'filesize' => $this->getFileSize($file)
+                        'filesize' => $this->getFileSize($file),
+                        'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
                     ]);
                 }
             }

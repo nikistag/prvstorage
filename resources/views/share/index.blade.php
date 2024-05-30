@@ -2,18 +2,16 @@
 
 @section('content')
 
-<div class="row">
-    <div><span><?= $quota ?></span>% of disk space in use. <?= $disk_free_space ?> Gb free space</div>
-    <div class="progress">
-        <div class="determinate" style="width: <?= $quota ?>%;"></div>
-    </div>
-</div>
+@include('partials._quota')
+
 <div class="row">
     <div class="col s6 left-align">
-        <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+        <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i
+                class="material-icons left">arrow_back</i>Back home</a>
     </div>
     <div class="col s6 right-align">
-        <a href="{{route('share.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i class="material-icons right">delete_forever</i>Purge all</a>
+        <a href="{{route('share.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i
+                class="material-icons right">delete_forever</i>Purge all</a>
     </div>
 </div>
 
@@ -50,17 +48,21 @@
             <td>{{$share->status}}</td>
             <td>
                 <input type="hidden" id="link_{{$share->id}}" value="{{$share->link}}" />
-                <a href="" data-custom="{{$share->id}}" class="tooltipped clipboard-copy" data-tooltip="Copy hyperlink"><i class="material-icons blue-text">content_copy</i></a>
+                <a href="" data-custom="{{$share->id}}" class="tooltipped clipboard-copy"
+                    data-tooltip="Copy hyperlink"><i class="material-icons blue-text">content_copy</i></a>
             </td>
             <td>
                 <input type="hidden" id="composition_{{$share->id}}" value="{{$share->composition}}" />
                 <input type="hidden" id="expiration_{{$share->id}}" value="{{$share->expirationDate}}" />
                 <input type="hidden" id="unlimited_{{$share->id}}" value="{{$share->unlimited}}" />
-                <input type="hidden" id="route_{{$share->id}}" value="{{route('share.update', ['share' => $share->id])}}" />
-                <a href="" id="{{$share->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+                <input type="hidden" id="route_{{$share->id}}"
+                    value="{{route('share.update', ['share' => $share->id])}}" />
+                <a href="" id="{{$share->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i
+                        class="material-icons green-text">edit</i></a>
             </td>
             <td>
-                <a href="{{$share->path}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile" data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
+                <a href="{{$share->path}}" class="modal-trigger remove-file tooltipped" data-target="modalremovefile"
+                    data-tooltip="Delete"><i class="material-icons red-text">remove_circle</i></a>
             </td>
         </tr>
         @endforeach
@@ -101,10 +103,12 @@
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
-                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit" name="action">Modify
+                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Modify
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-file-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
     </form>
@@ -135,7 +139,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.modal').modal();
         $('#modalfileshare').modal({
             dismissible: false,
@@ -144,7 +148,7 @@
             container: $('#pickerContainer'),
         });
         /* Open modal to edit share with the wild */
-        $('.edit-share').on("click", (function(e) {
+        $('.edit-share').on("click", (function (e) {
             e.preventDefault();
             //Getting data for share
             var shareId = $(this).attr('id');
@@ -174,7 +178,7 @@
 
         }));
         //Reset update form
-        $('#close-share-file-modal').on("click", (function(e) {
+        $('#close-share-file-modal').on("click", (function (e) {
             var updateForm = document.getElementById('fileshareform');
             var showFileForm = document.getElementById('showFileToShare');
             var unlimitedForm = document.getElementById('unlimited');
@@ -188,14 +192,14 @@
 
         }));
         //Remove 
-        $('.remove-file').on("click", (function(e) {
+        $('.remove-file').on("click", (function (e) {
             e.preventDefault();
             var filename = $(this).attr('href');
             $('input[name=filename]').val(filename);
             $('.filetoremove').html(filename);
         }));
 
-        $('.clipboard-copy').on('click', (function(e) {
+        $('.clipboard-copy').on('click', (function (e) {
             e.preventDefault();
             var shareId = $(this).attr('data-custom');
             var sharelink = document.getElementById('link_' + shareId);

@@ -1,16 +1,8 @@
 @extends('layouts.folder', ['title' => 'Root folder'])
 
 @section('content')
-<div class="row">
-    <div><span>
-            <?= $quota ?>
-        </span> % of disk space in use.
-        <?= $disk_free_space ?> Gb free space
-    </div>
-    <div class="progress">
-        <div class="determinate" style="width:<?= $quota ?>%;"></div>
-    </div>
-</div>
+
+@include('partials._quota')
 
 @include('folder._topActionBar')
 
