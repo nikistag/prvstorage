@@ -128,7 +128,7 @@
         </ul>
         @endguest
 
-        <div class="row blue-grey lighten-5" style="min-height:400px;">
+        <div class="row blue-grey lighten-5" style="min-height:400px; margin-bottom:0px;">
             <div class="col s12 center">
                 @include('partials._flash')
 
@@ -136,7 +136,7 @@
             </div>
         </div>
 
-        <footer class="page-footer blue-grey darken-3">
+        <footer class="page-footer blue-grey darken-3" style="padding-top: 5px;">
             <div class="container">
                 <div class="row">
                     <div class="col l6 s12">
@@ -154,11 +154,11 @@
                 </div>
             </div>
             <div class="footer-copyright blue-grey darken-4">
-                <div class="container">
+                <div style="padding: 5px;">
                     Copyright &copy; 2021 - {{ date('Y') }} Nichita Sandu / <a href="https://nikistag.com"
-                        target="_blank">nikistag.com</a> - All Rights Reserved
+                        target="_blank">nikistag.com</a> - All Rights Reserved &nbsp;&nbsp;
                     <div id="newVersion" class="right"></div>
-                    <div class="grey-text text-lighten-4 right">V. <b>{{ config('app.version') }}</b></div>
+                    <div class="grey-text text-lighten-4 right">&nbsp;&nbsp;V. <b>{{ config('app.version') }}</b></div>
                 </div>
             </div>
         </footer>

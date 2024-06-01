@@ -71,7 +71,7 @@
 @if($current_folder == '/ZTemp')
 @else
 
-<div class="row center left-align blue-grey lighten-4">
+<div class="row center left-align blue-grey lighten-4" style="margin-bottom:0px;">
     <div class="selectedaction blue-grey lighten-4" id="selectedaction">
         &nbsp;
         <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i

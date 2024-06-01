@@ -1,6 +1,8 @@
-@extends('layouts.app', ['title' => 'Root folder'])
+@extends('layouts.folder', ['title' => 'Search form'])
 
 @section('content')
+
+@include('folder._sidenavFolderView')
 
 @include('partials._quota')
 
@@ -9,12 +11,12 @@
         <div class="modal-content">
             <h5>Search files or folders</h5>
             @csrf
-            <div class="row">
-                <div class="col s12">
-                    <div class="input-field inline">
+            <div class="container">
+                <div class="row">
+                    <div class="input-field col s12">
                         <input id="searchstring" name="searchstring" type="text" class="valid" value="" size="40" />
                         <input type="hidden" name="current_folder" value="{{$current_folder}}" />
-                        <label for="searchstring"></label>
+                        <label for="searchstring">Search string</label>
                     </div>
                 </div>
             </div>
@@ -62,6 +64,7 @@
         $('#folder-tree-view').sidenav({
             edge: 'left'
         });
+        document.getElementById('searchstring').focus();
         /** Folder tree expanding */
         var toggler = document.getElementsByClassName("folder-tree");
         var i;
@@ -69,6 +72,26 @@
             toggler[i].addEventListener("click", function () {
                 this.parentElement.querySelector(".nested").classList.toggle("active-tree");
                 this.classList.toggle("folder-tree-down");
+            });
+        }
+        /** NShare folder tree expanding */
+        var toggler = document.getElementsByClassName("folder-tree-nshare");
+        var i;
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function () {
+                this.parentElement.querySelector(".nested-nshare").classList.toggle(
+                    "active-tree-nshare");
+                this.classList.toggle("folder-tree-nshare-down");
+            });
+        }
+        /** UShare folder tree expanding */
+        var toggler = document.getElementsByClassName("folder-tree-ushare");
+        var i;
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function () {
+                this.parentElement.querySelector(".nested-ushare").classList.toggle(
+                    "active-tree-ushare");
+                this.classList.toggle("folder-tree-ushare-down");
             });
         }
         //Ajax search for files and folders

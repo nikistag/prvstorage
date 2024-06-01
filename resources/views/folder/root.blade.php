@@ -79,7 +79,6 @@
                 this.classList.toggle("folder-tree-ushare-down");
             });
         }
-
     });
 
     function jsUpload(form, input, display, drop) {
