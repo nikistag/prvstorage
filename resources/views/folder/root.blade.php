@@ -1,16 +1,8 @@
 @extends('layouts.folder', ['title' => 'Root folder'])
 
 @section('content')
-<div class="row">
-    <div><span>
-            <?= $quota ?>
-        </span> % of disk space in use.
-        <?= $disk_free_space ?> Gb free space
-    </div>
-    <div class="progress">
-        <div class="determinate" style="width:<?= $quota ?>%;"></div>
-    </div>
-</div>
+
+@include('partials._quota')
 
 @include('folder._topActionBar')
 
@@ -67,7 +59,17 @@
                 this.classList.toggle("folder-tree-down");
             });
         }
-        /** Share folder tree expanding */
+        /** NShare folder tree expanding */
+        var toggler = document.getElementsByClassName("folder-tree-nshare");
+        var i;
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click", function () {
+                this.parentElement.querySelector(".nested-nshare").classList.toggle(
+                    "active-tree-nshare");
+                this.classList.toggle("folder-tree-nshare-down");
+            });
+        }
+        /** UShare folder tree expanding */
         var toggler = document.getElementsByClassName("folder-tree-ushare");
         var i;
         for (i = 0; i < toggler.length; i++) {
@@ -77,7 +79,6 @@
                 this.classList.toggle("folder-tree-ushare-down");
             });
         }
-
     });
 
     function jsUpload(form, input, display, drop) {

@@ -207,12 +207,72 @@ ul,
   vertical-align: middle;
 }
 
+.folder-tree-nshare {
+  cursor: pointer;
+  user-select: none;
+  /* Prevent text selection */
+}
+
+.folder-tree-nshare::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "create_new_folder";
+  color: indigo;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-nshare-down::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: indigo;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-nshare-down-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder_open";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-nshare-empty::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: indigo;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.folder-tree-nshare-empty-active::before {
+  font-family: "Material Icons";
+  font-size: 25px;
+  content: "folder";
+  color: #ad1457;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 /* Hide the nested list */
 .nested {
   display: none;
 }
 
 .nested-ushare {
+  display: none;
+}
+
+.nested-nshare {
   display: none;
 }
 
@@ -225,6 +285,10 @@ ul,
   display: block;
 }
 
+.active-tree-nshare {
+  display: block;
+}
+
 /*  Inactive links */
 .inactive {
   color: #292a2b;
@@ -234,6 +298,13 @@ ul,
 }
 
 .inactive-ushare {
+  color: #292a2b;
+  cursor: none;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inactive-nshare {
   color: #292a2b;
   cursor: none;
   text-decoration: none;

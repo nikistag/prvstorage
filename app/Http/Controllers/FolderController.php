@@ -89,7 +89,8 @@ class FolderController extends Controller
                 'extension' => $extensionWithDot,
                 'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
                 'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path, $fullfilename, $filename),
-                'filesize' => $this->getFileSize($file)
+                'filesize' => $this->getFileSize($file),
+                'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
             ]);
         }
 
@@ -600,8 +601,6 @@ class FolderController extends Controller
     {
         $current_folder = $request->current_folder;
 
-        $parent_folder = $this->getParentFolder($current_folder);
-
         $path = $this->getPath($current_folder);
 
         $breadcrumbs = $this->getBreadcrumbs($current_folder);
@@ -609,8 +608,34 @@ class FolderController extends Controller
         //Directory paths for options to move files and folders
         $full_private_directory_paths = Storage::allDirectories(auth()->user()->name);
         $share_directory_paths = Storage::allDirectories('NShare');
+        if (count($share_directory_paths) == 0) {
+            $share_directory_paths = ["NShare"];
+        }
+        //Delete expired local shares
+        $expiredShares = Ushare::where("expiration", "<", time())->get();
+        if (count($expiredShares) >= 1) {
+            foreach ($expiredShares as $expired) {
+                $expired->delete();
+            }
+        }
 
-        //Get folders an fils of current directory
+        //Get info about local shares
+        $usershares = null;
+        //if ($current_folder == null) {
+        $ushares = Ushare::where('wuser_id', auth()->user()->id)->get();
+        //}
+        if (count($ushares) > 0) {
+            $usershares = count($ushares->unique("user_id")) . " shares";
+            $usershares_directories = [];
+            foreach ($ushares as $ush) {
+                array_push($usershares_directories, [0 => substr($ush->path, 1, strlen($ush->path))]);
+                array_push($usershares_directories, Storage::allDirectories($ush->path));
+            }
+            $usershares_directory_merged = array_merge(...$usershares_directories);
+            $usershares_directory_paths = $this->prependStringToArrayElements($usershares_directory_merged, "UShare/");
+        }
+
+        //Get folders an files of current directory
         $dirs = Storage::directories($path);
         $fls = Storage::files($path);
         $directories = [];
@@ -626,6 +651,7 @@ class FolderController extends Controller
         $NShare['foldersize'] = $this->getFolderSize('NShare');
         $ztemp['foldersize'] = $this->getFolderSize(auth()->user()->name . '/ZTemp');
 
+        /* Process files */
         $files = [];
         foreach ($fls as $file) {
             $fullfilename = substr($file, strlen($path));
@@ -638,8 +664,9 @@ class FolderController extends Controller
                 'shortfilename' => strlen($filename) > 30 ? substr($filename, 0, 25) . "*~" : $filename,
                 'extension' => $extensionWithDot,
                 'fileimageurl' => $this->getThumbnailImage($extensionWithDot, $path, $fullfilename, $filename),
-                'filevideourl' => $this->getPreviewVideo($extensionWithDot, $path, $fullfilename, $filename),
-                'filesize' => $this->getFileSize($file)
+                'filevideourl' => $this->getThumbnailVideo($extensionWithDot, $path, $fullfilename, $filename),
+                'filesize' => $this->getFileSize($file),
+                'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
             ]);
         }
 
@@ -665,18 +692,27 @@ class FolderController extends Controller
 
         $userRoot = $this->convertPathsToTree($treeCollection)->first();
         $folderTreeView = '<li><span class="folder-tree-root"></span>';
-        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root">Root</a></li>';
+        $folderTreeView .= '<a class="blue-grey-text text-darken-3"   href="' . route('folder.root', ['current_folder' => '']) . '" data-folder="Root" data-folder-view="Root"><b><i>Root</i></b></a></li>';
         $folderTreeView .= $this->generateViewTree($userRoot['children'], $current_folder, $activeBranch);
 
         $treeMoveFolder = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-folder", $folderTreeView);
         $treeMoveFile = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-file", $folderTreeView);
         $treeMoveMulti = str_replace("blue-grey-text text-darken-3", "collection-item blue-grey-text text-darken-3 tree-move-multi", $folderTreeView);
 
+        //Add UShare folder to folder tree view
+        //Generate folder tree view - collection for UShare
+        if (count($ushares) > 0) {
+            $ushareCollection = collect($usershares_directory_paths);
+            $treeCollection_ushare = $ushareCollection->map(function ($item) {
+                return explode('/', '/' . $item);
+            });
+            $userRootShare = $this->convertPathsToTree($treeCollection_ushare)->first();
+            $folderTreeView .= $this->generateShareViewTree($userRootShare['children'], $ushares);
+        }
         return view('folder.searchForm', compact(
             'directories',
             'files',
             'current_folder',
-            'parent_folder',
             'NShare',
             'ztemp',
             'path',
@@ -739,7 +775,8 @@ class FolderController extends Controller
                     'filename' => $trueFileName,
                     'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                     'extension' => strrchr($file, "."),
-                    'filesize' => $this->getFileSize($file)
+                    'filesize' => $this->getFileSize($file),
+                    'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
                 ]);
             } else {
                 if (strstr(strtolower($trueFileName), $searchstring) !== false) {
@@ -750,7 +787,8 @@ class FolderController extends Controller
                         'filename' => $trueFileName,
                         'shortfilename' => strlen($trueFileName) > 25 ? substr($trueFileName, 0, 20) . "*~" : $trueFileName,
                         'extension' => strrchr($file, "."),
-                        'filesize' => $this->getFileSize($file)
+                        'filesize' => $this->getFileSize($file),
+                        'filedate' => date("Y.m.d", filemtime(Storage::path($file)))
                     ]);
                 }
             }
@@ -1233,27 +1271,40 @@ class FolderController extends Controller
                     count($activeBranch) == 0 ?
                         $view .= '<span class="folder-tree-down-active"></span><a class="pink-text text-darken-3" href="'
                         :
-                        $view .= '<span class="folder-tree-down"></span><a class="blue-grey-text text-darken-3" href="';
+                        $view .= '<span ';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= 'class="folder-tree-nshare-down">' : $view .= 'class="folder-tree-down">'; //Check if NShare
+                    $view .= '</span><a class="blue-grey-text text-darken-3" href="';
                     $view .= route('folder.root', ['current_folder' => $directory['path']]) .
                         '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                     $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
-                    $view .= '<ul class="active-tree browser-default" style="padding-left: 20px;">';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<ul class="active-tree-nshare browser-default" style="padding-left: 20px;">' :
+                        $view .= '<ul class="active-tree browser-default" style="padding-left: 20px;">';
                     $view .= $this->generateViewTree($directory['children'], $current_folder, $activeBranch);
                     $view .= '</ul>';
                 } else {
-                    $view .= '<span class="folder-tree"></span>';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare"></span>' :
+                        $view .= '<span class="folder-tree"></span>';
                     $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                     $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
-                    $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<ul class="nested-nshare browser-default" style="padding-left: 20px;">' :
+                        $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
                     $view .= $this->generateViewTree($directory['children'], $current_folder, $activeBranch);
                     $view .= '</ul>';
                 }
             } else {
 
                 if ((count($activeBranch) > 0) && ($activeBranch[0] == $directory["label"])) {
-                    $view .= '<span class="folder-tree-empty-active"></span><a class="pink-text text-darken-3" href="';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare-empty-active"></span><a class="pink-text text-darken-3" href="' :
+                        $view .= '<span class="folder-tree-empty-active"></span><a class="blue-grey-text text-darken-3" href="';
                 } else {
-                    $view .= '<span class="folder-tree-empty"></span><a class="blue-grey-text text-darken-3" href="';
+                    $this->startsWithNShare($directory['path']) ?
+                        $view .= '<span class="folder-tree-nshare-empty"></span><a class="blue-grey-text text-darken-3" href="' :
+                        $view .= '<span class="folder-tree-empty"></span><a class="blue-grey-text text-darken-3" href="';
                 }
                 $view .= route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
@@ -1354,5 +1405,11 @@ class FolderController extends Controller
             array_push($newArray, $string . $element);
         }
         return $newArray;
+    }
+
+
+    function startsWithNShare($path)
+    {
+        return strpos($path, "/NShare") === 0;
     }
 }

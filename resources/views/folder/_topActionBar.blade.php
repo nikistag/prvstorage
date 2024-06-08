@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" style="margin-bottom:0px;">
     @if(($current_folder != "/ZTemp") && (substr($current_folder, 0, 7) != "/NShare"))
 
     <!-- For large displays -->

@@ -2,18 +2,16 @@
 
 @section('content')
 
-<div class="row">
-    <div><span><?= $quota ?></span>% of disk space in use. <?= $disk_free_space ?> Gb free space</div>
-    <div class="progress">
-        <div class="determinate" style="width:<?= $quota ?>%"></div>
-    </div>
-</div>
+@include('partials._quota')
+
 <div class="row">
     <div class="col s6 left-align">
-        <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i class="material-icons left">arrow_back</i>Back home</a>
+        <a href="{{route('folder.root', ['current_folder' => ''])}}" class="waves-effect waves-light btn-small left"><i
+                class="material-icons left">arrow_back</i>Back home</a>
     </div>
     <div class="col s6 right-align">
-        <a href="{{route('ushare.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i class="material-icons right">delete_forever</i>Purge all</a>
+        <a href="{{route('ushare.purge')}}" class="waves-effect waves-light btn-small right red accent-4"><i
+                class="material-icons right">delete_forever</i>Purge all</a>
     </div>
 </div>
 
@@ -43,14 +41,19 @@
             <td>{{$ushare->expirationDate}}</td>
             <td>
                 <input type="hidden" id="user_{{$ushare->id}}" value="{{$ushare->wuser->id}}" />
-                <input type="hidden" id="username_{{$ushare->id}}" value="{{$ushare->wuser->name}}{{' / '.$ushare->wuser->email}}" />
+                <input type="hidden" id="username_{{$ushare->id}}"
+                    value="{{$ushare->wuser->name}}{{' / '.$ushare->wuser->email}}" />
                 <input type="hidden" id="expiration_{{$ushare->id}}" value="{{$ushare->expirationDate}}" />
                 <input type="hidden" id="whichfolder_{{$ushare->id}}" value="{{$ushare->path}}" />
-                <input type="hidden" id="route_{{$ushare->id}}" value="{{route('ushare.update', ['ushare' => $ushare->id])}}" />
-                <a href="" id="{{$ushare->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i class="material-icons green-text">edit</i></a>
+                <input type="hidden" id="route_{{$ushare->id}}"
+                    value="{{route('ushare.update', ['ushare' => $ushare->id])}}" />
+                <a href="" id="{{$ushare->id}}" class="edit-share tooltipped" data-tooltip="Edit"><i
+                        class="material-icons green-text">edit</i></a>
             </td>
             <td>
-                <a href="{{$ushare->id}}" class="modal-trigger remove-share tooltipped" data-target="modalremoveshare" data-tooltip="Delete" data-data="{{$ushare->path}}"><i class="material-icons red-text">remove_circle</i></a>
+                <a href="{{$ushare->id}}" class="modal-trigger remove-share tooltipped" data-target="modalremoveshare"
+                    data-tooltip="Delete" data-data="{{$ushare->path}}"><i
+                        class="material-icons red-text">remove_circle</i></a>
             </td>
         </tr>
         @endforeach
@@ -84,10 +87,12 @@
                 </div>
             </div>
             <div class="modal-footer" id="multifilefooter">
-                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit" name="action">Modify
+                <button id="submit-share-file" class="btn-small waves-effect waves-light" type="submit"
+                    name="action">Modify
                     <i class="material-icons right">share</i>
                 </button>
-                <a href="#!" id="close-share-file-modal" class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
+                <a href="#!" id="close-share-file-modal"
+                    class="modal-close waves-effect waves-green  deep-orange darken-4 btn-small">Cancel</a>
             </div>
         </div>
     </form>
@@ -102,7 +107,8 @@
                 <div class="col s12">
                     <div class="input-field inline">
                         <span class="sharetoremove"></span>
-                        <input id="shareidtodelete" name="shareidtodelete" type="hidden" class="valid" value="" size="40" />
+                        <input id="shareidtodelete" name="shareidtodelete" type="hidden" class="valid" value=""
+                            size="40" />
                         <label for="shareidtodelete"></label>
                     </div>
                 </div>
@@ -118,7 +124,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('.modal').modal();
         $('#modaleditshare').modal({
             dismissible: false,
@@ -127,7 +133,7 @@
             container: $('#pickerContainer'),
         });
         /* Open modal to edit share with the wild */
-        $('.edit-share').on("click", (function(e) {
+        $('.edit-share').on("click", (function (e) {
             e.preventDefault();
             //Getting data for share
             var updateForm = document.getElementById('editshareform');
@@ -153,7 +159,7 @@
 
         }));
         //Reset update form
-        $('#close-share-file-modal').on("click", (function(e) {
+        $('#close-share-file-modal').on("click", (function (e) {
             var updateForm = document.getElementById('editshareform');
             var showUserToShareForm = document.getElementById('showUserToShare');
             var showFolderForm = document.getElementById('showFolderToShare');
@@ -169,7 +175,7 @@
 
         }));
         //Remove 
-        $('.remove-share').on("click", (function(e) {
+        $('.remove-share').on("click", (function (e) {
             e.preventDefault();
             var shareid = $(this).attr('href');
             var sharepath = $(this).attr('data-data');
@@ -177,7 +183,7 @@
             $('.sharetoremove').html(sharepath);
         }));
 
-        $('.clipboard-copy').on('click', (function(e) {
+        $('.clipboard-copy').on('click', (function (e) {
             e.preventDefault();
             var shareId = $(this).attr('data-custom');
             var sharelink = document.getElementById('link_' + shareId);

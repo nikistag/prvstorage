@@ -24,8 +24,9 @@
         </div>
     </div>
     <div class="col s4">
-        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{
-            $file['filesize']['size']}}</span>
+        <span class="new badge" data-badge-caption="{{ $file['filesize']['type']}}">{{$file['filesize']['size']}}</span>
+        <br />
+        <span class="new badge blue-grey" data-badge-caption="{{$file['filedate']}}"></span>
     </div>
     <div class="col s4 right-align">
         @if($current_folder == '/ZTemp')
@@ -70,7 +71,7 @@
 @if($current_folder == '/ZTemp')
 @else
 
-<div class="row center left-align blue-grey lighten-4">
+<div class="row center left-align blue-grey lighten-4" style="margin-bottom:0px;">
     <div class="selectedaction blue-grey lighten-4" id="selectedaction">
         &nbsp;
         <a href="#copy" class="move-files tooltipped" data-tooltip="Move/Copy"><i

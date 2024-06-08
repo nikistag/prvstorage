@@ -1033,20 +1033,25 @@ class UshareController extends Controller
 
     private function generateViewTree($directories)
     {
-        // dd($directories);
         $view = '';
         foreach ($directories as $directory) {
             $withChildren = count($directory['children']) > 0 ? true : false;
             $view .= '<li>';
             if ($withChildren) {
-                $view .= '<span class="folder-tree"></span>';
+                $this->startsWithNShare($directory['path']) ?
+                    $view .= '<span class="folder-tree-nshare"></span>' :
+                    $view .= '<span class="folder-tree"></span>';
                 $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
-                $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
+                $this->startsWithNShare($directory['path']) ?
+                    $view .= '<ul class="nested-nshare browser-default" style="padding-left: 20px;">' :
+                    $view .= '<ul class="nested browser-default" style="padding-left: 20px;">';
                 $view .= $this->generateViewTree($directory['children']);
                 $view .= '</ul>';
             } else {
-                $view .= '<span class="folder-tree-empty"></span>';
+                $this->startsWithNShare($directory['path']) ?
+                    $view .= '<span class="folder-tree-nshare-empty"></span>' :
+                    $view .= '<span class="folder-tree-empty"></span>';
                 $view .= '<a class="blue-grey-text text-darken-3" href="' . route('folder.root', ['current_folder' => $directory['path']]) . '" data-folder="' . $directory['path'] . '" data-folder-view ="' . $directory['label'] . '">';
                 $view .= '<b><i>' . $directory['label'] . '</i></b></a>';
             }
@@ -1207,5 +1212,9 @@ class UshareController extends Controller
             $path = "/" . auth()->user()->name . $current_folder;                   //Path to folder of specific user               
         }
         return $path;
+    }
+    function startsWithNShare($path)
+    {
+        return strpos($path, "/NShare") === 0;
     }
 }
