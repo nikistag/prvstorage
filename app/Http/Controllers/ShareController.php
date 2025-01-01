@@ -89,7 +89,7 @@ class ShareController extends Controller
         $zip_path = Storage::path(auth()->user()->name . '/ZTemp/' . $zip_file_name);
         $db_zip_path = '/' . auth()->user()->name . '/ZTemp/' . $zip_file_name;
         $currentFolder = $this->getPath($request->input("current_folder_multifileshare"));
-
+        
         //Create archive
         $zip = new ZipArchive();
         if ($zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
@@ -287,5 +287,18 @@ class ShareController extends Controller
         }
 
         return redirect(route('share.index'))->with('success', 'All shares have been purged');
+    }
+
+    //Private functions 
+    private function getPath($current_folder)
+    {
+        $parent_search = explode("/", $current_folder);
+
+        if ((isset($parent_search[1])) && ($parent_search[1] == "NShare")) {
+            $path = $current_folder;                                               //Path to local network share           
+        } else {
+            $path = "/" . auth()->user()->name . $current_folder;                   //Path to folder of specific user               
+        }
+        return $path;
     }
 }
