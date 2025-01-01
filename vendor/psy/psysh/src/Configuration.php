@@ -47,7 +47,7 @@ class Configuration
     const VERBOSITY_VERY_VERBOSE = 'very_verbose';
     const VERBOSITY_DEBUG = 'debug';
 
-    private static $AVAILABLE_OPTIONS = [
+    private const AVAILABLE_OPTIONS = [
         'codeCleaner',
         'colorMode',
         'configDir',
@@ -67,6 +67,7 @@ class Configuration
         'requireSemicolons',
         'runtimeDir',
         'startupMessage',
+        'strictTypes',
         'theme',
         'updateCheck',
         'useBracketedPaste',
@@ -79,57 +80,57 @@ class Configuration
         'yolo',
     ];
 
-    private $defaultIncludes;
-    private $configDir;
-    private $dataDir;
-    private $runtimeDir;
-    private $configFile;
-    /** @var string|false */
+    private ?array $defaultIncludes = null;
+    private ?string $configDir = null;
+    private ?string $dataDir = null;
+    private ?string $runtimeDir = null;
+    private ?string $configFile = null;
+    /** @var string|false|null */
     private $historyFile;
-    private $historySize;
-    private $eraseDuplicates;
-    private $manualDbFile;
-    private $hasReadline;
-    private $useReadline;
-    private $useBracketedPaste;
-    private $hasPcntl;
-    private $usePcntl;
-    private $newCommands = [];
-    private $pipedInput;
-    private $pipedOutput;
-    private $rawOutput = false;
-    private $requireSemicolons = false;
-    private $useUnicode;
-    private $useTabCompletion;
-    private $newMatchers = [];
-    private $errorLoggingLevel = \E_ALL;
-    private $warnOnMultipleConfigs = false;
-    private $colorMode = self::COLOR_MODE_AUTO;
-    private $interactiveMode = self::INTERACTIVE_MODE_AUTO;
-    private $updateCheck;
-    private $startupMessage;
-    private $forceArrayIndexes = false;
+    private int $historySize = 0;
+    private ?bool $eraseDuplicates = null;
+    private ?string $manualDbFile = null;
+    private bool $hasReadline;
+    private ?bool $useReadline = null;
+    private bool $useBracketedPaste = false;
+    private bool $hasPcntl;
+    private ?bool $usePcntl = null;
+    private array $newCommands = [];
+    private ?bool $pipedInput = null;
+    private ?bool $pipedOutput = null;
+    private bool $rawOutput = false;
+    private bool $requireSemicolons = false;
+    private bool $strictTypes = false;
+    private ?bool $useUnicode = null;
+    private ?bool $useTabCompletion = null;
+    private array $newMatchers = [];
+    private int $errorLoggingLevel = \E_ALL;
+    private bool $warnOnMultipleConfigs = false;
+    private string $colorMode = self::COLOR_MODE_AUTO;
+    private string $interactiveMode = self::INTERACTIVE_MODE_AUTO;
+    private ?string $updateCheck = null;
+    private ?string $startupMessage = null;
+    private bool $forceArrayIndexes = false;
     /** @deprecated */
-    private $formatterStyles = [];
-    private $verbosity = self::VERBOSITY_NORMAL;
-    private $yolo = false;
-    /** @var Theme */
-    private $theme;
+    private array $formatterStyles = [];
+    private string $verbosity = self::VERBOSITY_NORMAL;
+    private bool $yolo = false;
+    private ?Theme $theme = null;
 
     // services
-    private $readline;
-    /** @var ShellOutput */
-    private $output;
-    private $shell;
-    private $cleaner;
-    private $pager;
-    private $manualDb;
-    private $presenter;
-    private $autoCompleter;
-    private $checker;
+    private ?Readline\Readline $readline = null;
+    private ?ShellOutput $output = null;
+    private ?Shell $shell = null;
+    private ?CodeCleaner $cleaner = null;
+    /** @var string|OutputPager|false|null */
+    private $pager = null;
+    private ?\PDO $manualDb = null;
+    private ?Presenter $presenter = null;
+    private ?AutoCompleter $autoCompleter = null;
+    private ?Checker $checker = null;
     /** @deprecated */
-    private $prompt;
-    private $configPaths;
+    private ?string $prompt = null;
+    private ConfigPaths $configPaths;
 
     /**
      * Construct a Configuration instance.
@@ -147,6 +148,8 @@ class Configuration
             $this->configFile = $config['configFile'];
         } elseif (isset($_SERVER['PSYSH_CONFIG']) && $_SERVER['PSYSH_CONFIG']) {
             $this->configFile = $_SERVER['PSYSH_CONFIG'];
+        } elseif (\PHP_SAPI === 'cli-server' && ($configFile = \getenv('PSYSH_CONFIG'))) {
+            $this->configFile = $configFile;
         }
 
         // legacy baseDir option
@@ -306,6 +309,11 @@ class Configuration
                     return self::VERBOSITY_VERY_VERBOSE;
                 case '3':
                 case 'vv': // `-vvv`
+                case 'vvv':
+                case 'vvvv':
+                case 'vvvvv':
+                case 'vvvvvv':
+                case 'vvvvvvv':
                     return self::VERBOSITY_DEBUG;
                 default: // implicitly normal, config file default wins
                     return;
@@ -457,7 +465,7 @@ class Configuration
      */
     public function loadConfig(array $options)
     {
-        foreach (self::$AVAILABLE_OPTIONS as $option) {
+        foreach (self::AVAILABLE_OPTIONS as $option) {
             if (isset($options[$option])) {
                 $method = 'set'.\ucfirst($option);
                 $this->$method($options[$option]);
@@ -614,16 +622,18 @@ class Configuration
     /**
      * Get the shell's temporary directory location.
      *
-     * Defaults to  `/psysh` inside the system's temp dir unless explicitly
+     * Defaults to `/psysh` inside the system's temp dir unless explicitly
      * overridden.
      *
      * @throws RuntimeException if no temporary directory is set and it is not possible to create one
+     *
+     * @param bool $create False to suppress directory creation if it does not exist
      */
-    public function getRuntimeDir(): string
+    public function getRuntimeDir($create = true): string
     {
         $runtimeDir = $this->configPaths->runtimeDir();
 
-        if (!\is_dir($runtimeDir)) {
+        if ($create && !\is_dir($runtimeDir)) {
             if (!@\mkdir($runtimeDir, 0700, true)) {
                 throw new RuntimeException(\sprintf('Unable to create PsySH runtime directory. Make sure PHP is able to write to %s in order to continue.', \dirname($runtimeDir)));
             }
@@ -648,7 +658,7 @@ class Configuration
      * Defaults to `/history` inside the shell's base config dir unless
      * explicitly overridden.
      */
-    public function getHistoryFile(): string
+    public function getHistoryFile(): ?string
     {
         if (isset($this->historyFile)) {
             return $this->historyFile;
@@ -665,7 +675,12 @@ class Configuration
             $this->setHistoryFile($files[0]);
         } else {
             // fallback: create our own history file
-            $this->setHistoryFile($this->configPaths->currentConfigDir().'/psysh_history');
+            $configDir = $this->configPaths->currentConfigDir();
+            if ($configDir === null) {
+                return null;
+            }
+
+            $this->setHistoryFile($configDir.'/psysh_history');
         }
 
         return $this->historyFile;
@@ -698,7 +713,7 @@ class Configuration
      */
     public function setEraseDuplicates(bool $value)
     {
-        $this->eraseDuplicates = (bool) $value;
+        $this->eraseDuplicates = $value;
     }
 
     /**
@@ -804,7 +819,7 @@ class Configuration
             $this->readline = new $className(
                 $this->getHistoryFile(),
                 $this->getHistorySize(),
-                $this->getEraseDuplicates()
+                $this->getEraseDuplicates() ?? false
             );
         }
 
@@ -961,6 +976,22 @@ class Configuration
     }
 
     /**
+     * Enable or disable strict types enforcement.
+     */
+    public function setStrictTypes($strictTypes)
+    {
+        $this->strictTypes = (bool) $strictTypes;
+    }
+
+    /**
+     * Check whether to enforce strict types.
+     */
+    public function strictTypes(): bool
+    {
+        return $this->strictTypes;
+    }
+
+    /**
      * Enable or disable Unicode in PsySH specific output.
      *
      * Note that this does not disable Unicode output in general, it just makes
@@ -998,7 +1029,11 @@ class Configuration
      */
     public function setErrorLoggingLevel($errorLoggingLevel)
     {
-        $this->errorLoggingLevel = (\E_ALL | \E_STRICT) & $errorLoggingLevel;
+        if (\PHP_VERSION_ID < 80400) {
+            $this->errorLoggingLevel = (\E_ALL | \E_STRICT) & $errorLoggingLevel;
+        } else {
+            $this->errorLoggingLevel = \E_ALL & $errorLoggingLevel;
+        }
     }
 
     /**
@@ -1036,7 +1071,7 @@ class Configuration
     public function getCodeCleaner(): CodeCleaner
     {
         if (!isset($this->cleaner)) {
-            $this->cleaner = new CodeCleaner(null, null, null, $this->yolo());
+            $this->cleaner = new CodeCleaner(null, null, null, $this->yolo(), $this->strictTypes());
         }
 
         return $this->cleaner;
@@ -1077,6 +1112,8 @@ class Configuration
      */
     public function setTabCompletion(bool $useTabCompletion)
     {
+        @\trigger_error('`setTabCompletion` is deprecated; call `setUseTabCompletion` instead.', \E_USER_DEPRECATED);
+
         $this->setUseTabCompletion($useTabCompletion);
     }
 
@@ -1098,6 +1135,8 @@ class Configuration
      */
     public function getTabCompletion(): bool
     {
+        @\trigger_error('`getTabCompletion` is deprecated; call `useTabCompletion` instead.', \E_USER_DEPRECATED);
+
         return $this->useTabCompletion();
     }
 
@@ -1229,6 +1268,18 @@ class Configuration
                 $this->pager = $pager;
             } elseif ($less = $this->configPaths->which('less')) {
                 // check for the presence of less...
+
+                // n.b. The busybox less implementation is a bit broken, so
+                // let's not use it by default.
+                //
+                // See https://github.com/bobthecow/psysh/issues/778
+                if (@\is_link($less)) {
+                    $link = @\readlink($less);
+                    if ($link !== false && \strpos($link, 'busybox') !== false) {
+                        return false;
+                    }
+                }
+
                 $this->pager = $less.' -R -F -X';
             }
         }
@@ -1263,6 +1314,8 @@ class Configuration
      */
     public function getTabCompletionMatchers(): array
     {
+        @\trigger_error('`getTabCompletionMatchers` is no longer used.', \E_USER_DEPRECATED);
+
         return [];
     }
 
@@ -1303,6 +1356,8 @@ class Configuration
      */
     public function addTabCompletionMatchers(array $matchers)
     {
+        @\trigger_error('`addTabCompletionMatchers` is deprecated; call `addMatchers` instead.', \E_USER_DEPRECATED);
+
         $this->addMatchers($matchers);
     }
 
@@ -1603,7 +1658,12 @@ class Configuration
      */
     public function getUpdateCheckCacheFile()
     {
-        return ConfigPaths::touchFileWithMkdir($this->configPaths->currentConfigDir().'/update_check.json');
+        $configDir = $this->configPaths->currentConfigDir();
+        if ($configDir === null) {
+            return false;
+        }
+
+        return ConfigPaths::touchFileWithMkdir($configDir.'/update_check.json');
     }
 
     /**

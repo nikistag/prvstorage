@@ -57,32 +57,33 @@ class Theme
         'default'   => [null],
 
         // Types
-        'number'   => ['magenta'],
-        'integer'  => ['magenta'],
-        'float'    => ['yellow'],
-        'string'   => ['green'],
-        'bool'     => ['cyan'],
-        'keyword'  => ['yellow'],
-        'comment'  => ['blue'],
-        'object'   => ['blue'],
-        'resource' => ['yellow'],
+        'number'       => ['magenta'],
+        'integer'      => ['magenta'],
+        'float'        => ['yellow'],
+        'string'       => ['green'],
+        'bool'         => ['cyan'],
+        'keyword'      => ['yellow'],
+        'comment'      => ['blue'],
+        'code_comment' => ['gray'],
+        'object'       => ['blue'],
+        'resource'     => ['yellow'],
 
         // Code-specific formatting
         'inline_html' => ['cyan'],
     ];
 
-    const ERROR_STYLES = ['info', 'warning', 'error', 'whisper'];
+    const ERROR_STYLES = ['info', 'warning', 'error', 'whisper', 'class'];
 
-    private $compact = false;
+    private bool $compact = false;
 
-    private $prompt = '> ';
-    private $bufferPrompt = '. ';
-    private $replayPrompt = '- ';
-    private $returnValue = '= ';
+    private string $prompt = '> ';
+    private string $bufferPrompt = '. ';
+    private string $replayPrompt = '- ';
+    private string $returnValue = '= ';
 
-    private $grayFallback = 'blue';
+    private string $grayFallback = 'blue';
 
-    private $styles = [];
+    private array $styles = [];
 
     /**
      * @param string|array $config theme name or config options
