@@ -29,12 +29,10 @@
             <a href="/index.php" class="brand-logo left"><span class="orange-text text-lighten-4"><strong>{{
                         auth()->user()->name }}'s</strong></span> <span style="font-size:medium;">private
                     storage</span></a>
-            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
-                    class="material-icons">menu</i></a>
+            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li>
-                    <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
-                            class="white-text">Account</span></a>
+                    <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span class="white-text">Account</span></a>
                 </li>
                 <li>
                     <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
@@ -67,13 +65,10 @@
             @endauth
             @guest
             &nbsp;
-            <a href="/index.php" class="brand-logo left "><img src="{{ asset('img/prvstorage_logo2_40_40.png') }}"
-                    alt="Prvstorage logo">
-                <span class="hide-on-med-and-down">Private storage</span><span
-                    class="hide-on-large-only">Prvstorage</span>
+            <a href="/index.php" class="brand-logo left "><img src="{{ asset('img/prvstorage_logo2_40_40.png') }}" alt="Prvstorage logo">
+                <span class="hide-on-med-and-down">Private storage</span><span class="hide-on-large-only">Prvstorage</span>
             </a>
-            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i
-                    class="material-icons">menu</i></a>
+            <a href="#" data-target="mobile-nav-menu" class="right sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
                 <li><a href="{{ route('login') }}"><span class="white-text">Login</span></a></li>
                 <li><a href="{{ route('register') }}"><span class="white-text">Register</span></a></li>
@@ -83,8 +78,7 @@
     @auth
     <ul class="sidenav blue-grey darken-2 white-text" id="mobile-nav-menu">
         <li>
-            <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span
-                    class="white-text">Account</span></a>
+            <a href="{{ route('user.view', ['user' => auth()->user()->id]) }}"><span class="white-text">Account</span></a>
         </li>
         <li>
             <a href="{{ route('share.index') }}"><span class="white-text">Outside shares</span></a>
@@ -143,15 +137,13 @@
         </div>
         <div class="footer-copyright blue-grey darken-4">
             <div class="container">
-                Copyright &copy; 2021 - {{ date('Y') }} Nichita Sandu / <a href="https://nikistag.com"
-                    target="_blank">nikistag.com</a> - All Rights Reserved
+                Copyright &copy; 2021 - {{ date('Y') }} Nichita Sandu / <a href="https://nikistag.com" target="_blank">nikistag.com</a> - All Rights Reserved
                 <div id="newVersion" class="right"></div>
                 <div class="grey-text text-lighten-4 right">V. <b>{{ config('app.version') }}</b></div>
             </div>
         </div>
     </footer>
     </div>
-
 
     <script>
         $(document).ready(function () {
@@ -169,25 +161,9 @@
             });
             $('.collapsible').collapsible();
 
-            /*  Check for new version/ update  */
-            $.ajax({
-                url: "https://nikistag.com/api/prvstorage/getversion",
-                /* url: "http://192.168.1.35/index.php/api/prvstorage/getversion", */ //Testing URL
-                type: "GET",
-                data: {
-                    'currentVersion': "{{ config('app.version') }}",
-                },
-                success: function (data) {
-                    if (typeof data.newRelease !== "undefined") {
-                        if (data.newRelease === true) {
-                            document.getElementById('newVersion').innerHTML = data.newVersionHtml;
-                            $('.tooltipped').tooltip();
-                        }
-                    }
-                }
-            });
         });
     </script>
+    @include('partials._versionScript')
 </body>
 
 </html>
