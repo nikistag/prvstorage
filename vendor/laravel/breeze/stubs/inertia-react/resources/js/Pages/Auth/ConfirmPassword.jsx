@@ -17,10 +17,6 @@ export default function ConfirmPassword() {
         };
     }, []);
 
-    const handleOnChange = (event) => {
-        setData(event.target.name, event.target.value);
-    };
-
     const submit = (e) => {
         e.preventDefault();
 
@@ -46,14 +42,14 @@ export default function ConfirmPassword() {
                         value={data.password}
                         className="mt-1 block w-full"
                         isFocused={true}
-                        onChange={handleOnChange}
+                        onChange={(e) => setData('password', e.target.value)}
                     />
 
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <PrimaryButton className="ml-4" disabled={processing}>
+                    <PrimaryButton className="ms-4" disabled={processing}>
                         Confirm
                     </PrimaryButton>
                 </div>
